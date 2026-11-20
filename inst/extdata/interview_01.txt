@@ -1,0 +1,11 @@
+Interviewerin: Guten Tag, danke, dass Sie sich Zeit nehmen. Koennen Sie sich kurz vorstellen?
+
+Befragte: Ja, gerne. Ich bin 34 Jahre alt und arbeite seit fuenf Jahren als Projektleiterin in einem kleinen Softwareunternehmen.
+
+Interviewerin: Wie sind Sie zu diesem Beruf gekommen?
+
+Befragte: Nach dem Studium der Wirtschaftsinformatik habe ich zuerst zwei Jahre in einem Konzern gearbeitet, aber das war mir zu anonym. Im KMU kann ich wirklich etwas bewegen.
+
+Interviewerin: Was motiviert Sie bei der Arbeit?
+
+Befragte: Vor allem die direkte Zusammenarbeit mit den Kunden. Und dass wir agile Methoden ernst nehmen, nicht nur auf dem Papier.

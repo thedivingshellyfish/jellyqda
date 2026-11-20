@@ -1,0 +1,77 @@
+---
+title: "jellyqda: RStudio-native, fully offline coding of interview transcripts"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{jellyqda: RStudio-native, fully offline coding of interview transcripts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Why jellyqda
+
+jellyqda is a small QDA (qualitative data analysis) tool that runs **entirely
+offline inside RStudio**. No interview data ever leaves your laptop. All
+project data lives in **one SQLite file per project** (`.jellyqda`) -- mobile,
+git-friendly, readable in 20 years.
+
+The key design decision: imported text is **frozen** into the database at
+import time and never re-extracted. Character offsets in codings therefore
+never drift.
+
+## Data model
+
+| table     | columns                                                        |
+|-----------|----------------------------------------------------------------|
+| `sources` | `id, name, format, frozen_text, meta_json`                     |
+| `codes`   | `id, label, parent_id, color, description`                     |
+| `codings` | `id, source_id, code_id, start, end, memo`                     |
+| `memos`   | `id, text_, created_at`                                        |
+| `events`  | `id, action, details, created_at` (audit trail)                |
+
+`codings$start`/`end` are 1-based inclusive character offsets into
+`sources$frozen_text`.
+
+## Workflow
+
+```{r, eval = FALSE}
+library(jellyqda)
+
+qda_open("meinarbeit.jellyqda")                       # open or create project
+qda_import(c("interview_01.docx", "feldnotizen.pdf")) # freeze texts
+qda_code_add("Beruflicher Werdegang")              # deductive code
+qda_code_add("KMU", parent = "Beruflicher Werdegang")
+
+qda_view(1)                                        # transcript in the Viewer, numbered segments
+qda_code(source = 1, segment = 3, code = "KMU", memo = "5 Jahre KMU")
+qda_code(source = 1, start = 120, end = 340, code = "Beruflicher Werdegang") # or by offsets
+
+qda_segments("KMU")                                # all passages with this code
+qda_codes()                                        # codebook as a tree
+qda_stats()                                        # progress: % coded
+qda_export("all")                                  # segments/codebook/audit as files
+qda_backup()                                       # timestamped zip outside the project folder
+```
+
+## Import formats
+
+`.txt`, `.md`, `.docx` and `.pdf` are first-class. Text files are read as raw
+bytes, the encoding is detected (`readr`/`stringi`) and everything is
+normalized to UTF-8. `.docx` goes through `officer`, `.pdf` through
+`pdftools`. A PDF without a usable text layer is imported with a warning; the
+original file is always copied unchanged into `originals/`.
+
+## Audit trail
+
+Every action (`import`, `code_add`, `coding_add`, `export`, `backup`, ...) is
+written to the `events` table with a UTC timestamp. `qda_export("audit")`
+exports it as CSV -- ready to cite in the methods section: *"All coding
+decisions were logged without gaps."*
+
+## Offline guarantee
+
+jellyqda never opens a network connection. The test suite scans the package
+source for network calls and runs a full coding session as a regression test.
