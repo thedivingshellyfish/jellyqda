@@ -97,6 +97,13 @@ qda_backup()         # timestamped zip in jellyqda-backups/ (AUSSERHALB des
 
 qda_events()         # kompletter Audit-Trail als Tabelle (jede Aktion + Zeitstempel)
 
+# --- 5b. Optional: interaktive App (V2) --------------------------------------
+# Ein Befehl startet eine lokale Web-Oberflaeche (nur 127.0.0.1, offline) im
+# RStudio-Viewer: Dokumentbaum links, Code-System mit Farben, Dokument-Browser
+# Mitte. Text markieren -> farbigen Code-Button klicken -> Coding wird an den
+# exakten Zeichen-Positionen gespeichert. Esc beendet die App.
+# qda_app()
+
 # --- 6. Sitzung beenden ------------------------------------------------------
 qda_close()
 

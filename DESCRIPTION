@@ -32,11 +32,15 @@ Imports:
     utils,
     zip
 Suggests:
+    bslib,
+    colourpicker,
+    fontawesome,
     knitr,
     pkgload,
     rmarkdown,
     roxygen2,
     rstudioapi,
+    shiny,
     testthat (>= 3.0.0),
     writexl
 Roxygen: list(markdown = TRUE)

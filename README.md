@@ -64,6 +64,29 @@ qda_backup()                                          # timestamped zip snapshot
 | `qda_stats()` | progress overview |
 | `qda_matrix()` | code x source counts (V1.5) |
 
+## Interactive app (V2): `qda_app()`
+
+One command starts a local web UI (loopback `127.0.0.1` only — still fully
+offline) in the RStudio Viewer pane:
+
+```r
+qda_open("meinarbeit.jellyqda")
+qda_app()     # Esc stops the app; open the printed URL in more browser
+              # windows/tabs for a multi-window setup (shared session)
+```
+
+Panels: **Dokumente** (document tree + import), **Codes** (code tree with
+color swatches, add/rename/delete, color picker), **Codings**, **Memos**, and
+the **document browser**: mark text with the mouse, then click a colored code
+button (or "Nur Memo") — the coding is stored at the exact character offsets
+in the same `.jellyqda` file, with audit event. Click a highlight to inspect
+or delete its coding. Backup/Export buttons in the top bar. Needs `shiny`,
+`bslib`, `colourpicker`, `fontawesome` (Suggests; install once).
+
+Note: RStudio itself cannot show toolbar icons that act on a text selection
+inside the Viewer — that is why the interactive UI is a local Shiny app, the
+"V2 door" reserved in the concept (§3).
+
 ## Demo & tests
 
 ```r
