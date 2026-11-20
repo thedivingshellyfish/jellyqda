@@ -1,3 +1,8 @@
+# jellyqda :: utils.R -- internal state & helpers shared by all files
+# .jellyqda_env (active project), project_path()/project_dir(), qda_con(),
+# .resolve_source/code/coding(), .to_json/fromJSON, .now(), esc helpers,
+# .writable_dir(), .union_len(), log_event() (writes events + auto-snapshot).
+
 # Internal state and helpers -------------------------------------------------
 
 .jellyqda_env <- new.env(parent = emptyenv())

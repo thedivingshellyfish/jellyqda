@@ -1,3 +1,8 @@
+# jellyqda :: schema.R -- CREATE TABLE IF NOT EXISTS for the whole project DB
+# Tables: sources, codes, codings, memos, summaries, events. sources.frozen_text
+# is the frozen import text all offsets refer to; meta_json holds import
+# metadata + per-source variables (sources.R).
+
 # Database schema ------------------------------------------------------------
 # Mirrors the data model of the concept (section 4), plus created_at on
 # events so every action carries a timestamp (concept section 8).

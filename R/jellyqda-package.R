@@ -1,3 +1,8 @@
+# jellyqda :: package root -- package-level docs (@keywords internal)
+# Start reading here for the big picture, then open.R (project lifecycle)
+# and app.R (the interactive UI). API files: import/sources/codes/coding/
+# memos/summary/export/backup/stats/undo; events.R is the audit trail.
+
 #' jellyqda: RStudio-native, fully offline coding of interview transcripts
 #'
 #' @description

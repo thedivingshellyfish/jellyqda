@@ -1,3 +1,6 @@
+# jellyqda :: summary.R -- summary grid cells: qda_summary_set()/qda_summaries()
+# One summary text per (code, source); UNIQUE constraint in schema.R.
+
 # Summary grid (V2) ------------------------------------------------------------
 # One editable summary text per (code, source) cell -- the "Summary Grid" of
 # the concept (section 6, V2). Stored in the `summaries` table, audited.

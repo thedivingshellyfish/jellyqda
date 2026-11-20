@@ -1,3 +1,7 @@
+# jellyqda :: open.R -- project lifecycle: qda_open()/qda_close()/qda_project()
+# One '.jellyqda' SQLite file per project; .jellyqda_env in utils.R holds
+# the active connection; schema is created/migrated in schema.R.
+
 # Open / close a project -----------------------------------------------------
 
 #' Open (or create) a jellyqda project file

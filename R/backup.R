@@ -1,3 +1,8 @@
+# jellyqda :: backup.R -- qda_backup(): timestamped zip snapshots + rotation
+# Backups go to jellyqda-backups/ OUTSIDE the project dir (fallback: inside
+# the project dir when the parent is not writable). Auto-snapshot is wired
+# in utils.R log_event().
+
 # Backup ---------------------------------------------------------------------
 
 #' Create a timestamped zip backup of the project

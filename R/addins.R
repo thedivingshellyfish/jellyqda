@@ -1,3 +1,6 @@
+# jellyqda :: addins.R -- RStudio addin (menu entry that starts qda_app())
+# Role: thin glue between the RStudio Addins menu and the Shiny app in app.R.
+
 # RStudio addins -------------------------------------------------------------
 # Thin no-argument wrappers so the Addins menu can trigger the daily workflow.
 

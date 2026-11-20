@@ -1,3 +1,6 @@
+# jellyqda :: events.R -- qda_events(): read the audit trail (events table)
+# log_event() lives in utils.R; undo.R consumes this trail.
+
 # Audit trail ----------------------------------------------------------------
 
 #' List the audit trail (events table)

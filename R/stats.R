@@ -1,3 +1,6 @@
+# jellyqda :: stats.R -- qda_stats(): overall + per_source + per_code progress
+# (coded chars use a union of intervals so overlaps count once).
+
 # Statistics -----------------------------------------------------------------
 
 #' Progress statistics of the active project

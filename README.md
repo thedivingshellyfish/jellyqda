@@ -18,11 +18,47 @@ offsets in codings never drift. Every action is recorded in an audit trail
 ## Install
 
 ```r
-# from a local clone (no CRAN dependency needed)
+# from GitHub (needs remotes or pak once):
+# remotes::install_github("shelly/jellyqda")     # <-- replace 'shelly' with your GitHub user
+# pak::pak("shelly/jellyqda")
+
+# or from a local clone (no CRAN dependency needed):
 install.packages("path/to/jellyqda", repos = NULL, type = "source")
 # dependencies: DBI, RSQLite, readr, stringi, officer, pdftools, tibble,
 #               jsonlite, htmltools, digest, zip
+# for the Shiny app (Suggests): shiny, bslib, colourpicker, fontawesome
 ```
+
+## Project structure
+
+```
+jellyqda/
+├── DESCRIPTION / LICENSE / CITATION      # package metadata (MIT license)
+├── R/                                    # all R code, one file per concern:
+│   ├── jellyqda-package.R                #   package docs -- start here
+│   ├── open.R / schema.R / utils.R       #   project lifecycle, DB schema, shared helpers
+│   ├── import.R / sources.R / view.R     #   import+freeze, source list+variables, Viewer HTML
+│   ├── codes.R / coding.R / memos.R      #   codebook, codings, memos (the core API)
+│   ├── summary.R / stats.R / undo.R      #   summary grid, progress stats, undo
+│   ├── export.R / backup.R / events.R    #   exports + HTML report, zip backups, audit trail
+│   ├── app.R                             #   the Shiny app qda_app() (UI+JS+server in one file)
+│   └── addins.R                          #   RStudio Addins menu entry
+├── inst/extdata/                         # bundled example data (fake transcripts)
+├── inst/examples/jellyqda-vorlage.R      # German template script with comments
+├── tests/testthat/                       # testthat suite (3rd edition)
+├── vignettes/ demo/                      # long-form docs / end-to-end demo
+└── .github/workflows/                    # CI: R CMD check on push/PR
+```
+
+**Architecture in one paragraph:** one SQLite file (`*.jellyqda`) per project
+holds everything (tables: `sources`, `codes`, `codings`, `memos`, `summaries`,
+`events` — see `R/schema.R`). Text is **frozen** at import into
+`sources.frozen_text`, and all codings are 1-based character offsets into that
+frozen text, so they can never drift. The console API (`qda_*()` functions)
+only reads/writes that DB and returns tibbles; the Shiny app (`qda_app()`)
+is a thin reactive layer on top: browser JS maps text selections to the same
+character offsets and calls the same handlers. Every mutation is logged to
+`events`, which powers both `qda_export("audit")` and `qda_undo()`.
 
 ## Quickstart
 
@@ -187,5 +223,24 @@ Example data (fake transcripts + a broken PDF) lives in `inst/extdata/`.
 - `qda_backup()` after each session; an auto-snapshot fires after every
   `auto_snapshot` actions (default 25, see `qda_open()`).
 - Original transcript files are kept unchanged in `originals/`.
+
+## Development
+
+```r
+pkgload::load_all(".")     # dev load
+testthat::test_local(".")  # tests
+R CMD check --as-cran      # full package check (CI runs this on every push)
+```
+
+See `CONTRIBUTING.md`. R code in `R/` must stay ASCII-only (umlauts ->
+ae/oe/ue/ss). Each `R/*.R` file starts with a header comment explaining its
+role in the architecture (see "Project structure" above).
+
+## License & citation
+
+MIT license — see [LICENSE](LICENSE). Free to use, modify and share;
+interview data stays local in your `.jellyqda` files and is never part of
+the repository. If you use jellyqda in academic work, please cite it:
+`citation("jellyqda")` (see [CITATION](CITATION)).
 
 Documentation is in English; see `vignette("jellyqda")` after installation.

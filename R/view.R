@@ -1,3 +1,6 @@
+# jellyqda :: view.R -- qda_view(): frozen text with colored <mark> codings
+# as HTML for the RStudio Viewer; segment numbers included.
+
 # Viewer ---------------------------------------------------------------------
 
 #' View a source in the RStudio Viewer with segment numbers and codings

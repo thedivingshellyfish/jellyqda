@@ -1,3 +1,7 @@
+# jellyqda :: export.R -- qda_export(): CSV/XLSX/DOCX exports + standalone
+# HTML report (.report_html(), reuses app.R's .render_doc_html()).
+# Writes to exports/ next to the project file; every export is logged.
+
 # Export ---------------------------------------------------------------------
 
 #' Export segments, codebook, codings or the audit trail

@@ -1,3 +1,8 @@
+# jellyqda :: import.R -- qda_import(): txt/md/docx/pdf -> UTF-8 frozen text
+# SHA-256 dedup (same content is never imported twice), originals copied to
+# originals/ under the display name (names= arg, e.g. real upload names),
+# broken PDFs import with a warning. Text is FROZEN here and never re-read.
+
 # Import engine --------------------------------------------------------------
 # txt / md / docx / pdf are first-class formats; everything is normalized to
 # UTF-8 and FROZEN into sources.frozen_text at import time. The text is never

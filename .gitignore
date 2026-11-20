@@ -9,3 +9,10 @@ exports/
 .Rhistory
 .RData
 .Ruserdata
+
+# R build artifacts
+*.Rcheck/
+*.tar.gz
+*.zip
+revdep/
+.Rproj.user

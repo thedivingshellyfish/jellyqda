@@ -1,3 +1,6 @@
+# jellyqda :: sources.R -- qda_sources() + case variables per source
+# (qda_source_vars/set_var/del_var, stored in sources.meta_json$variables).
+
 # Sources --------------------------------------------------------------------
 
 #' List all imported sources

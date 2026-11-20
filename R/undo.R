@@ -1,3 +1,7 @@
+# jellyqda :: undo.R -- qda_undo(): revert the last undoable action using the
+# audit trail (events.details carries old values for exact restores);
+# repeated calls walk backwards; already-undone events are skipped.
+
 # Undo -----------------------------------------------------------------------
 # Reverts the last undoable action, using the audit trail (events.details).
 # Undone events are remembered (in the undo event's details) so repeated

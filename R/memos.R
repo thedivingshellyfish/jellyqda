@@ -1,3 +1,7 @@
+# jellyqda :: memos.R -- free memos: qda_memo_add/update/delete/list
+# (passage memos are codings with the reserved 'Memo' code, see coding.R;
+# the app creates them via text selection + 'Memo speichern').
+
 # Memos ----------------------------------------------------------------------
 
 #' Add a free memo to the project

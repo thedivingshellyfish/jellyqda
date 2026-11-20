@@ -1,3 +1,7 @@
+# jellyqda :: codes.R -- codebook CRUD: qda_codes(), qda_code_add/rename/delete/move
+# Codes are a self-referencing tree (parent_id); paths are 'A / B / C'.
+# qda_code_move() has a cycle check. Deleting a code deletes sub-codes+codings.
+
 # Codebook -------------------------------------------------------------------
 
 #' List the codebook

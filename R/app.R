@@ -1,3 +1,22 @@
+# jellyqda :: app.R -- the interactive Shiny app qda_app() (the 'V2 door')
+#
+# Structure of this file (top to bottom):
+#   1. .split_segments_full()  -- split frozen text into numbered segments
+#   2. .render_doc_html()      -- frozen text + codings as HTML <mark>s for #doc
+#   3. .jellyqda_js()          -- all client JS: selection->char offsets,
+#      delegated clicks, shortcuts, zoom, dark mode, drag&drop (panels,
+#      files, code re-parenting), layout persistence (localStorage)
+#   4. .jellyqda_ui()          -- page layout: top bar, symbol bar, 3-pane
+#      grid with 7 draggable panels, CSS incl. dark mode
+#   5. .jellyqda_server()      -- all reactive logic: every button/input has
+#      an observeEvent; outputs render HTML rows; all state in one DB file
+#
+# Data flow: browser JS -> Shiny inputs -> server handlers -> qda_* API
+# (other files) -> SQLite -> renderUI outputs -> browser.
+#
+# To change the look: CSS block + fa() icon list in .jellyqda_ui(); labels
+# are plain strings here. See README section 'Customizing the look'.
+
 # qda_app: local Shiny UI (V2) -------------------------------------------------
 # One command starts a local-only web UI (127.0.0.1, no internet) inside the
 # RStudio Viewer pane -- the "V2 door" reserved in concept section 3.

@@ -1,3 +1,9 @@
+# jellyqda :: coding.R -- codings: qda_code(), qda_codings(), qda_coding_delete(),
+# qda_coding_set_memo(), qda_segments()
+# Offsets are 1-based character positions into sources.frozen_text and are
+# validated against the frozen text length. The reserved code 'Memo' marks
+# memo passages (rendered as underline in the app).
+
 # Codings --------------------------------------------------------------------
 
 #' Assign a code to a passage of a source
