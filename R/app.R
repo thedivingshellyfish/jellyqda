@@ -28,15 +28,19 @@
 #'
 #' @param host Host to bind; loopback only, default `"127.0.0.1"`.
 #' @param port Port; `NULL` picks a random free port.
-#' @param open Logical; open the app in the RStudio Viewer / browser.
+#' @param open Logical; open the app at all.
+#' @param new_window Logical; open the app in a **new browser window**
+#'   (default, recommended -- the RStudio Viewer pane is small). With
+#'   `new_window = FALSE` it opens inside the RStudio Viewer pane instead.
 #' @return Invisibly `NULL` (after the app is stopped).
 #' @export
 #' @examples
 #' \dontrun{
 #' qda_open("meinarbeit.jellyqda")
-#' qda_app()   # Esc stops the app
+#' qda_app()                    # new browser window; Esc stops the app
+#' qda_app(new_window = FALSE)  # inside the RStudio Viewer pane
 #' }
-qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
+qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = TRUE) {
   if (!qda_is_open()) {
     stop("No jellyqda project is open. Call qda_open(path) first.", call. = FALSE)
   }
@@ -49,8 +53,10 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
   launcher <- function(url) {
     cat("jellyqda app (lokal, offline):", url, "\n")
     if (isTRUE(open)) {
-      if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-        rstudioapi::viewer(url)
+      if (isTRUE(new_window)) {
+        utils::browseURL(url)  # eigenes Browser-Fenster
+      } else if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+        rstudioapi::viewer(url)  # RStudio Viewer-Pane
       } else {
         utils::browseURL(url)
       }
@@ -354,7 +360,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
 .jellyqda_ui <- function() {
   fa <- fontawesome::fa
   bslib::page_fluid(
-    theme = bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.95),
+    theme = bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.82),
     shiny::tags$head(
       .jellyqda_js(),
       shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
@@ -365,7 +371,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         .topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
                   padding:.5rem .9rem; border-radius:.6rem; margin-bottom:.6rem;
                   box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
-        .topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; }
+        .topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; font-size:.82rem; }
         #memo_field { width:16rem; margin-bottom:0; }
         .appgrid { display:grid; gap:0; height:calc(100vh - 118px);
                    grid-template-columns:300px 6px minmax(0,1fr) 6px 300px; }
@@ -377,14 +383,14 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         .panel { background:#fff; border-radius:.6rem; box-shadow:0 1px 3px rgba(0,0,0,.08);
                  display:flex; flex-direction:column; min-height:0; flex:1; }
         .panel.dragging { opacity:.45; }
-        .panelhead { padding:.4rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
+        .panelhead { padding:.35rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
                      display:flex; gap:.45rem; align-items:center; color:#2c6fbb; flex:none;
-                     cursor:grab; user-select:none; }
+                     cursor:grab; user-select:none; font-size:.82rem; }
         .panelhead:active { cursor:grabbing; }
         .panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }
         .browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
         .docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
-        #doc { font-family:Georgia,'Times New Roman',serif; font-size:1.02rem; line-height:1.65;
+        #doc { font-family:Georgia,'Times New Roman',serif; font-size:.95rem; line-height:1.6;
                white-space:pre-wrap; word-break:break-word; }
         .segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; }
         .segtext::before { content:'Seg ' attr(data-seg); position:absolute; left:0; top:.2em;
@@ -396,12 +402,12 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         .actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
                      border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
                      margin-bottom:.5rem; flex-wrap:wrap; }
-        .actionbar .selinfo { font-family:monospace; font-size:.85rem; color:#7a6414; margin-right:.4rem; }
-        .codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.3rem .6rem;
-                   font-size:.85rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+        .actionbar .selinfo { font-family:monospace; font-size:.76rem; color:#7a6414; margin-right:.4rem; }
+        .codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.25rem .55rem;
+                   font-size:.76rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
         .codebtn:hover { filter:brightness(1.12); }
         #memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
-                         padding:.3rem .6rem; font-size:.85rem; cursor:pointer; }
+                         padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
         .clickedbar { flex:none; display:flex; gap:.6rem; align-items:center; background:#eef4fb;
                       border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.5rem; }
         .coderow, .docrow, .segrow, .memorow { display:flex; gap:.45rem; align-items:center;
@@ -413,25 +419,27 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         .codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .mini { margin-left:auto; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
                 padding:.1rem .45rem; cursor:pointer; color:#b03a2e; flex:none; }
-        .docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.75rem; color:#6b7683; flex:none; }
-        .segrow .snippet, .memorow .snippet, .snippet { font-size:.85rem; color:#333; }
+        .docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.68rem; color:#6b7683; flex:none; }
+        .segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
         .segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
         .memorow { display:block; white-space:pre-wrap; }
         .placeholder { color:#8a94a0; font-style:italic; padding:1rem; text-align:center; }
         .memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
-                     padding:.5rem .7rem; margin-bottom:.5rem; font-size:.9rem; white-space:pre-wrap; }
+                     padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
         .memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }
         .panel.collapsed { flex:0 0 auto; }
         .panel.collapsed .panelbody { display:none; }
         .toggler { margin-left:auto; cursor:pointer; color:#8a94a0; }
         .panel.collapsed .toggler i { transform:rotate(-90deg); }
-        .symbolbar { display:flex; gap:.25rem; align-items:center; padding-left:.4rem;
+        .symbolbar { display:flex; gap:.3rem; align-items:center; padding-left:.4rem;
                      border-left:1px solid #e3e8ee; }
+        .symbolbar .symgroup { display:flex; gap:.2rem; align-items:center; }
+        .symbolbar .symsep { width:1px; height:1.1rem; background:#d6dbe1; }
         .symbolbar .symbtn { border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
-                            padding:.15rem .4rem; cursor:pointer; color:#2c6fbb; }
+                            padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
         .symbolbar .symbtn:hover { background:#eef4fb; }
         .symbolbar .symbtn.off { color:#b6bec8; background:#f4f6f8; }
-        table.mx { border-collapse:collapse; width:100%; font-size:.8rem; }
+        table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
         table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
         table.mx th { background:#f4f6f8; position:sticky; top:0; }
         table.mx td.rowlab { text-align:left; font-weight:600; cursor:pointer; white-space:nowrap; }
@@ -453,20 +461,18 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
       shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
                           class = "btn-sm btn-outline-secondary"),
       shiny::div(class = "symbolbar", title = "Fenster ein-/ausklappen",
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-docs", title = "Dokumente",
-                           fa("folder-tree")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-codes", title = "Code System",
-                           fa("tags")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-matrix", title = "Code-Matrix",
-                           fa("table-cells")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-browser", title = "Dokument-Browser",
-                           fa("file-lines")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-segs", title = "Retrieved Segments",
-                           fa("highlighter")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos",
-                           fa("note-sticky")),
-        shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid",
-                           fa("table-list"))
+        shiny::span(class = "symgroup",
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-docs", title = "Dokumente", fa("folder-tree")),
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-codes", title = "Code System", fa("tags")),
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-matrix", title = "Code-Matrix", fa("table-cells"))),
+        shiny::span(class = "symsep"),
+        shiny::span(class = "symgroup",
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-browser", title = "Dokument-Browser", fa("file-lines")),
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-segs", title = "Retrieved Segments", fa("highlighter"))),
+        shiny::span(class = "symsep"),
+        shiny::span(class = "symgroup",
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos", fa("note-sticky")),
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list")))
       ),
       shiny::textInput("memo_field", label = NULL, placeholder = "Memo (optional)"),
       shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),

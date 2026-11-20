@@ -71,8 +71,10 @@ offline) in the RStudio Viewer pane:
 
 ```r
 qda_open("meinarbeit.jellyqda")
-qda_app()     # Esc stops the app; open the printed URL in more browser
-              # windows/tabs for a multi-window setup (shared session)
+qda_app()                    # opens in a NEW browser window (default, because
+                             # the RStudio Viewer pane is small); Esc stops it
+qda_app(new_window = FALSE)  # instead: inside the RStudio Viewer pane
+# the printed URL can be opened in more browser windows/tabs (shared session)
 ```
 
 The layout shows all panes at once (workflow logic follows MAXQDA per concept

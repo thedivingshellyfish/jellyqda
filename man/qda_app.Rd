@@ -4,14 +4,18 @@
 \alias{qda_app}
 \title{Start the jellyqda app (local Shiny UI) for the active project}
 \usage{
-qda_app(host = "127.0.0.1", port = NULL, open = TRUE)
+qda_app(host = "127.0.0.1", port = NULL, open = TRUE, new_window = TRUE)
 }
 \arguments{
 \item{host}{Host to bind; loopback only, default \code{"127.0.0.1"}.}
 
 \item{port}{Port; \code{NULL} picks a random free port.}
 
-\item{open}{Logical; open the app in the RStudio Viewer / browser.}
+\item{open}{Logical; open the app at all.}
+
+\item{new_window}{Logical; open the app in a \strong{new browser window}
+(default, recommended -- the RStudio Viewer pane is small). With
+\code{new_window = FALSE} it opens inside the RStudio Viewer pane instead.}
 }
 \value{
 Invisibly \code{NULL} (after the app is stopped).
@@ -35,6 +39,7 @@ Requires the suggested packages \code{shiny}, \code{bslib}, \code{colourpicker} 
 \examples{
 \dontrun{
 qda_open("meinarbeit.jellyqda")
-qda_app()   # Esc stops the app
+qda_app()                    # new browser window; Esc stops the app
+qda_app(new_window = FALSE)  # inside the RStudio Viewer pane
 }
 }

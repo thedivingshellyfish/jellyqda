@@ -170,6 +170,11 @@ test_that("qda_app refuses to start without an open project / shiny", {
   expect_error(jellyqda::qda_app(), "qda_open")
 })
 
+test_that("qda_app opens in a new window by default (new_window = TRUE)", {
+  expect_true("new_window" %in% names(formals(jellyqda::qda_app)))
+  expect_true(formals(jellyqda::qda_app)$new_window)
+})
+
 test_that("qda_app UI has the flexible pane layout (draggable panels, handles, presets)", {
   skip_if_not_installed("shiny")
   new_project()
