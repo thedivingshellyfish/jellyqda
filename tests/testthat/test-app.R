@@ -260,13 +260,16 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl('draggable="true"', ui, fixed = TRUE))
   expect_false(grepl("layout_preset", ui, fixed = TRUE))  # sizing dropdown removed
   expect_true(grepl("localStorage", ui, fixed = TRUE))
-  # fixed symbol bar: only dark mode, help and close -- NO collapse/expand
+  # fixed symbol bar: panel collapse toggles (7) + dark/help/close; NO side collapse
   expect_true(grepl("symbolbar", ui, fixed = TRUE))
   expect_true(grepl("data-closeapp", ui, fixed = TRUE))
-  expect_false(grepl("data-toggle", ui, fixed = TRUE))   # panel collapse removed
-  expect_false(grepl("data-side", ui, fixed = TRUE))       # side collapse removed
+  expect_equal(length(gregexpr('data-toggle="panel-', ui, fixed = TRUE)[[1]]), 14)  # 7 in bar + 7 in heads
+  expect_true(grepl("panel.collapsed", ui, fixed = TRUE))  # collapse CSS + JS
+  expect_false(grepl("data-side=", ui, fixed = TRUE))      # left/right side collapse stays removed
   expect_false(grepl("setSide", ui, fixed = TRUE))
-  expect_false(grepl("collapsed", ui, fixed = TRUE))
+  # panel headers: icon left, label right (hlabel), resize handles between columns
+  expect_equal(length(gregexpr('class="hlabel"', ui, fixed = TRUE)[[1]]), 7)
+  expect_equal(length(gregexpr('class="colhandle"', ui, fixed = TRUE)[[1]]), 2)
   # document browser + segments can never be dragged into a side column
   expect_true(grepl("dragEl.id === 'panel-browser'", ui, fixed = TRUE))
   # inline edit handler for memo entries + no free-memo form in the static UI

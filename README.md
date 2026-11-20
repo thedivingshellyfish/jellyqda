@@ -100,7 +100,9 @@ passages** (click = jump to the passage) and **free memos** (console:
 `qda_memo_add()`), and **every entry** has inline edit (pen → textarea +
 save/check), cancel and delete (trash). The symbol bar has a **moon** (dark
 mode), a **?** (help: symbols & shortcuts) and a red **X button** that saves
-everything (export + backup) and stops the app. Console memo API:
+everything (export + backup) and stops the app. Each panel (window/section)
+can be collapsed/expanded via the symbol bar icons or the chevron in its
+panel header — persisted with the layout. Console memo API:
 `qda_memo_update()`, `qda_memo_delete()`, `qda_coding_set_memo()`.
 
 Marking text + clicking a code button stores the coding at the exact
@@ -111,7 +113,9 @@ the top bar.
 **Flexible panes:** drag any panel by its header into another column (e.g.
 Memos to the right, browser stays center; the document browser and segments
 always stay in the center column), drag the gray column borders to
-resize. "Layout reset" (grouped with Undo/Backup/Export in the top bar) restores the
+resize (adjustable between left/center/right). Panel headers show the icon
+on the left and the label on the right. "Layout reset" (grouped with
+Undo/Backup/Export in the top bar) restores the
 default. The arrangement is saved in the browser's localStorage and restored
 on the next start. The optional memo text field appears in the selection
 action bar (only while text is marked). Needs `shiny`, `bslib`,
