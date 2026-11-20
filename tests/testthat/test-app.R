@@ -140,12 +140,33 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     # stats line renders
     expect_true(grepl("Quellen", output$stats_line))
 
-    # memo edit flow: pen loads memo, save overwrites
+    # free memo via form; per-entry inline edit + save in the memo section
     session$setInputs(memo_text = "erstes Memo", memo_save_btn = 1L)
     mid <- qda_memos()$id[1]
-    session$setInputs(edit_memo = mid, memo_text = "bearbeitet", memo_save_btn = 1L)
+    key <- paste0("memo_", mid)
+    session$setInputs(edit_memo_entry = key)
+    ml <- as_html(output$memos_list)
+    expect_true(grepl(paste0("memo_edit_", key), ml, fixed = TRUE))  # inline editor shown
+    do.call(session$setInputs, stats::setNames(list("bearbeitet"), paste0("memo_edit_", key)))
+    session$setInputs(save_memo_entry = key)
     expect_equal(qda_memos()$text_[qda_memos()$id == mid], "bearbeitet")
-    session$setInputs(memo_cancel_btn = 1L)  # no error
+    session$setInputs(cancel_edit = 1L)  # no error
+
+    # memo-marked passage: click entry -> jump + highlight (memomark sel)
+    session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"), memo_field = "spring")
+    session$setInputs(add_memo_only = 1L)
+    mcod <- qda_codings()
+    mcod <- mcod[mcod$code == "Memo", ]
+    session$setInputs(goto_memo = mcod$id[1])
+    doc_html2 <- as_html(output$doc)
+    expect_true(grepl('memomark sel', doc_html2, fixed = TRUE))
+    expect_true(grepl("data-gotomemo", as_html(output$memos_list), fixed = TRUE))
+    # per-entry edit of the memo-marked passage (coding memo)
+    ckey <- paste0("cod_", mcod$id[1])
+    session$setInputs(edit_memo_entry = ckey)
+    do.call(session$setInputs, stats::setNames(list("neu markiert"), paste0("memo_edit_", ckey)))
+    session$setInputs(save_memo_entry = ckey)
+    expect_equal(qda_codings()$memo[qda_codings()$id == mcod$id[1]], "neu markiert")
 
     # code matrix renders with cells + SUM
     mtx <- as_html(output$matrix_panel)
@@ -191,11 +212,12 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
     expect_true(grepl(paste0('id="', pid, '"'), ui, fixed = TRUE))
   }
   expect_true(grepl('draggable="true"', ui, fixed = TRUE))
-  expect_true(grepl("layout_preset", ui, fixed = TRUE))
-  expect_true(grepl("jellyqdaPreset", ui, fixed = TRUE))
+  expect_false(grepl("layout_preset", ui, fixed = TRUE))  # sizing dropdown removed
   expect_true(grepl("localStorage", ui, fixed = TRUE))
-  # fixed symbol bar with collapse toggles for every window
+  # fixed symbol bar with collapse toggles for every window + close button
   expect_true(grepl("symbolbar", ui, fixed = TRUE))
   expect_equal(length(gregexpr('data-toggle="panel-', ui, fixed = TRUE)[[1]]), 14)  # 7 in bar + 7 in heads
+  expect_true(grepl("data-closeapp", ui, fixed = TRUE))
   expect_true(grepl("panel.collapsed", ui, fixed = TRUE))
+  expect_true(grepl("memomark.sel", ui, fixed = TRUE))
 })

@@ -109,7 +109,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
 # Segment badges are CSS ::before pseudo-elements (not DOM text), so they do
 # not disturb offset mapping.
 #' @noRd
-.render_doc_html <- function(source_id) {
+.render_doc_html <- function(source_id, sel_cid = NULL) {
   con <- qda_con()
   src <- .resolve_source(source_id)
   text <- src$frozen_text
@@ -133,8 +133,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         # reserved "Memo" code -> underline mark (no background), so memo
         # passages are visually distinct from real codings
         if (ov$label[j] == "Memo") {
-          inner <- c(inner, sprintf('<mark class="memomark" data-cid="%d" title="Memo">%s</mark>',
-                                    ov$id[j], esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
+          cls <- if (!is.null(sel_cid) && ov$id[j] == sel_cid) "memomark sel" else "memomark"
+          inner <- c(inner, sprintf('<mark class="%s" data-cid="%d" title="Memo">%s</mark>',
+                                    cls, ov$id[j], esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
         } else {
           inner <- c(inner, sprintf('<mark data-cid="%d" style="background-color:%s" title="%s">%s</mark>',
                                     ov$id[j], esc(ov$color[j]), esc(ov$label[j]),
@@ -220,7 +221,23 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     });
     $(document).on('click', '[data-editmemo]', function(e) {
       e.stopPropagation();
-      Shiny.setInputValue('edit_memo', parseInt($(this).attr('data-editmemo')), {priority: 'event'});
+      Shiny.setInputValue('edit_memo_entry', $(this).attr('data-editmemo'), {priority: 'event'});
+    });
+    $(document).on('click', '[data-gotomemo]', function(e) {
+      Shiny.setInputValue('goto_memo', parseInt($(this).attr('data-gotomemo')), {priority: 'event'});
+    });
+    $(document).on('click', '[data-savememo]', function(e) {
+      e.stopPropagation();
+      Shiny.setInputValue('save_memo_entry', $(this).attr('data-savememo'), {priority: 'event'});
+    });
+    $(document).on('click', '[data-canceledit]', function(e) {
+      e.stopPropagation();
+      Shiny.setInputValue('cancel_edit', Date.now(), {priority: 'event'});
+    });
+    $(document).on('click', '[data-closeapp]', function(e) {
+      if (confirm('jellyqda beenden? Arbeit wird gespeichert (Export + Backup).')) {
+        Shiny.setInputValue('close_app', Date.now(), {priority: 'event'});
+      }
     });
     $(document).on('click', '[data-toggle]', function(e) {
       e.stopPropagation();
@@ -365,7 +382,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       .jellyqda_js(),
       shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
                  fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
-                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"), fa("table-cells"), fa("table-list")),
+                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"), fa("table-cells"), fa("table-list"), fa("xmark")),
       shiny::tags$style(shiny::HTML("
         body { background:#f4f6f8; }
         .topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
@@ -399,6 +416,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         #doc mark { padding:0 .12em; border-radius:.25em; cursor:pointer; }
         #doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
                              border-radius:0; }
+        #doc mark.memomark.sel { border-bottom:5px solid #d81b60; background:rgba(216,27,96,.14) !important; }
         .actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
                      border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
                      margin-bottom:.5rem; flex-wrap:wrap; }
@@ -423,6 +441,14 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         .segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
         .segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
         .memorow { display:block; white-space:pre-wrap; }
+        .memogroup { font-size:.68rem; font-weight:700; color:#7a6414; margin:.4rem 0 .2rem 0;
+                     text-transform:uppercase; letter-spacing:.04em; }
+        .memorow.memomark-row { cursor:pointer; border-left:3px solid #b58900; }
+        .memorow.memomark-row:hover { background:#fff8e1; }
+        .memorow.editing { border-color:#2c6fbb; }
+        .memorow.editing textarea { border:1px solid #b9d2ec; border-radius:.35rem; padding:.2rem .4rem;
+                                    font-size:.78rem; margin-bottom:.2rem; }
+        .mini.ok { color:#1e7e34; }
         .placeholder { color:#8a94a0; font-style:italic; padding:1rem; text-align:center; }
         .memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
                      padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
@@ -439,6 +465,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
                             padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
         .symbolbar .symbtn:hover { background:#eef4fb; }
         .symbolbar .symbtn.off { color:#b6bec8; background:#f4f6f8; }
+        .symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
         table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
         table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
         table.mx th { background:#f4f6f8; position:sticky; top:0; }
@@ -455,9 +482,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     ),
     shiny::div(class = "topbar",
       shiny::span(class = "stats", shiny::textOutput("stats_line", inline = TRUE)),
-      shiny::selectInput("layout_preset", label = NULL, width = "150px",
-                         choices = c("Standard" = "standard", "Browser gross" = "browser",
-                                     "Nur Browser" = "focus")),
       shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
                           class = "btn-sm btn-outline-secondary"),
       shiny::div(class = "symbolbar", title = "Fenster ein-/ausklappen",
@@ -472,7 +496,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         shiny::span(class = "symsep"),
         shiny::span(class = "symgroup",
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos", fa("note-sticky")),
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list")))
+          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list"))),
+        shiny::span(class = "symsep"),
+        shiny::tags$button(class = "symbtn closeapp", `data-closeapp` = "1", title = "App beenden (speichert + stoppt)", fa("xmark"))
       ),
       shiny::textInput("memo_field", label = NULL, placeholder = "Memo (optional)"),
       shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),
@@ -568,7 +594,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
 #' @noRd
 .jellyqda_server <- function(input, output, session) {
   rv <- shiny::reactiveValues(src = NULL, sel = NULL, clicked = NULL, sel_code = NULL,
-                              edit_memo = NULL, sum_cell = NULL, tick = 0)
+                              edit_entry = NULL, sum_cell = NULL, sel_memo = NULL, tick = 0)
   bump <- function() rv$tick <- shiny::isolate(rv$tick) + 1
   esc <- htmltools::htmlEscape
 
@@ -616,7 +642,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     rv$tick
     id <- rv$src
     if (is.null(id)) return(shiny::tags$div(class = "placeholder", "Links ein Dokument auswaehlen ..."))
-    shiny::HTML(.render_doc_html(id))
+    shiny::HTML(.render_doc_html(id, sel_cid = rv$sel_memo))
   })
   shiny::observeEvent(input$selection, {
     rv$sel <- input$selection
@@ -810,51 +836,103 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       shiny::tags$span(class = "who", sprintf("Memo zu Coding #%d (%s / %s)", row$id, row$source, row$code)),
       if (nzchar(row$memo)) row$memo else shiny::tags$em("(kein Memo)"))
   })
-  # memo edit flow: click pen -> load into textarea; save updates, else adds
-  shiny::observeEvent(input$edit_memo, {
-    m <- qda_memos()
-    row <- m[m$id == input$edit_memo, , drop = FALSE]
-    if (nrow(row) == 0) return()
-    rv$edit_memo <- row$id
-    shiny::updateTextAreaInput(session, "memo_text", value = row$text_)
-    shiny::showNotification(sprintf("Memo #%d wird bearbeitet - 'Memo speichern' ueberschreibt.", row$id),
-                            type = "message")
-  })
-  shiny::observeEvent(input$memo_cancel_btn, {
-    rv$edit_memo <- NULL
-    shiny::updateTextAreaInput(session, "memo_text", value = "")
-  })
+  # new free memo via the form at the top of the memo section
   shiny::observeEvent(input$memo_save_btn, {
     txt <- input$memo_text
     shiny::req(txt)
     if (!nzchar(trimws(txt))) return()
-    if (!is.null(rv$edit_memo)) {
-      qda_memo_update(rv$edit_memo, txt)
-      rv$edit_memo <- NULL
-      shiny::showNotification("Memo aktualisiert (Audit-Trail).", type = "message")
-    } else {
-      qda_memo_add(txt)
-      shiny::showNotification("Memo gespeichert (Audit-Trail).", type = "message")
-    }
+    qda_memo_add(txt)
     shiny::updateTextAreaInput(session, "memo_text", value = "")
     bump()
+    shiny::showNotification("Memo gespeichert (Audit-Trail).", type = "message")
   })
+  shiny::observeEvent(input$memo_cancel_btn, {
+    shiny::updateTextAreaInput(session, "memo_text", value = "")
+  })
+
+  # memo section: two groups -- memo-marked passages (jump to text) + free memos.
+  # every entry has inline edit (pen), delete (trash) and save (in edit mode).
   output$memos_list <- shiny::renderUI({
     rv$tick
-    m <- qda_memos()
-    if (nrow(m) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine freien Memos."))
-    rows <- vapply(seq_len(nrow(m)), function(i) {
-      sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span>
-               <button class="mini" data-editmemo="%d" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i></button>
-               <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i></button></div>',
-              m$id[i], esc(m$created_at[i]), esc(m$text_[i]), m$id[i], m$id[i])
+    esc2 <- esc
+    # group 1: codings with the reserved Memo code (= underlined passages)
+    mc <- DBI::dbGetQuery(qda_con(), "
+      SELECT c.id, c.source_id, s.name AS source, c.start, c.end, c.memo
+      FROM codings c JOIN codes k ON k.id = c.code_id JOIN sources s ON s.id = c.source_id
+      WHERE k.label = 'Memo' ORDER BY c.source_id, c.start")
+    mk_rows <- if (nrow(mc) == 0) character() else vapply(seq_len(nrow(mc)), function(i) {
+      key <- paste0("cod_", mc$id[i])
+      if (!is.null(rv$edit_entry) && rv$edit_entry == key) {
+        sprintf('<div class="memorow editing"><textarea id="memo_edit_%s" rows="2" style="width:100%%">%s</textarea>
+                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i></button>
+                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>',
+                key, esc2(mc$memo[i]), key)
+      } else {
+        lab <- if (nzchar(mc$memo[i])) mc$memo[i] else paste0("Zeichen ", mc$start[i], "-", mc$end[i])
+        sprintf('<div class="memorow memomark-row" data-gotomemo="%d" title="Zur Markierung springen">
+                 <span class="snippet">#%d %s (%d-%d): %s</span>
+                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                 <button class="mini" data-delcoding="%d" title="Markierung loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+                mc$id[i], mc$id[i], esc2(mc$source[i]), mc$start[i], mc$end[i], esc2(lab), key, mc$id[i])
+      }
     }, character(1))
-    shiny::HTML(paste(rows, collapse = ""))
+    # group 2: free memos
+    m <- qda_memos()
+    fm_rows <- if (nrow(m) == 0) character() else vapply(seq_len(nrow(m)), function(i) {
+      key <- paste0("memo_", m$id[i])
+      if (!is.null(rv$edit_entry) && rv$edit_entry == key) {
+        sprintf('<div class="memorow editing"><textarea id="memo_edit_%s" rows="2" style="width:100%%">%s</textarea>
+                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i></button>
+                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>',
+                key, esc2(m$text_[i]), key)
+      } else {
+        sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span>
+                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                 <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+                m$id[i], esc2(m$created_at[i]), esc2(m$text_[i]), key, m$id[i])
+      }
+    }, character(1))
+    if (length(mk_rows) == 0 && length(fm_rows) == 0) {
+      return(shiny::tags$div(class = "placeholder", "Noch keine Memos."))
+    }
+    shiny::HTML(paste0(
+      if (length(mk_rows)) c('<div class="memogroup">Memo-Markierungen (Klick = zur Stelle springen)</div>', mk_rows) else "",
+      if (length(fm_rows)) c('<div class="memogroup">Freie Memos</div>', fm_rows) else ""
+    ))
+  })
+  shiny::observeEvent(input$edit_memo_entry, { rv$edit_entry <- input$edit_memo_entry })
+  shiny::observeEvent(input$cancel_edit, { rv$edit_entry <- NULL; bump() })
+  shiny::observeEvent(input$save_memo_entry, {
+    key <- input$save_memo_entry
+    txt <- input[[paste0("memo_edit_", key)]]
+    if (is.null(txt)) return()
+    parts <- strsplit(key, "_", fixed = TRUE)[[1]]
+    if (parts[1] == "cod") {
+      qda_coding_set_memo(as.integer(parts[2]), txt)
+      shiny::showNotification("Memo-Markierung aktualisiert (Audit-Trail).", type = "message")
+    } else {
+      qda_memo_update(as.integer(parts[2]), txt)
+      shiny::showNotification("Memo aktualisiert (Audit-Trail).", type = "message")
+    }
+    rv$edit_entry <- NULL
+    bump()
   })
   shiny::observeEvent(input$del_memo, {
     qda_memo_delete(input$del_memo)
     bump()
     shiny::showNotification("Memo geloescht (Audit-Trail).", type = "message")
+  })
+  # click a memo-marked passage -> jump to it in the browser and highlight it
+  shiny::observeEvent(input$goto_memo, {
+    df <- qda_codings()
+    row <- df[df$id == input$goto_memo, , drop = FALSE]
+    if (nrow(row) == 0) return()
+    rv$src <- row$source_id
+    rv$sel <- NULL
+    rv$clicked <- row$id
+    rv$sel_memo <- row$id
+    bump()
+    session$sendCustomMessage("jellyqdaScroll", list(cid = row$id))
   })
 
   # header: stats + backup + export ---------------------------------------------
@@ -978,11 +1056,15 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
   })
 
   # flexible layout -------------------------------------------------------------
-  shiny::observeEvent(input$layout_preset, {
-    session$sendCustomMessage("jellyqdaPreset", input$layout_preset)
-  })
   shiny::observeEvent(input$layout_reset, {
     session$sendCustomMessage("jellyqdaReset", 1)
+  })
+  # close app: save work (export + backup), then stop ---------------------------
+  shiny::observeEvent(input$close_app, {
+    qda_export("all")
+    z <- qda_backup(quiet = TRUE)
+    shiny::showNotification(paste("Gespeichert. Export + Backup:", z), type = "message", duration = 10)
+    shiny::stopApp()
   })
 }
 

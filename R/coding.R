@@ -86,6 +86,22 @@ qda_codings <- function(source = NULL, code = NULL) {
   )
 }
 
+#' Set / change the memo of an existing coding
+#'
+#' @param coding Coding id.
+#' @param memo New memo text.
+#' @return Invisibly, a one-row tibble with the updated coding.
+#' @export
+qda_coding_set_memo <- function(coding, memo) {
+  con <- qda_con()
+  row <- .resolve_coding(coding)
+  DBI::dbExecute(con, "UPDATE codings SET memo = ? WHERE id = ?",
+                 params = list(as.character(memo), row$id))
+  log_event("coding_memo", list(coding_id = row$id, memo = as.character(memo)))
+  invisible(tibble::tibble(id = row$id, source_id = row$source_id, code_id = row$code_id,
+                           start = row$start, end = row$end, memo = as.character(memo)))
+}
+
 #' Delete a coding
 #'
 #' @param coding Coding id.

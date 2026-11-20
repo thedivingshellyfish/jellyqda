@@ -57,6 +57,19 @@ test_that("memos work and are audited", {
   expect_true("memo_add" %in% ev)
 })
 
+test_that("qda_coding_set_memo updates the memo of a coding and is audited", {
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  qda_import(ext("interview_01.txt"))
+  qda_code_add("A")
+  qda_code(1, segment = 1, code = "A", memo = "alt")
+  qda_coding_set_memo(1, "neu")
+  expect_equal(qda_codings()$memo[1], "neu")
+  expect_error(qda_coding_set_memo(99, "x"), "No coding")
+  ev <- DBI::dbGetQuery(qda_con(), "SELECT action FROM events")$action
+  expect_true("coding_memo" %in% ev)
+})
+
 test_that("qda_memo_delete removes a memo and is audited", {
   new_project()
   on.exit(qda_close(), add = TRUE)
