@@ -244,6 +244,12 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       var p = document.getElementById($(this).attr('data-toggle'));
       if (p) p.classList.toggle('collapsed');
     });
+    $(document).on('click', '[data-side]', function(e) {
+      e.stopPropagation();
+      var side = $(this).attr('data-side');
+      var pane = document.querySelector('.pane[data-pane=\"' + side + '\"]');
+      if (pane && window.jellyqdaSetSide) window.jellyqdaSetSide(side, pane.style.display === 'none');
+    });
     $(document).on('click', '.mxcell', function() {
       Shiny.setInputValue('mx_cell', {
         code: parseInt($(this).attr('data-mxcode')),
@@ -259,11 +265,35 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     // ---- flexible layout: drag panels between panes, resize columns ---------
     $(function() {
       var grid = document.querySelector('.appgrid');
-      var PRESETS = {
-        standard: '300px 6px minmax(0,1fr) 6px 300px',
-        browser:  '240px 6px minmax(0,2.4fr) 6px 240px',
-        focus:    '0px 6px minmax(0,1fr) 6px 0px'
-      };
+      function colTracks() {
+        return (grid.style.gridTemplateColumns || getComputedStyle(grid).gridTemplateColumns).split(/\\s+/);
+      }
+      // collapse/expand a whole side pane (left or right) to free space for the browser
+      function setSide(which, collapsed, skipSave) {
+        var pane = document.querySelector('.pane[data-pane=\"' + which + '\"]');
+        if (!pane) return;
+        var handle = which === 'left'
+          ? document.querySelector('.colhandle[data-a=\"0\"]')
+          : document.querySelector('.colhandle[data-b=\"4\"]');
+        var cols = colTracks();
+        if (collapsed) {
+          if (which === 'left') { if (!pane.dataset.w) pane.dataset.w = cols[0]; cols[0] = '0px'; cols[1] = '0px'; }
+          else { if (!pane.dataset.w) pane.dataset.w = cols[4]; cols[3] = '0px'; cols[4] = '0px'; }
+          pane.style.display = 'none';
+          if (handle) handle.style.display = 'none';
+        } else {
+          if (which === 'left') { cols[0] = pane.dataset.w || '300px'; cols[1] = '6px'; }
+          else { cols[3] = '6px'; cols[4] = pane.dataset.w || '300px'; }
+          pane.style.display = '';
+          if (handle) handle.style.display = '';
+          delete pane.dataset.w;
+        }
+        grid.style.gridTemplateColumns = cols.join(' ');
+        var btn = document.querySelector('.symbtn[data-side=\"' + which + '\"]');
+        if (btn) btn.classList.toggle('active', collapsed);
+        if (!skipSave) saveLayout();
+      }
+      window.jellyqdaSetSide = setSide;
       function saveLayout() {
         try {
           var panes = {};
@@ -271,10 +301,18 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
             panes[p.dataset.pane] = Array.from(p.querySelectorAll('.panel')).map(function(el) { return el.id; });
           });
           var collapsed = Array.from(document.querySelectorAll('.panel.collapsed')).map(function(el) { return el.id; });
+          var cols = colTracks();
+          var paneL = document.querySelector('.pane[data-pane=\"left\"]');
+          var paneR = document.querySelector('.pane[data-pane=\"right\"]');
+          var sides = { left: !!(paneL && paneL.style.display === 'none'),
+                        right: !!(paneR && paneR.style.display === 'none') };
+          if (sides.left && paneL.dataset.w) { cols[0] = paneL.dataset.w; cols[1] = '6px'; }
+          if (sides.right && paneR.dataset.w) { cols[3] = '6px'; cols[4] = paneR.dataset.w; }
           localStorage.setItem('jellyqda_layout', JSON.stringify({
-            cols: grid.style.gridTemplateColumns || getComputedStyle(grid).gridTemplateColumns,
+            cols: cols.join(' '),
             panes: panes,
-            collapsed: collapsed
+            collapsed: collapsed,
+            sides: sides
           }));
         } catch (e) {}
       }
@@ -296,6 +334,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
             var el = document.getElementById(pid);
             if (el) el.classList.add('collapsed');
           });
+          setSide('left', !!(L.sides && L.sides.left), true);
+          setSide('right', !!(L.sides && L.sides.right), true);
         } catch (e) {}
       }
       restoreLayout();
@@ -355,15 +395,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           document.addEventListener('mouseup', up);
         });
       });
-      Shiny.addCustomMessageHandler('jellyqdaPreset', function(p) {
-        if (PRESETS[p]) {
-          grid.style.gridTemplateColumns = PRESETS[p];
-          document.querySelectorAll('.pane').forEach(function(pane) {
-            pane.style.display = (p === 'focus' && (pane.dataset.pane === 'left' || pane.dataset.pane === 'right')) ? 'none' : '';
-          });
-          saveLayout();
-        }
-      });
       Shiny.addCustomMessageHandler('jellyqdaReset', function() {
         try { localStorage.removeItem('jellyqda_layout'); } catch (e) {}
         location.reload();
@@ -382,14 +413,17 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       .jellyqda_js(),
       shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
                  fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
-                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"), fa("table-cells"), fa("table-list"), fa("xmark")),
+                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"),
+                 fa("table-cells"), fa("table-list"), fa("xmark"), fa("check"),
+                 fa("angles-left"), fa("angles-right")),
       shiny::tags$style(shiny::HTML("
         body { background:#f4f6f8; }
         .topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
                   padding:.5rem .9rem; border-radius:.6rem; margin-bottom:.6rem;
                   box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
         .topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; font-size:.82rem; }
-        #memo_field { width:16rem; margin-bottom:0; }
+        .btnsection { display:flex; gap:.4rem; align-items:center; }
+        .actionbar #memo_field { width:12rem; margin-bottom:0; }
         .appgrid { display:grid; gap:0; height:calc(100vh - 118px);
                    grid-template-columns:300px 6px minmax(0,1fr) 6px 300px; }
         .colhandle { cursor:col-resize; background:#e2e7ec; border-radius:3px; }
@@ -464,6 +498,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         .symbolbar .symbtn { border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
                             padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
         .symbolbar .symbtn:hover { background:#eef4fb; }
+        .symbolbar .symbtn.active { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
         .symbolbar .symbtn.off { color:#b6bec8; background:#f4f6f8; }
         .symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
         table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
@@ -482,8 +517,12 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     ),
     shiny::div(class = "topbar",
       shiny::span(class = "stats", shiny::textOutput("stats_line", inline = TRUE)),
-      shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
-                          class = "btn-sm btn-outline-secondary"),
+      shiny::div(class = "btnsection",
+        shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),
+        shiny::actionButton("export_btn", "Export", icon = fa("file-export"), class = "btn-sm btn-outline-secondary"),
+        shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
+                            class = "btn-sm btn-outline-secondary")
+      ),
       shiny::div(class = "symbolbar", title = "Fenster ein-/ausklappen",
         shiny::span(class = "symgroup",
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-docs", title = "Dokumente", fa("folder-tree")),
@@ -498,11 +537,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos", fa("note-sticky")),
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list"))),
         shiny::span(class = "symsep"),
+        shiny::tags$button(class = "symbtn", `data-side` = "left", title = "Linke Spalte zu/auf",
+                           fa("angles-left")),
+        shiny::tags$button(class = "symbtn", `data-side` = "right", title = "Rechte Spalte zu/auf",
+                           fa("angles-right")),
+        shiny::span(class = "symsep"),
         shiny::tags$button(class = "symbtn closeapp", `data-closeapp` = "1", title = "App beenden (speichert + stoppt)", fa("xmark"))
-      ),
-      shiny::textInput("memo_field", label = NULL, placeholder = "Memo (optional)"),
-      shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),
-      shiny::actionButton("export_btn", "Export", icon = fa("file-export"), class = "btn-sm btn-outline-secondary")
+      )
     ),
     shiny::div(class = "appgrid",
       # left column: document tree (top) + code system (bottom)
@@ -663,7 +704,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     shiny::div(class = "actionbar",
       shiny::span(class = "selinfo", sprintf("Markiert: Zeichen %d-%d", s$start, s$end)),
       shiny::HTML(btns),
-      shiny::tags$button(id = "memo_only_btn", "Nur Memo")
+      shiny::tags$button(id = "memo_only_btn", "Nur Memo"),
+      shiny::textInput("memo_field", label = NULL, placeholder = "Memo (optional)")
     )
   })
   shiny::observeEvent(input$assign_code, {

@@ -44,6 +44,29 @@ test_that("end-to-end: import, code, export, backup, stats, audit", {
   expect_true("originals/interview_01.txt" %in% zip::zip_list(z)$filename)
 })
 
+test_that("backup falls back to a project-local dir when the parent is not writable", {
+  uid <- suppressWarnings(as.integer(system("id -u", intern = TRUE)))
+  skip_if(isTRUE(uid == 0), "chmod does not restrict root")
+  outer <- tempfile("qda-outer-")
+  inner <- file.path(outer, "projekt")
+  dir.create(inner, recursive = TRUE)
+  Sys.chmod(outer, "0555")  # e.g. project directly in $HOME: parent not writable
+  on.exit({ Sys.chmod(outer, "0755"); unlink(outer, recursive = TRUE) }, add = TRUE)
+  p <- file.path(inner, "proj.jellyqda")
+  qda_open(p)
+  on.exit(qda_close(), add = TRUE)
+  expect_equal(default_backup_dir(), file.path(inner, "jellyqda-backups"))
+  z <- qda_backup(quiet = TRUE)
+  expect_true(file.exists(z))
+  expect_equal(dirname(z), file.path(inner, "jellyqda-backups"))
+  # explicit non-writable path also falls back with a warning
+  expect_warning(
+    z2 <- qda_backup(path = file.path(outer, "jellyqda-backups"), quiet = TRUE),
+    "nicht beschreibbar"
+  )
+  expect_equal(dirname(z2), file.path(inner, "jellyqda-backups"))
+})
+
 test_that("backup rotation keeps only the newest `keep` snapshots", {
   new_project()
   on.exit(qda_close(), add = TRUE)

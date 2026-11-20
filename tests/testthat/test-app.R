@@ -73,6 +73,9 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     # action bar does not offer the reserved Memo code as a button
     session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"))
     ab <- htmltools::renderTags(output$actionbar)$html
+    # selection action bar contains the optional memo text field
+    expect_true(grepl('id="memo_field"', ab, fixed = TRUE))
+    expect_true(grepl('class="actionbar"', ab, fixed = TRUE))
     memo_id <- qda_codes()$id[qda_codes()$label == "Memo"]
     expect_false(grepl(sprintf('data-codeid="%d"', memo_id), ab, fixed = TRUE))
     # retrieved-segments panel lists the memo passage (clickable, with memo)
@@ -218,6 +221,19 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl("symbolbar", ui, fixed = TRUE))
   expect_equal(length(gregexpr('data-toggle="panel-', ui, fixed = TRUE)[[1]]), 14)  # 7 in bar + 7 in heads
   expect_true(grepl("data-closeapp", ui, fixed = TRUE))
+  # left/right side-collapse buttons to free space for the document browser
+  expect_true(grepl('data-side="left"', ui, fixed = TRUE))
+  expect_true(grepl('data-side="right"', ui, fixed = TRUE))
+  expect_true(grepl("function setSide", ui, fixed = TRUE))
+  expect_true(grepl("sides", ui, fixed = TRUE))  # persisted in localStorage
+  # backup / export / layout-reset grouped in one button section
+  expect_true(grepl("btnsection", ui, fixed = TRUE))
+  expect_true(grepl('id="backup_btn"', ui, fixed = TRUE))
+  expect_true(grepl('id="export_btn"', ui, fixed = TRUE))
+  expect_true(grepl('id="layout_reset"', ui, fixed = TRUE))
+  # memo text field is NOT in the static top bar (it lives in the server-rendered
+  # selection action bar, checked in the testServer test below)
+  expect_false(grepl('id="memo_field"', ui, fixed = TRUE))
   expect_true(grepl("panel.collapsed", ui, fixed = TRUE))
   expect_true(grepl("memomark.sel", ui, fixed = TRUE))
 })

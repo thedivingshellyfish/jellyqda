@@ -27,7 +27,11 @@ qda_backup <- function(path = NULL, keep = 10, quiet = FALSE, auto = FALSE) {
   qda_con()
   p <- project_path()
   dir <- path %||% default_backup_dir()
-  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  if (!.writable_dir(dir)) {
+    dir <- file.path(dirname(p), "jellyqda-backups")
+    .writable_dir(dir)
+    warning(sprintf("Backup-Pfad nicht beschreibbar - fallback: %s", dir), call. = FALSE)
+  }
   ts <- format(Sys.time(), "%Y%m%d-%H%M%S", tz = "UTC")
   base <- tools::file_path_sans_ext(basename(p))
   z <- file.path(dir, paste0(base, "_", ts, ".zip"))

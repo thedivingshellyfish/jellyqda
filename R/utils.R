@@ -34,10 +34,23 @@ project_path <- function() .jellyqda_env$path
 project_dir <- function() dirname(.jellyqda_env$path)
 
 #' @noRd
+.writable_dir <- function(d) {
+  dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  if (!dir.exists(d)) return(FALSE)
+  f <- tempfile("wtest", d)
+  ok <- tryCatch({ writeLines("x", f); unlink(f); TRUE }, error = function(e) FALSE)
+  ok
+}
+
+#' @noRd
 default_backup_dir <- function() {
-  # backups live OUTSIDE the project folder (concept section 7)
-  normalizePath(file.path(dirname(project_path()), "..", "jellyqda-backups"),
-                mustWork = FALSE)
+  # backups live OUTSIDE the project folder when possible (concept section 7);
+  # if the parent is not writable (e.g. project directly in $HOME), fall back
+  # to a backups folder next to the project file
+  pdir <- dirname(project_path())
+  outside <- normalizePath(file.path(pdir, "..", "jellyqda-backups"), mustWork = FALSE)
+  if (.writable_dir(outside)) return(outside)
+  file.path(pdir, "jellyqda-backups")
 }
 
 #' Write one row to the events audit trail; triggers auto-snapshot if due.
