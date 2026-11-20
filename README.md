@@ -85,25 +85,29 @@ colors/icons/layout):
 |---|---|---|
 | Document System | left top: **Dokumente** tree + import | `qda_sources()` |
 | Code System | left bottom: **Code System** tree, color swatches, add/rename/delete | `qda_codes()` |
-| Document Browser | center top: mark text → colored code buttons / "Nur Memo" | `qda_view()` |
+| Document Browser | center top: mark text → colored code buttons / memo field + "Memo speichern" | `qda_view()` |
 | Retrieved Segments | center bottom: segments of the code selected in the tree (click → jump) | `qda_segments()` |
 | (Memo panel) | right: **Memos** — memo of the clicked coding + free memos (editable) | `qda_memos()` |
 | Code Matrix Browser | left: **Code-Matrix** — codes x documents counts, SUM row/col, cell intensity; click cell = open code+document | `qda_matrix()` |
 | Summary Grid | right: **Summary Grid** — click a cell: its segments + editable summary text per cell (saved, audited) | `qda_summary_set()` / `qda_summaries()` |
 
-The memo section (right) lists **memo-marked passages** (underlined in the
-browser) and **free memos**, each with inline edit (pen → textarea + save),
-delete (trash) and save. Clicking a memo-marked entry jumps the browser to
-that passage and highlights it (thick pink underline). The symbol bar has a
-red **X button** that saves everything (export + backup) and stops the app.
-Every panel also has a collapse chevron in its header, and the fixed symbol
-bar toggles each window — collapsed state is persisted with the layout.
-Console: `qda_memo_update()`, `qda_memo_delete()`, `qda_coding_set_memo()`.
+Memos are captured **one uniform way**: mark text in the document browser,
+type the memo text into the action bar's memo field, click **"Memo
+speichern"** — the passage is stored under a reserved *Memo* code rendered as
+an **underline**, and the selection stays highlighted in the browser (thick
+pink underline) after saving. The memo section (right) lists **memo-marked
+passages** (click = jump to the passage) and **free memos** (console:
+`qda_memo_add()`), and **every entry** has inline edit (pen → textarea +
+save/check), cancel and delete (trash). The symbol bar has a red **X button**
+that saves everything (export + backup) and stops the app. Every panel also
+has a collapse chevron in its header, and the fixed symbol bar toggles each
+window and each whole side column (<< / >>) — state is persisted with the
+layout in localStorage. Console memo API: `qda_memo_update()`,
+`qda_memo_delete()`, `qda_coding_set_memo()`.
 
 Marking text + clicking a code button stores the coding at the exact
 character offsets in the same `.jellyqda` file (audit event included); click a
-highlight to inspect/delete it. **"Nur Memo"** stores the passage under a
-reserved *Memo* code rendered as an **underline**. Backup/Export buttons in
+highlight to inspect/delete it. Backup/Export buttons in
 the top bar.
 
 **Flexible panes:** drag any panel by its header into another column (e.g.

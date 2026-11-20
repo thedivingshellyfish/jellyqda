@@ -243,12 +243,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       e.stopPropagation();
       var p = document.getElementById($(this).attr('data-toggle'));
       if (p) p.classList.toggle('collapsed');
+      if (window.jellyqdaSaveLayout) window.jellyqdaSaveLayout();
     });
     $(document).on('click', '[data-side]', function(e) {
       e.stopPropagation();
       var side = $(this).attr('data-side');
       var pane = document.querySelector('.pane[data-pane=\"' + side + '\"]');
-      if (pane && window.jellyqdaSetSide) window.jellyqdaSetSide(side, pane.style.display === 'none');
+      if (pane && window.jellyqdaSetSide) window.jellyqdaSetSide(side, pane.style.display !== 'none');
     });
     $(document).on('click', '.mxcell', function() {
       Shiny.setInputValue('mx_cell', {
@@ -294,6 +295,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         if (!skipSave) saveLayout();
       }
       window.jellyqdaSetSide = setSide;
+      window.jellyqdaSaveLayout = function() { saveLayout(); };
       function saveLayout() {
         try {
           var panes = {};
@@ -604,13 +606,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::span("Memos"), shiny::span(class = "toggler", `data-toggle` = "panel-memos", fontawesome::fa("chevron-down"))),
           shiny::div(class = "panelbody",
             shiny::uiOutput("memo_detail"),
-            shiny::textAreaInput("memo_text", "Memo bearbeiten / neu", rows = 3,
-                                 placeholder = "z. B. Gedanken zum Leitfaden, Auffaelligkeiten ..."),
-            shiny::div(style = "display:flex; gap:.4rem;",
-              shiny::actionButton("memo_save_btn", "Memo speichern", icon = fa("floppy-disk"),
-                                  class = "btn-sm btn-primary"),
-              shiny::actionButton("memo_cancel_btn", "Abbrechen", class = "btn-sm btn-outline-secondary")
-            ),
+            shiny::p(class = "placeholder",
+                     "Memo anlegen (einheitlicher Weg): Text im Dokument-Browser markieren, Memo-Text in der Aktionsleiste eingeben, dann 'Memo speichern'."),
             shiny::hr(),
             shiny::uiOutput("memos_list")
           )
@@ -704,7 +701,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     shiny::div(class = "actionbar",
       shiny::span(class = "selinfo", sprintf("Markiert: Zeichen %d-%d", s$start, s$end)),
       shiny::HTML(btns),
-      shiny::tags$button(id = "memo_only_btn", "Nur Memo"),
+      shiny::tags$button(id = "memo_only_btn", "Memo speichern",
+                         title = "Markierten Text als Memo-Markierung speichern (Auswahl bleibt sichtbar)"),
       shiny::textInput("memo_field", label = NULL, placeholder = "Memo (optional)")
     )
   })
@@ -737,11 +735,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     txt <- substring(frozen, s$start, end)
     memo_txt <- input$memo_field %||% ""
     if (!nzchar(memo_txt)) memo_txt <- txt
-    # store as coding with the reserved Memo code -> underlined in the browser
-    qda_code(rv$src, memo_code_id(), start = s$start, end = end, memo = memo_txt)
-    rv$sel <- NULL
+    # store as coding with the reserved Memo code -> underlined in the browser.
+    # the selection stays visible: the new mark is rendered as "selected"
+    # (thick underline) until the user selects something else.
+    res <- qda_code(rv$src, memo_code_id(), start = s$start, end = end, memo = memo_txt)
+    rv$sel_memo <- res$id
     bump()
-    shiny::showNotification("Memo-Markierung gespeichert (Absatz unterstrichen).", type = "message")
+    shiny::showNotification("Memo gespeichert - Markierung bleibt im Browser hervorgehoben.", type = "message")
   })
 
   # click on a highlight -> inspect / delete ----------------------------------
@@ -836,8 +836,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       if (length(lab) == 0) lab <- "?"
       shiny::span(sprintf("Retrieved Segments: %s (%d)", lab, sum(qda_codings()$code_id == rv$sel_code)))
     } else {
-      shiny::span(sprintf("Alle Codings (%d) - Code links anklicken fuer seine Segmente",
-                          nrow(qda_codings())))
+      shiny::span(sprintf("All Codings (%d)", nrow(qda_codings())))
     }
   })
   output$seg_panel <- shiny::renderUI({
@@ -878,20 +877,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       shiny::tags$span(class = "who", sprintf("Memo zu Coding #%d (%s / %s)", row$id, row$source, row$code)),
       if (nzchar(row$memo)) row$memo else shiny::tags$em("(kein Memo)"))
   })
-  # new free memo via the form at the top of the memo section
-  shiny::observeEvent(input$memo_save_btn, {
-    txt <- input$memo_text
-    shiny::req(txt)
-    if (!nzchar(trimws(txt))) return()
-    qda_memo_add(txt)
-    shiny::updateTextAreaInput(session, "memo_text", value = "")
-    bump()
-    shiny::showNotification("Memo gespeichert (Audit-Trail).", type = "message")
-  })
-  shiny::observeEvent(input$memo_cancel_btn, {
-    shiny::updateTextAreaInput(session, "memo_text", value = "")
-  })
-
   # memo section: two groups -- memo-marked passages (jump to text) + free memos.
   # every entry has inline edit (pen), delete (trash) and save (in edit mode).
   output$memos_list <- shiny::renderUI({

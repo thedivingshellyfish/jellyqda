@@ -66,10 +66,12 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_equal(memo_cod$memo, "kurz")
     expect_equal(memo_cod$start, 1L)
     expect_equal(memo_cod$end, 5L)
-    # document renders it as underline mark (memomark, no background)
+    # document renders it as underline mark (memomark, no background);
+    # the selection stays visible -> mark is rendered as selected (thick underline)
     session$setInputs(backup_btn = 1L)
     doc_html <- htmltools::renderTags(output$doc)$html
-    expect_true(grepl('class="memomark"', doc_html, fixed = TRUE))
+    expect_true(grepl("memomark", doc_html, fixed = TRUE))
+    expect_true(grepl("memomark sel", doc_html, fixed = TRUE))
     # action bar does not offer the reserved Memo code as a button
     session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"))
     ab <- htmltools::renderTags(output$actionbar)$html
@@ -82,14 +84,15 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     segp <- htmltools::renderTags(output$seg_panel)$html
     expect_true(grepl("data-goto", segp, fixed = TRUE))
     expect_true(grepl("kurz", segp, fixed = TRUE))
+    # segments header label (no code selected yet)
+    expect_true(grepl("All Codings", htmltools::renderTags(output$seg_head)$html, fixed = TRUE))
 
-    # free-text memo via the memo form
-    session$setInputs(memo_text = "Leitfaden-Frage 3 nachschaerfen", memo_save_btn = 1L)
+    # free memos (console API) show in the memo panel with edit + delete icons
+    qda_memo_add("Leitfaden-Frage 3 nachschaerfen")
     expect_equal(nrow(qda_memos()), 1)
-    expect_equal(qda_memos()$text_[1], "Leitfaden-Frage 3 nachschaerfen")
-    # free memo shows in the memos panel (right column) and can be deleted
     session$setInputs(backup_btn = 1L)
     ml <- htmltools::renderTags(output$memos_list)$html
+    expect_true(grepl("data-editmemo", ml, fixed = TRUE))
     expect_true(grepl("data-delmemo", ml, fixed = TRUE))
     expect_true(grepl("nachschaerfen", ml, fixed = TRUE))
     session$setInputs(del_memo = qda_memos()$id[1])
@@ -143,13 +146,15 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     # stats line renders
     expect_true(grepl("Quellen", output$stats_line))
 
-    # free memo via form; per-entry inline edit + save in the memo section
-    session$setInputs(memo_text = "erstes Memo", memo_save_btn = 1L)
+    # free memo via console API; per-entry inline edit + save in the memo section
+    qda_memo_add("erstes Memo")
     mid <- qda_memos()$id[1]
     key <- paste0("memo_", mid)
     session$setInputs(edit_memo_entry = key)
+    session$setInputs(backup_btn = 1L)  # flush -> memo list re-renders in edit mode
     ml <- as_html(output$memos_list)
     expect_true(grepl(paste0("memo_edit_", key), ml, fixed = TRUE))  # inline editor shown
+    expect_true(grepl("data-savememo", ml, fixed = TRUE))
     do.call(session$setInputs, stats::setNames(list("bearbeitet"), paste0("memo_edit_", key)))
     session$setInputs(save_memo_entry = key)
     expect_equal(qda_memos()$text_[qda_memos()$id == mid], "bearbeitet")
@@ -226,6 +231,11 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl('data-side="right"', ui, fixed = TRUE))
   expect_true(grepl("function setSide", ui, fixed = TRUE))
   expect_true(grepl("sides", ui, fixed = TRUE))  # persisted in localStorage
+  # side-toggle must collapse a visible pane (not the inverted check)
+  expect_true(grepl("pane.style.display !== 'none'", ui, fixed = TRUE))
+  # inline edit handler for memo entries + no free-memo form in the static UI
+  expect_true(grepl("[data-editmemo]", ui, fixed = TRUE))
+  expect_false(grepl('id="memo_text"', ui, fixed = TRUE))
   # backup / export / layout-reset grouped in one button section
   expect_true(grepl("btnsection", ui, fixed = TRUE))
   expect_true(grepl('id="backup_btn"', ui, fixed = TRUE))
