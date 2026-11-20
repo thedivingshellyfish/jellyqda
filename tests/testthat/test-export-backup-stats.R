@@ -1,3 +1,10 @@
+# jellyqda :: test-export-backup-stats.R --------------------------------------
+# Windows notes: never compare absolute path STRINGS (8.3 short names vs.
+# long names, mixed slashes), and never rely on Sys.chmod() to make a
+# directory unwritable on Windows (POSIX permission bits are not enforced
+# for directory creation there). The fallback is triggered deterministically
+# by blocking the default backup location with a regular file instead.
+
 test_that("end-to-end: import, code, export, backup, stats, audit", {
   p <- new_project()
   on.exit(qda_close(), add = TRUE)
@@ -39,32 +46,38 @@ test_that("end-to-end: import, code, export, backup, stats, audit", {
   # backup: zip lands OUTSIDE the project dir, contains the project file
   z <- qda_backup(quiet = TRUE)
   expect_true(file.exists(z))
-  expect_false(dirname(z) == dirname(p))  # outside the project folder
+  expect_false(basename(dirname(z)) == basename(dirname(p)))
   expect_true(basename(p) %in% zip::zip_list(z)$filename)
   expect_true("originals/interview_01.txt" %in% zip::zip_list(z)$filename)
 })
 
 test_that("backup falls back to a project-local dir when the parent is not writable", {
-  uid <- suppressWarnings(as.integer(system("id -u", intern = TRUE)))
-  skip_if(isTRUE(uid == 0), "chmod does not restrict root")
   outer <- tempfile("qda-outer-")
   inner <- file.path(outer, "projekt")
   dir.create(inner, recursive = TRUE)
-  Sys.chmod(outer, "0555")  # e.g. project directly in $HOME: parent not writable
-  on.exit({ Sys.chmod(outer, "0755"); unlink(outer, recursive = TRUE) }, add = TRUE)
+  # deterministic on every OS (Windows ACLs and root included): block the
+  # default backup location with a regular FILE so the directory cannot be
+  # created there -> .writable_dir() is FALSE -> fallback must trigger
+  lock <- file.path(outer, "jellyqda-backups")
+  file.create(lock)
+  on.exit(unlink(outer, recursive = TRUE), add = TRUE)
   p <- file.path(inner, "proj.jellyqda")
   qda_open(p)
   on.exit(qda_close(), add = TRUE)
-  expect_equal(default_backup_dir(), file.path(inner, "jellyqda-backups"))
+  # form-independent checks: the fallback dir lives INSIDE the project dir
+  fb <- default_backup_dir()
+  expect_equal(basename(dirname(fb)), "projekt")
   z <- qda_backup(quiet = TRUE)
   expect_true(file.exists(z))
-  expect_equal(dirname(z), file.path(inner, "jellyqda-backups"))
+  expect_equal(basename(dirname(z)), "jellyqda-backups")
+  expect_equal(basename(dirname(dirname(z))), "projekt")
   # explicit non-writable path also falls back with a warning
   expect_warning(
-    z2 <- qda_backup(path = file.path(outer, "jellyqda-backups"), quiet = TRUE),
+    z2 <- qda_backup(path = lock, quiet = TRUE),
     "nicht beschreibbar"
   )
-  expect_equal(dirname(z2), file.path(inner, "jellyqda-backups"))
+  expect_true(file.exists(z2))
+  expect_equal(basename(dirname(dirname(z2))), "projekt")
 })
 
 test_that("backup rotation keeps only the newest `keep` snapshots", {

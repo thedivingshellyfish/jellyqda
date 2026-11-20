@@ -1,3 +1,8 @@
+# jellyqda :: test-open.R -- qda_open()/qda_close()/qda_project() ------ don't
+# compare absolute path STRINGS on Windows: 8.3 short names (RUNNER~1) and
+# long names (runneradmin) appear in the same path depending on when
+# normalizePath() ran, and slashes can be mixed. Compare structurally instead.
+
 test_that("qda_open creates a project file with the full schema", {
   p <- new_project()
   on.exit(qda_close(), add = TRUE)
@@ -8,7 +13,9 @@ test_that("qda_open creates a project file with the full schema", {
                             "summaries", "sqlite_sequence"))
   info <- qda_project()
   expect_s3_class(info, "tbl_df")
-  expect_equal(info$project, p)
+  # same file, but form-independent of Windows path quirks:
+  expect_equal(basename(info$project), basename(p))
+  expect_true(file.exists(info$project))
   expect_equal(info$sources, 0)
 })
 
