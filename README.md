@@ -91,8 +91,14 @@ Marking text + clicking a code button stores the coding at the exact
 character offsets in the same `.jellyqda` file (audit event included); click a
 highlight to inspect/delete it. **"Nur Memo"** stores the passage under a
 reserved *Memo* code rendered as an **underline**. Backup/Export buttons in
-the top bar. Needs `shiny`, `bslib`, `colourpicker`, `fontawesome` (Suggests;
-install once).
+the top bar.
+
+**Flexible panes:** drag any panel by its header into another column (e.g.
+Memos to the right, browser stays center), drag the gray column borders to
+resize, or use the layout preset in the top bar ("Standard" / "Browser gross"
+/ "Nur Browser") plus "Layout reset". The arrangement is saved in the
+browser's localStorage and restored on the next start. Needs `shiny`,
+`bslib`, `colourpicker`, `fontawesome` (Suggests; install once).
 
 Note: RStudio itself cannot show toolbar icons that act on a text selection
 inside the Viewer — that is why the interactive UI is a local Shiny app, the

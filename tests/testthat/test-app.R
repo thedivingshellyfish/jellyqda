@@ -146,3 +146,23 @@ test_that("qda_app refuses to start without an open project / shiny", {
   qda_close()
   expect_error(jellyqda::qda_app(), "qda_open")
 })
+
+test_that("qda_app UI has the flexible pane layout (draggable panels, handles, presets)", {
+  skip_if_not_installed("shiny")
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  rt <- htmltools::renderTags(jellyqda:::.jellyqda_ui())
+  ui <- paste(rt$head, rt$html, collapse = "\n")
+  expect_true(grepl('class="appgrid"', ui, fixed = TRUE))
+  expect_true(grepl("colhandle", ui, fixed = TRUE))
+  expect_true(grepl('data-pane="left"', ui, fixed = TRUE))
+  expect_true(grepl('data-pane="center"', ui, fixed = TRUE))
+  expect_true(grepl('data-pane="right"', ui, fixed = TRUE))
+  for (pid in c("panel-docs", "panel-codes", "panel-browser", "panel-segs", "panel-memos")) {
+    expect_true(grepl(paste0('id="', pid, '"'), ui, fixed = TRUE))
+  }
+  expect_true(grepl('draggable="true"', ui, fixed = TRUE))
+  expect_true(grepl("layout_preset", ui, fixed = TRUE))
+  expect_true(grepl("jellyqdaPreset", ui, fixed = TRUE))
+  expect_true(grepl("localStorage", ui, fixed = TRUE))
+})
