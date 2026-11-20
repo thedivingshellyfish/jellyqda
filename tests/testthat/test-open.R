@@ -5,7 +5,7 @@ test_that("qda_open creates a project file with the full schema", {
   con <- qda_con()
   tables <- DBI::dbGetQuery(con, "SELECT name FROM sqlite_master WHERE type = 'table'")$name
   expect_setequal(tables, c("sources", "codes", "codings", "memos", "events",
-                            "sqlite_sequence"))
+                            "summaries", "sqlite_sequence"))
   info <- qda_project()
   expect_s3_class(info, "tbl_df")
   expect_equal(info$project, p)

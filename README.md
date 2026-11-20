@@ -85,7 +85,15 @@ colors/icons/layout):
 | Code System | left bottom: **Code System** tree, color swatches, add/rename/delete | `qda_codes()` |
 | Document Browser | center top: mark text → colored code buttons / "Nur Memo" | `qda_view()` |
 | Retrieved Segments | center bottom: segments of the code selected in the tree (click → jump) | `qda_segments()` |
-| (Memo panel) | right: **Memos** — memo of the clicked coding + free memos | `qda_memos()` |
+| (Memo panel) | right: **Memos** — memo of the clicked coding + free memos (editable) | `qda_memos()` |
+| Code Matrix Browser | left: **Code-Matrix** — codes x documents counts, SUM row/col, cell intensity; click cell = open code+document | `qda_matrix()` |
+| Summary Grid | right: **Summary Grid** — click a cell: its segments + editable summary text per cell (saved, audited) | `qda_summary_set()` / `qda_summaries()` |
+
+Memos are editable: pen icon loads a memo into the text area, "Memo
+speichern" overwrites it (`qda_memo_update()`), "Abbrechen" cancels. Every
+panel has a collapse chevron in its header, and the fixed symbol bar in the
+top bar toggles each window (Dokumente, Codes, Matrix, Browser, Segments,
+Memos, Summary) — collapsed state is persisted with the layout.
 
 Marking text + clicking a code button stores the coding at the exact
 character offsets in the same `.jellyqda` file (audit event included); click a

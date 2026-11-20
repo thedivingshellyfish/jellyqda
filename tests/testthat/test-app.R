@@ -139,6 +139,29 @@ test_that("qda_app server wiring works (shiny::testServer)", {
 
     # stats line renders
     expect_true(grepl("Quellen", output$stats_line))
+
+    # memo edit flow: pen loads memo, save overwrites
+    session$setInputs(memo_text = "erstes Memo", memo_save_btn = 1L)
+    mid <- qda_memos()$id[1]
+    session$setInputs(edit_memo = mid, memo_text = "bearbeitet", memo_save_btn = 1L)
+    expect_equal(qda_memos()$text_[qda_memos()$id == mid], "bearbeitet")
+    session$setInputs(memo_cancel_btn = 1L)  # no error
+
+    # code matrix renders with cells + SUM
+    mtx <- as_html(output$matrix_panel)
+    expect_true(grepl("mxcell", mtx, fixed = TRUE))
+    expect_true(grepl("SUM", mtx, fixed = TRUE))
+    session$setInputs(mx_cell = list(code = 1L, source = 2L))
+    expect_true(grepl("Retrieved Segments", as_html(output$seg_head), fixed = TRUE))
+
+    # summary grid: pick cell, write summary, save -> persisted
+    smx <- as_html(output$sum_matrix)
+    expect_true(grepl("sumcell", smx, fixed = TRUE))
+    session$setInputs(sum_cell = list(code = 1L, source = 1L), sum_text = "Zellentext A",
+                      sum_save_btn = 1L)
+    expect_equal(qda_summaries(code = 1, source = 1)$text_, "Zellentext A")
+    sd <- as_html(output$sum_detail)
+    expect_true(grepl("Zellentext A", sd, fixed = TRUE))
   })
 })
 
@@ -158,11 +181,16 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl('data-pane="left"', ui, fixed = TRUE))
   expect_true(grepl('data-pane="center"', ui, fixed = TRUE))
   expect_true(grepl('data-pane="right"', ui, fixed = TRUE))
-  for (pid in c("panel-docs", "panel-codes", "panel-browser", "panel-segs", "panel-memos")) {
+  for (pid in c("panel-docs", "panel-codes", "panel-matrix", "panel-browser",
+                "panel-segs", "panel-memos", "panel-summary")) {
     expect_true(grepl(paste0('id="', pid, '"'), ui, fixed = TRUE))
   }
   expect_true(grepl('draggable="true"', ui, fixed = TRUE))
   expect_true(grepl("layout_preset", ui, fixed = TRUE))
   expect_true(grepl("jellyqdaPreset", ui, fixed = TRUE))
   expect_true(grepl("localStorage", ui, fixed = TRUE))
+  # fixed symbol bar with collapse toggles for every window
+  expect_true(grepl("symbolbar", ui, fixed = TRUE))
+  expect_equal(length(gregexpr('data-toggle="panel-', ui, fixed = TRUE)[[1]]), 14)  # 7 in bar + 7 in heads
+  expect_true(grepl("panel.collapsed", ui, fixed = TRUE))
 })

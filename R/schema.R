@@ -46,6 +46,16 @@ create_schema <- function(con) {
       details TEXT NOT NULL DEFAULT '{}',
       created_at TEXT NOT NULL
     )")
+  # V2: one summary text per (code, source) cell of the Summary Grid
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS summaries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code_id INTEGER NOT NULL REFERENCES codes(id) ON DELETE CASCADE,
+      source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+      text_ TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL,
+      UNIQUE (code_id, source_id)
+    )")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_codings_source ON codings(source_id)")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_codings_code ON codings(code_id)")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_events_action ON events(action)")

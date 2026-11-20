@@ -38,3 +38,20 @@ qda_memo_delete <- function(memo) {
   log_event("memo_delete", list(memo_id = id))
   invisible(NULL)
 }
+
+#' Edit (overwrite) the text of an existing memo
+#'
+#' @param memo Memo id.
+#' @param text_ New memo text.
+#' @return Invisibly, a one-row tibble with the updated memo.
+#' @export
+qda_memo_update <- function(memo, text_) {
+  con <- qda_con()
+  id <- as.integer(memo)
+  row <- DBI::dbGetQuery(con, "SELECT id FROM memos WHERE id = ?", params = list(id))
+  if (nrow(row) == 0) stop(sprintf("No memo found with id '%s'.", memo), call. = FALSE)
+  DBI::dbExecute(con, "UPDATE memos SET text_ = ? WHERE id = ?",
+                 params = list(as.character(text_), id))
+  log_event("memo_update", list(memo_id = id, text = as.character(text_)))
+  invisible(tibble::tibble(id = id, text_ = as.character(text_)))
+}

@@ -19,9 +19,10 @@ Invisibly \code{NULL} (after the app is stopped).
 \description{
 Launches a local Shiny app on \verb{127.0.0.1} (loopback only -- fully offline)
 and opens it in the RStudio Viewer pane when running inside RStudio.
-The app has a document tree, a code system (with colors), and a document
-browser: mark text with the mouse, then click a code button (or the memo
-button) to store the coding at the exact character offsets.
+The layout shows all panes at once: document tree, code system, document
+browser (mark text with the mouse, then click a code button or the memo
+button to store the coding at the exact character offsets), retrieved
+segments per selected code, and the memo panel.
 }
 \details{
 The call blocks the console while the app runs (press Esc to stop), like
