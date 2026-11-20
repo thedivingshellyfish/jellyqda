@@ -20,9 +20,14 @@ in a browser like Firefox. JellyQDA can start via R script and or R consol.
 
 ## Install
 
+You can download the the project as a zip file or via git, only the secound 
+step is the installation over the R consol and or RStudio:
+
+> install.packages("path/to/jellyqda", repos = NULL, type = "source")
+
 ```r
 # from GitHub (needs remotes or pak once):
-# remotes::install_github("thedivingshellyfish/jellyqda")     # <-- replace 'thedivingshellyfish' with your GitHub user
+# remotes::install_github("thedivingshellyfish/jellyqda")
 # pak::pak("thedivingshellyfish/jellyqda")
 
 # or from a local clone (no CRAN dependency needed):
