@@ -19,8 +19,8 @@ offsets in codings never drift. Every action is recorded in an audit trail
 
 ```r
 # from GitHub (needs remotes or pak once):
-# remotes::install_github("shelly/jellyqda")     # <-- replace 'shelly' with your GitHub user
-# pak::pak("shelly/jellyqda")
+# remotes::install_github("thedivingshellyfish/jellyqda")     # <-- replace 'thedivingshellyfish' with your GitHub user
+# pak::pak("thedivingshellyfish/jellyqda")
 
 # or from a local clone (no CRAN dependency needed):
 install.packages("path/to/jellyqda", repos = NULL, type = "source")
@@ -117,7 +117,7 @@ The layout shows all panes at once (workflow logic follows MAXQDA per concept
 §6 — in jellyqda's own look, the concept forbids copying MAXQDA's
 colors/icons/layout):
 
-| MAXQDA window | jellyqda pane (in `qda_app()`) | API |
+| Window | jellyqda pane (in `qda_app()`) | API |
 |---|---|---|
 | Document System | left top: **Dokumente** tree + import | `qda_sources()` |
 | Code System | left bottom: **Code System** tree, color swatches, add/rename/delete | `qda_codes()` |
