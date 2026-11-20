@@ -168,12 +168,27 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     $(document).on('click', '[data-delcode]', function() {
       Shiny.setInputValue('del_code_id', parseInt($(this).attr('data-delcode')), {priority: 'event'});
     });
-    $(document).on('click', '[data-delcoding]', function() {
+    $(document).on('click', '[data-delcoding]', function(e) {
+      e.stopPropagation();
       Shiny.setInputValue('del_coding', parseInt($(this).attr('data-delcoding')), {priority: 'event'});
+    });
+    $(document).on('click', '[data-goto]', function(e) {
+      Shiny.setInputValue('goto_coding', parseInt($(this).attr('data-goto')), {priority: 'event'});
     });
     $(document).on('click', '#doc mark', function(e) {
       e.stopPropagation();
       Shiny.setInputValue('clicked_coding', parseInt($(this).attr('data-cid')), {priority: 'event'});
+    });
+    // server asks us to scroll to a coding inside the freshly rendered document
+    Shiny.addCustomMessageHandler('jellyqdaScroll', function(msg) {
+      setTimeout(function() {
+        var m = document.querySelector('#doc mark[data-cid=\"' + msg.cid + '\"]');
+        if (m) {
+          m.scrollIntoView({behavior: 'smooth', block: 'center'});
+          m.style.outline = '3px solid #2c6fbb';
+          setTimeout(function() { m.style.outline = ''; }, 2500);
+        }
+      }, 250);
     });
   "))
 }
@@ -213,9 +228,16 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
           shiny::actionButton("delete_code_btn", "Loeschen", icon = fa("trash"), class = "btn-sm btn-outline-danger")
         ),
         bslib::nav_panel("Codings", fa("highlighter"),
+          shiny::p(style = "font-size:.8rem;color:#6b7683;margin:0 0 .4rem 0",
+                   "Klick auf eine Zeile springt im Dokument-Browser zur Stelle."),
           shiny::uiOutput("codings_list")
         ),
         bslib::nav_panel("Memos", fa("note-sticky"),
+          shiny::textAreaInput("memo_text", "Neues Memo (freier Text)", rows = 4,
+                               placeholder = "z. B. Gedanken zum Leitfaden, Auffaelligkeiten ..."),
+          shiny::actionButton("memo_save_btn", "Memo speichern", icon = fa("floppy-disk"),
+                              class = "btn-sm btn-primary"),
+          shiny::hr(),
           shiny::uiOutput("memos_list")
         )
       )
@@ -250,6 +272,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         #doc mark { padding:0 .12em; border-radius:.25em; cursor:pointer; }
         .coderow, .docrow, .codingrow, .memorow { display:flex; gap:.45rem; align-items:center;
           background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
+        .codingrow { cursor:pointer; } .codingrow:hover { background:#eef4fb; }
+        .codingrow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
+        .memorow { display:block; white-space:pre-wrap; }
         .swatch { width:1rem; height:1rem; border-radius:.3rem; flex:none; border:1px solid rgba(0,0,0,.25); }
         .codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .mini { margin-left:auto; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
@@ -375,12 +400,24 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     if (nrow(row) == 0) { rv$clicked <- NULL; return(NULL) }
     shiny::div(class = "clickedbar",
       shiny::span(class = "snippet",
-        sprintf("Coding #%d - %s - %s - Zeichen %d-%d: '%s'",
+        sprintf("Coding #%d - %s - %s - Zeichen %d-%d: '%s'%s",
                 row$id, row$source, row$code, row$start, row$end,
-                if (nchar(row$text) > 90) paste0(substr(row$text, 1, 90), "...") else row$text)),
+                if (nchar(row$text) > 90) paste0(substr(row$text, 1, 90), "...") else row$text,
+                if (nzchar(row$memo)) paste0("  |  Memo: ", row$memo) else "")),
       shiny::actionButton("del_clicked_coding", "Loeschen", icon = fontawesome::fa("trash"),
                           class = "btn-sm btn-outline-danger")
     )
+  })
+  # click a coding in the list -> jump to it in the document browser -----------
+  shiny::observeEvent(input$goto_coding, {
+    df <- qda_codings()
+    row <- df[df$id == input$goto_coding, , drop = FALSE]
+    if (nrow(row) == 0) return()
+    rv$src <- row$source_id
+    rv$sel <- NULL
+    rv$clicked <- row$id
+    bump()
+    session$sendCustomMessage("jellyqdaScroll", list(cid = row$id))
   })
   shiny::observeEvent(input$del_clicked_coding, {
     shiny::req(rv$clicked)
@@ -439,12 +476,24 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     if (nrow(df) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Codings."))
     rows <- vapply(seq_len(nrow(df)), function(i) {
       snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
-      sprintf('<div class="codingrow"><span class="snippet">#%d <b>%s</b> -> <b>%s</b> (%s, %d-%d) %s%s</span>
+      sprintf('<div class="codingrow" data-goto="%d" title="Im Dokument-Browser zeigen">
+               <span class="snippet">#%d <b>%s</b> -> <b>%s</b> (%d-%d) %s%s</span>
                <button class="mini" data-delcoding="%d"><i class="fa-solid fa-trash"></i></button></div>',
-              df$id[i], esc(df$source[i]), esc(df$code[i]), esc(df$memo[i]), df$start[i], df$end[i],
-              esc(snippet), if (nzchar(df$memo[i])) "" else "", df$id[i])
+              df$id[i], df$id[i], esc(df$source[i]), esc(df$code[i]), df$start[i], df$end[i],
+              esc(snippet),
+              if (nzchar(df$memo[i])) sprintf('<span class="memo">Memo: %s</span>', esc(df$memo[i])) else "",
+              df$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
+  })
+  shiny::observeEvent(input$memo_save_btn, {
+    txt <- input$memo_text
+    shiny::req(txt)
+    if (!nzchar(trimws(txt))) return()
+    qda_memo_add(txt)
+    shiny::updateTextAreaInput(session, "memo_text", value = "")
+    bump()
+    shiny::showNotification("Memo gespeichert (Audit-Trail).", type = "message")
   })
   output$memos_list <- shiny::renderUI({
     rv$tick

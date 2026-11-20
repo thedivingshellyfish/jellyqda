@@ -62,6 +62,11 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_equal(nrow(qda_memos()), 1)
     expect_true(grepl("Zeichen 1", qda_memos()$text_[1], fixed = TRUE))
 
+    # free-text memo via the memo form
+    session$setInputs(memo_text = "Leitfaden-Frage 3 nachschaerfen", memo_save_btn = 1L)
+    expect_equal(nrow(qda_memos()), 2)
+    expect_equal(qda_memos()$text_[2], "Leitfaden-Frage 3 nachschaerfen")
+
     # add a code via the form
     session$setInputs(new_code_label = "Motivation", new_code_parent = "",
                       new_code_color = "#00FF00", new_code_desc = "d", add_code_btn = 1L)
@@ -78,9 +83,20 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_equal(nrow(qda_codings()), 0)
 
     # clicked coding bar
-    qda_code(1, segment = 1, code = 1)
-    session$setInputs(clicked_coding = qda_codings()$id[1])
+    qda_code(1, segment = 1, code = 1, memo = "springt hierher")
+    cid <- qda_codings()$id[1]
+    session$setInputs(backup_btn = 1L)   # any app action bumps the tick -> lists re-render
+    session$setInputs(clicked_coding = cid)
     expect_true(!is.null(output$clicked_bar))
+    # codings list rows are navigable (data-goto) and show the memo
+    as_html <- function(x) htmltools::renderTags(x)$html
+    expect_true(grepl("data-goto", as_html(output$codings_list), fixed = TRUE))
+    expect_true(grepl("springt hierher", as_html(output$codings_list), fixed = TRUE))
+    # goto: click a coding -> browser switches to its source, clicked bar shows memo
+    session$setInputs(open_source = 2L)
+    session$setInputs(goto_coding = cid)
+    expect_true(!is.null(output$clicked_bar))
+    expect_true(grepl("Memo: springt hierher", as_html(output$clicked_bar), fixed = TRUE))
     session$setInputs(del_clicked_coding = 1L)
     expect_equal(nrow(qda_codings()), 0)
 
