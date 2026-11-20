@@ -75,19 +75,20 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     ab <- htmltools::renderTags(output$actionbar)$html
     memo_id <- qda_codes()$id[qda_codes()$label == "Memo"]
     expect_false(grepl(sprintf('data-codeid="%d"', memo_id), ab, fixed = TRUE))
-    # memo strip in the browser area lists the memo passage
-    strip <- htmltools::renderTags(output$memo_strip)$html
-    expect_true(grepl("memochip", strip, fixed = TRUE))
-    expect_true(grepl("kurz", strip, fixed = TRUE))
+    # retrieved-segments panel lists the memo passage (clickable, with memo)
+    segp <- htmltools::renderTags(output$seg_panel)$html
+    expect_true(grepl("data-goto", segp, fixed = TRUE))
+    expect_true(grepl("kurz", segp, fixed = TRUE))
 
     # free-text memo via the memo form
     session$setInputs(memo_text = "Leitfaden-Frage 3 nachschaerfen", memo_save_btn = 1L)
     expect_equal(nrow(qda_memos()), 1)
     expect_equal(qda_memos()$text_[1], "Leitfaden-Frage 3 nachschaerfen")
-    # free memo shows in the strip and can be deleted via data-delmemo
+    # free memo shows in the memos panel (right column) and can be deleted
     session$setInputs(backup_btn = 1L)
-    strip <- htmltools::renderTags(output$memo_strip)$html
-    expect_true(grepl("memochip free", strip, fixed = TRUE))
+    ml <- htmltools::renderTags(output$memos_list)$html
+    expect_true(grepl("data-delmemo", ml, fixed = TRUE))
+    expect_true(grepl("nachschaerfen", ml, fixed = TRUE))
     session$setInputs(del_memo = qda_memos()$id[1])
     expect_equal(nrow(qda_memos()), 0)
 
@@ -114,10 +115,20 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(backup_btn = 1L)   # any app action bumps the tick -> lists re-render
     session$setInputs(clicked_coding = cid)
     expect_true(!is.null(output$clicked_bar))
-    # codings list rows are navigable (data-goto) and show the memo
+    # segment rows are navigable (data-goto) and show the memo
     as_html <- function(x) htmltools::renderTags(x)$html
-    expect_true(grepl("data-goto", as_html(output$codings_list), fixed = TRUE))
-    expect_true(grepl("springt hierher", as_html(output$codings_list), fixed = TRUE))
+    expect_true(grepl("data-goto", as_html(output$seg_panel), fixed = TRUE))
+    expect_true(grepl("springt hierher", as_html(output$seg_panel), fixed = TRUE))
+    # code tree rows are selectable (data-selcode); selecting filters segments
+    ct <- as_html(output$code_tree)
+    expect_true(grepl("data-selcode", ct, fixed = TRUE))
+    session$setInputs(sel_code = 1L)
+    sh <- as_html(output$seg_head)
+    expect_true(grepl("Retrieved Segments", sh, fixed = TRUE))
+    sp <- as_html(output$seg_panel)
+    expect_true(grepl("springt hierher", sp, fixed = TRUE))
+    expect_false(grepl('data-codeid', sp, fixed = TRUE))
+    session$setInputs(sel_code = NULL)
     # goto: click a coding -> browser switches to its source, clicked bar shows memo
     session$setInputs(open_source = 2L)
     session$setInputs(goto_coding = cid)

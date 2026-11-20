@@ -1,16 +1,23 @@
 # qda_app: local Shiny UI (V2) -------------------------------------------------
 # One command starts a local-only web UI (127.0.0.1, no internet) inside the
 # RStudio Viewer pane -- the "V2 door" reserved in concept section 3.
-# Panels: document tree | code system | document browser with select-to-code.
+#
+# Layout follows the MAXQDA *workflow logic* (concept section 6), in jellyqda's
+# own look (the concept explicitly forbids copying MAXQDA's colors/icons):
+#   left column   : Documents tree (top) + Code System tree (bottom)
+#   center        : Document Browser (top, select text -> code/memo buttons)
+#                   + Retrieved Segments for the selected code (bottom)
+#   right column  : Memos (memo of the clicked coding + free memos)
 # All data flows through the same qda_*() API into the same .jellyqda file.
 
 #' Start the jellyqda app (local Shiny UI) for the active project
 #'
 #' Launches a local Shiny app on `127.0.0.1` (loopback only -- fully offline)
 #' and opens it in the RStudio Viewer pane when running inside RStudio.
-#' The app has a document tree, a code system (with colors), and a document
-#' browser: mark text with the mouse, then click a code button (or the memo
-#' button) to store the coding at the exact character offsets.
+#' The layout shows all panes at once: document tree, code system, document
+#' browser (mark text with the mouse, then click a code button or the memo
+#' button to store the coding at the exact character offsets), retrieved
+#' segments per selected code, and the memo panel.
 #'
 #' The call blocks the console while the app runs (press Esc to stop), like
 #' any Shiny app. Open the printed URL in additional browser windows/tabs for
@@ -166,13 +173,17 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     $(document).on('click', '[data-src]', function() {
       Shiny.setInputValue('open_source', parseInt($(this).attr('data-src')), {priority: 'event'});
     });
+    $(document).on('click', '[data-selcode]', function() {
+      Shiny.setInputValue('sel_code', parseInt($(this).attr('data-selcode')), {priority: 'event'});
+    });
     $(document).on('click', '.codebtn', function() {
       Shiny.setInputValue('assign_code', parseInt($(this).attr('data-codeid')), {priority: 'event'});
     });
     $(document).on('click', '#memo_only_btn', function() {
       Shiny.setInputValue('add_memo_only', Date.now(), {priority: 'event'});
     });
-    $(document).on('click', '[data-delcode]', function() {
+    $(document).on('click', '[data-delcode]', function(e) {
+      e.stopPropagation();
       Shiny.setInputValue('del_code_id', parseInt($(this).attr('data-delcode')), {priority: 'event'});
     });
     $(document).on('click', '[data-delcoding]', function(e) {
@@ -204,57 +215,17 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
   "))
 }
 
-# --- UI ----------------------------------------------------------------------
+# --- UI: four-pane layout (MAXQDA workflow logic, jellyqda look) -------------
 #' @noRd
 .jellyqda_ui <- function() {
   fa <- fontawesome::fa
-  bslib::page_sidebar(
-    title = paste0("jellyqda - ", basename(project_path())),
+  bslib::page_fluid(
     theme = bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.95),
-    sidebar = bslib::sidebar(
-      width = 350,
-      shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
-                 fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"), fa("plus")),
-      bslib::navset_tab(
-        id = "side_tabs",
-        bslib::nav_panel("Dokumente", fa("folder-tree"),
-          shiny::uiOutput("doc_tree"),
-          shiny::hr(),
-          shiny::fileInput("import_files", "Transkripte importieren (txt/md/docx/pdf)",
-                           multiple = TRUE, accept = c(".txt", ".md", ".docx", ".pdf")),
-          shiny::actionButton("import_btn", "Importieren", icon = fa("plus"), class = "btn-sm btn-primary")
-        ),
-        bslib::nav_panel("Codes", fa("tags"),
-          shiny::uiOutput("code_tree"),
-          shiny::hr(),
-          shiny::textInput("new_code_label", "Neuer Code", placeholder = "Label"),
-          shiny::selectInput("new_code_parent", "Parent", choices = c("(kein Parent)" = "")),
-          colourpicker::colourInput("new_code_color", "Farbe", value = "#E69F00"),
-          shiny::textInput("new_code_desc", "Beschreibung", placeholder = "optional"),
-          shiny::actionButton("add_code_btn", "Code anlegen", icon = fa("plus"), class = "btn-sm btn-primary"),
-          shiny::hr(),
-          shiny::selectInput("ren_code_select", "Code waehlen", choices = character()),
-          shiny::textInput("ren_code_label", "Umbenennen in", placeholder = "neues Label"),
-          shiny::actionButton("rename_code_btn", "Umbenennen", class = "btn-sm btn-secondary"),
-          shiny::actionButton("delete_code_btn", "Loeschen", icon = fa("trash"), class = "btn-sm btn-outline-danger")
-        ),
-        bslib::nav_panel("Codings", fa("highlighter"),
-          shiny::p(style = "font-size:.8rem;color:#6b7683;margin:0 0 .4rem 0",
-                   "Klick auf eine Zeile springt im Dokument-Browser zur Stelle."),
-          shiny::uiOutput("codings_list")
-        ),
-        bslib::nav_panel("Memos", fa("note-sticky"),
-          shiny::textAreaInput("memo_text", "Neues Memo (freier Text)", rows = 4,
-                               placeholder = "z. B. Gedanken zum Leitfaden, Auffaelligkeiten ..."),
-          shiny::actionButton("memo_save_btn", "Memo speichern", icon = fa("floppy-disk"),
-                              class = "btn-sm btn-primary"),
-          shiny::hr(),
-          shiny::uiOutput("memos_list")
-        )
-      )
-    ),
     shiny::tags$head(
       .jellyqda_js(),
+      shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
+                 fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
+                 fa("plus"), fa("file-lines")),
       shiny::tags$style(shiny::HTML("
         body { background:#f4f6f8; }
         .topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
@@ -262,18 +233,19 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
                   box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
         .topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; }
         #memo_field { width:16rem; margin-bottom:0; }
-        .actionbar { position:sticky; top:0; z-index:20; display:flex; gap:.4rem;
-                     align-items:center; background:#fff8e1; border:1px solid #e0c96a;
-                     padding:.45rem .7rem; border-radius:.5rem; margin-bottom:.6rem;
-                     box-shadow:0 2px 6px rgba(0,0,0,.12); flex-wrap:wrap; }
-        .actionbar .selinfo { font-family:monospace; font-size:.85rem; color:#7a6414; margin-right:.4rem; }
-        .codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.3rem .6rem;
-                   font-size:.85rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
-        .codebtn:hover { filter:brightness(1.12); }
-        #memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
-                         padding:.3rem .6rem; font-size:.85rem; cursor:pointer; }
-        .docarea { background:#fff; border-radius:.6rem; padding:1.2rem 1.4rem;
-                   box-shadow:0 1px 3px rgba(0,0,0,.08); }
+        .appgrid { display:grid; gap:.6rem; height:calc(100vh - 118px);
+                   grid-template-columns:300px minmax(0,1fr) 300px;
+                   grid-template-rows:minmax(0,3fr) minmax(0,2fr); }
+        .pane { display:flex; flex-direction:column; min-height:0; min-width:0; }
+        .pane.left, .pane.right { grid-row:1 / 3; }
+        .panel { background:#fff; border-radius:.6rem; box-shadow:0 1px 3px rgba(0,0,0,.08);
+                 display:flex; flex-direction:column; min-height:0; flex:1; margin-bottom:.6rem; }
+        .panel:last-child { margin-bottom:0; }
+        .panelhead { padding:.4rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
+                     display:flex; gap:.45rem; align-items:center; color:#2c6fbb; flex:none; }
+        .panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }
+        .browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
+        .docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
         #doc { font-family:Georgia,'Times New Roman',serif; font-size:1.02rem; line-height:1.65;
                white-space:pre-wrap; word-break:break-word; }
         .segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; }
@@ -283,31 +255,34 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         #doc mark { padding:0 .12em; border-radius:.25em; cursor:pointer; }
         #doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
                              border-radius:0; }
-        .memostrip { display:flex; gap:.4rem; align-items:flex-start; flex-wrap:wrap;
-                     background:#fffdf5; border:1px solid #e8d9a8; border-radius:.5rem;
-                     padding:.4rem .7rem; margin-bottom:.6rem; }
-        .memostrip .striptitle { font-weight:700; font-size:.8rem; color:#7a6414; margin-right:.3rem; }
-        .memochip { display:inline-flex; gap:.35rem; align-items:center; background:#fff;
-                    border:1px solid #e0d3a0; border-bottom:3px solid #b58900; border-radius:.4rem;
-                    padding:.15rem .45rem; font-size:.8rem; cursor:pointer; max-width:26rem;
-                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .memochip.free { border-bottom-color:#8a94a0; }
-        .memochip:hover { background:#fff8e1; }
-        .coderow, .docrow, .codingrow, .memorow { display:flex; gap:.45rem; align-items:center;
+        .actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
+                     border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
+                     margin-bottom:.5rem; flex-wrap:wrap; }
+        .actionbar .selinfo { font-family:monospace; font-size:.85rem; color:#7a6414; margin-right:.4rem; }
+        .codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.3rem .6rem;
+                   font-size:.85rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+        .codebtn:hover { filter:brightness(1.12); }
+        #memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
+                         padding:.3rem .6rem; font-size:.85rem; cursor:pointer; }
+        .clickedbar { flex:none; display:flex; gap:.6rem; align-items:center; background:#eef4fb;
+                      border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.5rem; }
+        .coderow, .docrow, .segrow, .memorow { display:flex; gap:.45rem; align-items:center;
           background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
-        .codingrow { cursor:pointer; } .codingrow:hover { background:#eef4fb; }
-        .codingrow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
-        .memorow { display:block; white-space:pre-wrap; }
+        .coderow, .docrow, .segrow { cursor:pointer; }
+        .coderow:hover, .docrow:hover, .segrow:hover { background:#eef4fb; }
+        .coderow.sel { border-color:#2c6fbb; background:#eef4fb; }
         .swatch { width:1rem; height:1rem; border-radius:.3rem; flex:none; border:1px solid rgba(0,0,0,.25); }
         .codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .mini { margin-left:auto; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
-                padding:.1rem .45rem; cursor:pointer; color:#b03a2e; }
-        .docrow { cursor:pointer; } .docrow:hover { background:#eef4fb; }
-        .docrow .fmt { margin-left:auto; font-size:.75rem; color:#6b7683; }
-        .snippet { font-size:.85rem; color:#333; }
-        .placeholder { color:#8a94a0; font-style:italic; padding:2rem; text-align:center; }
-        .clickedbar { display:flex; gap:.6rem; align-items:center; background:#eef4fb;
-                      border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.6rem; }
+                padding:.1rem .45rem; cursor:pointer; color:#b03a2e; flex:none; }
+        .docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.75rem; color:#6b7683; flex:none; }
+        .segrow .snippet, .memorow .snippet, .snippet { font-size:.85rem; color:#333; }
+        .segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
+        .memorow { display:block; white-space:pre-wrap; }
+        .placeholder { color:#8a94a0; font-style:italic; padding:1rem; text-align:center; }
+        .memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
+                     padding:.5rem .7rem; margin-bottom:.5rem; font-size:.9rem; white-space:pre-wrap; }
+        .memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }
       "))
     ),
     shiny::div(class = "topbar",
@@ -316,17 +291,75 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
       shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),
       shiny::actionButton("export_btn", "Export", icon = fa("file-export"), class = "btn-sm btn-outline-secondary")
     ),
-    shiny::uiOutput("clicked_bar"),
-    shiny::uiOutput("actionbar"),
-    shiny::uiOutput("memo_strip"),
-    shiny::div(class = "docarea", shiny::uiOutput("doc"))
+    shiny::div(class = "appgrid",
+      # left column: document tree (top) + code system (bottom)
+      shiny::div(class = "pane left",
+        shiny::div(class = "panel docs",
+          shiny::div(class = "panelhead", fa("folder-tree"), shiny::span("Dokumente")),
+          shiny::div(class = "panelbody",
+            shiny::uiOutput("doc_tree"),
+            shiny::hr(),
+            shiny::fileInput("import_files", NULL, multiple = TRUE,
+                             accept = c(".txt", ".md", ".docx", ".pdf"), buttonLabel = "Dateien..."),
+            shiny::actionButton("import_btn", "Importieren", icon = fa("plus"), class = "btn-sm btn-primary")
+          )
+        ),
+        shiny::div(class = "panel codes",
+          shiny::div(class = "panelhead", fa("tags"), shiny::span("Code System")),
+          shiny::div(class = "panelbody",
+            shiny::uiOutput("code_tree"),
+            shiny::hr(),
+            shiny::textInput("new_code_label", "Neuer Code", placeholder = "Label"),
+            shiny::selectInput("new_code_parent", "Parent", choices = c("(kein Parent)" = "")),
+            colourpicker::colourInput("new_code_color", "Farbe", value = "#E69F00"),
+            shiny::textInput("new_code_desc", "Beschreibung", placeholder = "optional"),
+            shiny::actionButton("add_code_btn", "Code anlegen", icon = fa("plus"), class = "btn-sm btn-primary"),
+            shiny::hr(),
+            shiny::selectInput("ren_code_select", "Code waehlen", choices = character()),
+            shiny::textInput("ren_code_label", "Umbenennen in", placeholder = "neues Label"),
+            shiny::actionButton("rename_code_btn", "Umbenennen", class = "btn-sm btn-secondary"),
+            shiny::actionButton("delete_code_btn", "Loeschen", icon = fa("trash"), class = "btn-sm btn-outline-danger")
+          )
+        )
+      ),
+      # center: document browser (top) + retrieved segments (bottom)
+      shiny::div(class = "pane center",
+        shiny::div(class = "panel browser",
+          shiny::div(class = "panelhead", fa("file-lines"), shiny::textOutput("doc_title", inline = TRUE)),
+          shiny::div(class = "panelbody",
+            shiny::uiOutput("clicked_bar"),
+            shiny::uiOutput("actionbar"),
+            shiny::div(class = "docarea", shiny::uiOutput("doc"))
+          )
+        ),
+        shiny::div(class = "panel segs",
+          shiny::div(class = "panelhead", fa("highlighter"), shiny::uiOutput("seg_head", inline = TRUE)),
+          shiny::div(class = "panelbody", shiny::uiOutput("seg_panel"))
+        )
+      ),
+      # right column: memos
+      shiny::div(class = "pane right",
+        shiny::div(class = "panel memos",
+          shiny::div(class = "panelhead", fa("note-sticky"), shiny::span("Memos")),
+          shiny::div(class = "panelbody",
+            shiny::uiOutput("memo_detail"),
+            shiny::textAreaInput("memo_text", "Neues Memo (freier Text)", rows = 3,
+                                 placeholder = "z. B. Gedanken zum Leitfaden, Auffaelligkeiten ..."),
+            shiny::actionButton("memo_save_btn", "Memo speichern", icon = fa("floppy-disk"),
+                                class = "btn-sm btn-primary"),
+            shiny::hr(),
+            shiny::uiOutput("memos_list")
+          )
+        )
+      )
+    )
   )
 }
 
 # --- server -------------------------------------------------------------------
 #' @noRd
 .jellyqda_server <- function(input, output, session) {
-  rv <- shiny::reactiveValues(src = NULL, sel = NULL, clicked = NULL, tick = 0)
+  rv <- shiny::reactiveValues(src = NULL, sel = NULL, clicked = NULL, sel_code = NULL, tick = 0)
   bump <- function() rv$tick <- shiny::isolate(rv$tick) + 1
   esc <- htmltools::htmlEscape
 
@@ -337,21 +370,22 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     c("(kein Parent)" = "", out)
   }
   shiny::observe({
-    bump_dep <- rv$tick
+    rv$tick
     shiny::updateSelectInput(session, "new_code_parent", choices = code_choices())
     shiny::updateSelectInput(session, "ren_code_select",
                              choices = stats::setNames(as.character(qda_codes()$id), qda_codes()$label))
   })
 
-  # document tree -------------------------------------------------------------
+  # document tree (left top) ---------------------------------------------------
   output$doc_tree <- shiny::renderUI({
     rv$tick
     s <- qda_sources()
     if (nrow(s) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Dokumente importiert."))
     rows <- vapply(seq_len(nrow(s)), function(i) {
-      sprintf('<div class="docrow" data-src="%d"><i class="fa-solid fa-file-lines"></i>
+      cls <- if (!is.null(rv$src) && rv$src == s$id[i]) "docrow sel" else "docrow"
+      sprintf('<div class="%s" data-src="%d"><i class="fa-solid fa-file-lines"></i>
                <span>%s</span><span class="fmt">%s - %d Seg.</span></div>',
-              s$id[i], esc(s$name[i]), esc(s$format[i]), s$segments[i])
+              cls, s$id[i], esc(s$name[i]), esc(s$format[i]), s$segments[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
   })
@@ -364,7 +398,11 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     bump(); shiny::showNotification("Importiert (Text eingefroren, Original in originals/).", type = "message")
   })
 
-  # document browser ----------------------------------------------------------
+  # document browser (center top) ----------------------------------------------
+  output$doc_title <- shiny::renderText({
+    rv$tick
+    if (is.null(rv$src)) "Dokument-Browser" else .resolve_source(rv$src)$name
+  })
   output$doc <- shiny::renderUI({
     rv$tick
     id <- rv$src
@@ -386,7 +424,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
         sprintf('<button class="codebtn" data-codeid="%d" style="background-color:%s" title="%s">%s</button>',
                 codes$id[i], esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]))
       }, character(1)), collapse = "")
-    } else '<span style="color:#8a94a0">Noch keine Codes angelegt (Tab Codes)</span>'
+    } else '<span style="color:#8a94a0">Noch keine Codes angelegt (Code System links)</span>'
     shiny::div(class = "actionbar",
       shiny::span(class = "selinfo", sprintf("Markiert: Zeichen %d-%d", s$start, s$end)),
       shiny::HTML(btns),
@@ -403,6 +441,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     bump()
     shiny::showNotification("Coding gespeichert (Audit-Trail aktualisiert).", type = "message")
   })
+
   # reserved code for memo passages (rendered as underline, not background)
   memo_code_id <- function() {
     con <- qda_con()
@@ -447,17 +486,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
                           class = "btn-sm btn-outline-danger")
     )
   })
-  # click a coding in the list -> jump to it in the document browser -----------
-  shiny::observeEvent(input$goto_coding, {
-    df <- qda_codings()
-    row <- df[df$id == input$goto_coding, , drop = FALSE]
-    if (nrow(row) == 0) return()
-    rv$src <- row$source_id
-    rv$sel <- NULL
-    rv$clicked <- row$id
-    bump()
-    session$sendCustomMessage("jellyqdaScroll", list(cid = row$id))
-  })
   shiny::observeEvent(input$del_clicked_coding, {
     shiny::req(rv$clicked)
     qda_coding_delete(rv$clicked)
@@ -468,17 +496,32 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     qda_coding_delete(input$del_coding); bump()
     shiny::showNotification("Coding geloescht (Audit-Trail).", type = "message")
   })
+  # click a segment/coding in a list -> jump to it in the document browser ----
+  shiny::observeEvent(input$goto_coding, {
+    df <- qda_codings()
+    row <- df[df$id == input$goto_coding, , drop = FALSE]
+    if (nrow(row) == 0) return()
+    rv$src <- row$source_id
+    rv$sel <- NULL
+    rv$clicked <- row$id
+    bump()
+    session$sendCustomMessage("jellyqdaScroll", list(cid = row$id))
+  })
 
-  # code system ---------------------------------------------------------------
+  # code system (left bottom) ---------------------------------------------------
+  shiny::observeEvent(input$sel_code, { rv$sel_code <- input$sel_code })
   output$code_tree <- shiny::renderUI({
     rv$tick
     codes <- qda_codes()
     if (nrow(codes) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Codes."))
     rows <- vapply(seq_len(nrow(codes)), function(i) {
-      sprintf('<div class="coderow"><span class="swatch" style="background-color:%s"></span>
+      cls <- if (!is.null(rv$sel_code) && rv$sel_code == codes$id[i]) "coderow sel" else "coderow"
+      sprintf('<div class="%s" data-selcode="%d" title="Klicken = Segmente abajo anzeigen">
+               <span class="swatch" style="background-color:%s"></span>
                <span class="codelabel" title="%s">%s</span><span class="fmt">%d</span>
                <button class="mini" data-delcode="%d" title="Code loeschen"><i class="fa-solid fa-trash"></i></button></div>',
-              esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]), codes$n_codings[i], codes$id[i])
+              cls, codes$id[i], esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]),
+              codes$n_codings[i], codes$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
   })
@@ -508,15 +551,31 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     bump(); shiny::showNotification("Code geloescht.", type = "warning")
   })
 
-  # codings + memos panels ----------------------------------------------------
-  output$codings_list <- shiny::renderUI({
+  # retrieved segments (center bottom) -----------------------------------------
+  output$seg_head <- shiny::renderUI({
     rv$tick
-    df <- qda_codings()
+    if (!is.null(rv$sel_code)) {
+      lab <- qda_codes()$label[qda_codes()$id == rv$sel_code]
+      if (length(lab) == 0) lab <- "?"
+      shiny::span(sprintf("Retrieved Segments: %s (%d)", lab, sum(qda_codings()$code_id == rv$sel_code)))
+    } else {
+      shiny::span(sprintf("Alle Codings (%d) - Code links anklicken fuer seine Segmente",
+                          nrow(qda_codings())))
+    }
+  })
+  output$seg_panel <- shiny::renderUI({
+    rv$tick
+    df <- if (!is.null(rv$sel_code)) {
+      d <- qda_codings()
+      d[d$code_id == rv$sel_code, , drop = FALSE]
+    } else {
+      qda_codings()
+    }
     if (nrow(df) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Codings."))
     rows <- vapply(seq_len(nrow(df)), function(i) {
       snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
-      sprintf('<div class="codingrow" data-goto="%d" title="Im Dokument-Browser zeigen">
-               <span class="snippet">#%d <b>%s</b> -> <b>%s</b> (%d-%d) %s%s</span>
+      sprintf('<div class="segrow" data-goto="%d" title="Im Dokument-Browser zeigen">
+               <span class="snippet">#%d <b>%s</b> &rarr; <b>%s</b> (%d-%d) %s%s</span>
                <button class="mini" data-delcoding="%d"><i class="fa-solid fa-trash"></i></button></div>',
               df$id[i], df$id[i], esc(df$source[i]), esc(df$code[i]), df$start[i], df$end[i],
               esc(snippet),
@@ -524,6 +583,23 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
               df$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
+  })
+
+  # memos (right column) ---------------------------------------------------------
+  output$memo_detail <- shiny::renderUI({
+    rv$tick
+    cid <- rv$clicked
+    if (is.null(cid)) {
+      return(shiny::tags$div(class = "memodetail",
+        shiny::tags$span(class = "who", "Memo"),
+        "Text markieren oder ein Coding anklicken, um sein Memo hier zu sehen."))
+    }
+    df <- qda_codings()
+    row <- df[df$id == cid, , drop = FALSE]
+    if (nrow(row) == 0) return(NULL)
+    shiny::tags$div(class = "memodetail",
+      shiny::tags$span(class = "who", sprintf("Memo zu Coding #%d (%s / %s)", row$id, row$source, row$code)),
+      if (nzchar(row$memo)) row$memo else shiny::tags$em("(kein Memo)"))
   })
   shiny::observeEvent(input$memo_save_btn, {
     txt <- input$memo_text
@@ -537,7 +613,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
   output$memos_list <- shiny::renderUI({
     rv$tick
     m <- qda_memos()
-    if (nrow(m) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Memos."))
+    if (nrow(m) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine freien Memos."))
     rows <- vapply(seq_len(nrow(m)), function(i) {
       sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span>
                <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i></button></div>',
@@ -551,44 +627,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     shiny::showNotification("Memo geloescht (Audit-Trail).", type = "message")
   })
 
-  # memo strip directly in the document-browser area --------------------------
-  output$memo_strip <- shiny::renderUI({
-    rv$tick
-    id <- rv$src
-    chips <- character()
-    if (!is.null(id)) {
-      mc <- DBI::dbGetQuery(qda_con(), "
-        SELECT c.id, c.start, c.end, c.memo, s.frozen_text
-        FROM codings c JOIN codes k ON k.id = c.code_id JOIN sources s ON s.id = c.source_id
-        WHERE k.label = 'Memo' AND c.source_id = ? ORDER BY c.start", params = list(id))
-      for (i in seq_len(nrow(mc))) {
-        snippet <- substring(mc$frozen_text[i], mc$start[i], mc$end[i])
-        if (nchar(snippet) > 60) snippet <- paste0(substr(snippet, 1, 60), "...")
-        label <- if (nzchar(mc$memo[i])) mc$memo[i] else snippet
-        if (nchar(label) > 60) label <- paste0(substr(label, 1, 60), "...")
-        chips <- c(chips, sprintf(
-          '<span class="memochip" data-goto="%d" title="%s">Memo #%d: %s</span>',
-          mc$id[i], esc(snippet), mc$id[i], esc(label)))
-      }
-    }
-    m <- qda_memos()
-    if (nrow(m) > 0) {
-      for (i in seq_len(nrow(m))) {
-        label <- m$text_[i]
-        if (nchar(label) > 60) label <- paste0(substr(label, 1, 60), "...")
-        chips <- c(chips, sprintf(
-          '<span class="memochip free" title="freies Memo">Memo #%d: %s
-           <button class="mini" data-delmemo="%d"><i class="fa-solid fa-trash"></i></button></span>',
-          m$id[i], esc(label), m$id[i]))
-      }
-    }
-    if (length(chips) == 0) return(NULL)
-    shiny::div(class = "memostrip",
-      shiny::span(class = "striptitle", "Memos:"),
-      shiny::HTML(paste(chips, collapse = "")))
-  })
-
-  # header: stats + backup + export -------------------------------------------
+  # header: stats + backup + export ---------------------------------------------
   output$stats_line <- shiny::renderText({
     rv$tick
     st <- qda_stats()$overall
@@ -604,7 +643,3 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     bump(); shiny::showNotification(paste("Exportiert:", nrow(ex), "Dateien nach exports/"), type = "message")
   })
 }
-
-
-
-
