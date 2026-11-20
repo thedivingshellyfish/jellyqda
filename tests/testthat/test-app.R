@@ -260,21 +260,15 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl('draggable="true"', ui, fixed = TRUE))
   expect_false(grepl("layout_preset", ui, fixed = TRUE))  # sizing dropdown removed
   expect_true(grepl("localStorage", ui, fixed = TRUE))
-  # fixed symbol bar with collapse toggles for every window + close button
+  # fixed symbol bar: only dark mode, help and close -- NO collapse/expand
   expect_true(grepl("symbolbar", ui, fixed = TRUE))
-  expect_equal(length(gregexpr('data-toggle="panel-', ui, fixed = TRUE)[[1]]), 14)  # 7 in bar + 7 in heads
   expect_true(grepl("data-closeapp", ui, fixed = TRUE))
-  # left/right side-collapse buttons to free space for the document browser
-  expect_true(grepl('data-side="left"', ui, fixed = TRUE))
-  expect_true(grepl('data-side="right"', ui, fixed = TRUE))
-  expect_true(grepl("function setSide", ui, fixed = TRUE))
-  expect_true(grepl("sides", ui, fixed = TRUE))  # persisted in localStorage
-  # side-toggle must collapse a visible pane (not the inverted check)
-  expect_true(grepl("pane.style.display !== 'none'", ui, fixed = TRUE))
-  # document browser + segments can never be dragged into a side column,
-  # and a side pane containing them is never hidden by the side collapse
+  expect_false(grepl("data-toggle", ui, fixed = TRUE))   # panel collapse removed
+  expect_false(grepl("data-side", ui, fixed = TRUE))       # side collapse removed
+  expect_false(grepl("setSide", ui, fixed = TRUE))
+  expect_false(grepl("collapsed", ui, fixed = TRUE))
+  # document browser + segments can never be dragged into a side column
   expect_true(grepl("dragEl.id === 'panel-browser'", ui, fixed = TRUE))
-  expect_true(grepl("#panel-browser, #panel-segs", ui, fixed = TRUE))
   # inline edit handler for memo entries + no free-memo form in the static UI
   expect_true(grepl("[data-editmemo]", ui, fixed = TRUE))
   expect_false(grepl('id="memo_text"', ui, fixed = TRUE))
@@ -304,6 +298,5 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   # memo text field is NOT in the static top bar (it lives in the server-rendered
   # selection action bar, checked in the testServer test below)
   expect_false(grepl('id="memo_field"', ui, fixed = TRUE))
-  expect_true(grepl("panel.collapsed", ui, fixed = TRUE))
   expect_true(grepl("memomark.sel", ui, fixed = TRUE))
 })

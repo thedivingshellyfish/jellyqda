@@ -98,12 +98,10 @@ an **underline**, and the selection stays highlighted in the browser (thick
 pink underline) after saving. The memo section (right) lists **memo-marked
 passages** (click = jump to the passage) and **free memos** (console:
 `qda_memo_add()`), and **every entry** has inline edit (pen → textarea +
-save/check), cancel and delete (trash). The symbol bar has a red **X button**
-that saves everything (export + backup) and stops the app. Every panel also
-has a collapse chevron in its header, and the fixed symbol bar toggles each
-window and each whole side column (<< / >>) — state is persisted with the
-layout in localStorage. Console memo API: `qda_memo_update()`,
-`qda_memo_delete()`, `qda_coding_set_memo()`.
+save/check), cancel and delete (trash). The symbol bar has a **moon** (dark
+mode), a **?** (help: symbols & shortcuts) and a red **X button** that saves
+everything (export + backup) and stops the app. Console memo API:
+`qda_memo_update()`, `qda_memo_delete()`, `qda_coding_set_memo()`.
 
 Marking text + clicking a code button stores the coding at the exact
 character offsets in the same `.jellyqda` file (audit event included); click a
@@ -111,10 +109,9 @@ highlight to inspect/delete it. Backup/Export buttons in
 the top bar.
 
 **Flexible panes:** drag any panel by its header into another column (e.g.
-Memos to the right, browser stays center), drag the gray column borders to
-resize, and collapse the whole **left/right column** with the angle buttons
-in the symbol bar (<< / >>) to give the document browser maximum space.
-"Layout reset" (grouped with Backup/Export in the top bar) restores the
+Memos to the right, browser stays center; the document browser and segments
+always stay in the center column), drag the gray column borders to
+resize. "Layout reset" (grouped with Undo/Backup/Export in the top bar) restores the
 default. The arrangement is saved in the browser's localStorage and restored
 on the next start. The optional memo text field appears in the selection
 action bar (only while text is marked). Needs `shiny`, `bslib`,
@@ -164,7 +161,7 @@ Everything visual lives in **`R/app.R`** (single file, no build step):
 | Icons | `fontawesome::fa("name")` calls; every icon used in dynamically rendered HTML must also be registered once in the hidden icon `<div>` (otherwise it renders blank). Mini buttons carry a text label (Edit/Save/Del/X) as fallback |
 | Labels / German UI text | the `shiny::*Input(...)` / `shiny::span(...)` calls in `.jellyqda_ui()` and the `sprintf(...)` strings in `.jellyqda_server()` |
 | Code colors | per code in the Code System form (`colourpicker::colourInput`) or `qda_code_add(color = "#...")`; reserved Memo code = gold underline |
-| Panel layout behavior | the JS in `.jellyqda_js()` (drag & drop, column handles, side collapse, localStorage persistence key `jellyqda_layout`) |
+| Panel layout behavior | the JS in `.jellyqda_js()` (drag & drop, column resize handles, localStorage persistence key `jellyqda_layout`) |
 
 After editing: `pkgload::load_all(".")` in dev, or rebuild/reinstall
 (`R CMD build` + `R CMD INSTALL`) and restart `qda_app()`.

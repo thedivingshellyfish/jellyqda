@@ -362,18 +362,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         Shiny.setInputValue('close_app', Date.now(), {priority: 'event'});
       }
     });
-    $(document).on('click', '[data-toggle]', function(e) {
-      e.stopPropagation();
-      var p = document.getElementById($(this).attr('data-toggle'));
-      if (p) p.classList.toggle('collapsed');
-      if (window.jellyqdaSaveLayout) window.jellyqdaSaveLayout();
-    });
-    $(document).on('click', '[data-side]', function(e) {
-      e.stopPropagation();
-      var side = $(this).attr('data-side');
-      var pane = document.querySelector('.pane[data-pane=\"' + side + '\"]');
-      if (pane && window.jellyqdaSetSide) window.jellyqdaSetSide(side, pane.style.display !== 'none');
-    });
     $(document).on('click', '.mxcell', function() {
       Shiny.setInputValue('mx_cell', {
         code: parseInt($(this).attr('data-mxcode')),
@@ -392,54 +380,15 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       function colTracks() {
         return (grid.style.gridTemplateColumns || getComputedStyle(grid).gridTemplateColumns).split(/\\s+/);
       }
-      // collapse/expand a whole side pane (left or right) to free space for the browser
-      function setSide(which, collapsed, skipSave) {
-        var pane = document.querySelector('.pane[data-pane=\"' + which + '\"]');
-        if (!pane) return;
-        // safety: never hide a pane that contains the center panels
-        if (collapsed && pane.querySelector('#panel-browser, #panel-segs')) return;
-        var handle = which === 'left'
-          ? document.querySelector('.colhandle[data-a=\"0\"]')
-          : document.querySelector('.colhandle[data-b=\"4\"]');
-        var cols = colTracks();
-        if (collapsed) {
-          if (which === 'left') { if (!pane.dataset.w) pane.dataset.w = cols[0]; cols[0] = '0px'; cols[1] = '0px'; }
-          else { if (!pane.dataset.w) pane.dataset.w = cols[4]; cols[3] = '0px'; cols[4] = '0px'; }
-          pane.style.display = 'none';
-          if (handle) handle.style.display = 'none';
-        } else {
-          if (which === 'left') { cols[0] = pane.dataset.w || '300px'; cols[1] = '6px'; }
-          else { cols[3] = '6px'; cols[4] = pane.dataset.w || '300px'; }
-          pane.style.display = '';
-          if (handle) handle.style.display = '';
-          delete pane.dataset.w;
-        }
-        grid.style.gridTemplateColumns = cols.join(' ');
-        var btn = document.querySelector('.symbtn[data-side=\"' + which + '\"]');
-        if (btn) btn.classList.toggle('active', collapsed);
-        if (!skipSave) saveLayout();
-      }
-      window.jellyqdaSetSide = setSide;
-      window.jellyqdaSaveLayout = function() { saveLayout(); };
       function saveLayout() {
         try {
           var panes = {};
           document.querySelectorAll('.pane').forEach(function(p) {
             panes[p.dataset.pane] = Array.from(p.querySelectorAll('.panel')).map(function(el) { return el.id; });
           });
-          var collapsed = Array.from(document.querySelectorAll('.panel.collapsed')).map(function(el) { return el.id; });
-          var cols = colTracks();
-          var paneL = document.querySelector('.pane[data-pane=\"left\"]');
-          var paneR = document.querySelector('.pane[data-pane=\"right\"]');
-          var sides = { left: !!(paneL && paneL.style.display === 'none'),
-                        right: !!(paneR && paneR.style.display === 'none') };
-          if (sides.left && paneL.dataset.w) { cols[0] = paneL.dataset.w; cols[1] = '6px'; }
-          if (sides.right && paneR.dataset.w) { cols[3] = '6px'; cols[4] = paneR.dataset.w; }
           localStorage.setItem('jellyqda_layout', JSON.stringify({
-            cols: cols.join(' '),
-            panes: panes,
-            collapsed: collapsed,
-            sides: sides
+            cols: grid.style.gridTemplateColumns || getComputedStyle(grid).gridTemplateColumns,
+            panes: panes
           }));
         } catch (e) {}
       }
@@ -449,20 +398,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           if (!L) return;
           if (L.cols) grid.style.gridTemplateColumns = L.cols;
           ['left', 'center', 'right'].forEach(function(name) {
-            var pane = document.querySelector('.pane[data-pane=\"' + name + '\"]');
+            var pane = document.querySelector('.pane[data-pane=' + name + ']');
             if (!pane) return;
-            pane.style.display = '';
             (L.panes[name] || []).forEach(function(pid) {
               var el = document.getElementById(pid);
               if (el) pane.appendChild(el);
             });
           });
-          (L.collapsed || []).forEach(function(pid) {
-            var el = document.getElementById(pid);
-            if (el) el.classList.add('collapsed');
-          });
-          setSide('left', !!(L.sides && L.sides.left), true);
-          setSide('right', !!(L.sides && L.sides.right), true);
         } catch (e) {}
       }
       restoreLayout();
@@ -554,9 +496,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       .jellyqda_js(),
       shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
                  fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
-                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"),
+                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"),
                  fa("table-cells"), fa("table-list"), fa("xmark"), fa("check"),
-                 fa("angles-left"), fa("angles-right"), fa("rotate-left"), fa("moon"),
+                 fa("rotate-left"), fa("moon"),
                  fa("circle-question"), fa("magnifying-glass"), fa("trash")),
       shiny::tags$style(shiny::HTML("
         body { background:#f4f6f8; }
@@ -641,10 +583,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         .memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
                      padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
         .memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }
-        .panel.collapsed { flex:0 0 auto; }
-        .panel.collapsed .panelbody { display:none; }
-        .toggler { margin-left:auto; cursor:pointer; color:#8a94a0; }
-        .panel.collapsed .toggler i { transform:rotate(-90deg); }
         .symbolbar { display:flex; gap:.3rem; align-items:center; padding-left:.4rem;
                      border-left:1px solid #e3e8ee; }
         .symbolbar .symgroup { display:flex; gap:.2rem; align-items:center; }
@@ -653,7 +591,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
                             padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
         .symbolbar .symbtn:hover { background:#eef4fb; }
         .symbolbar .symbtn.active { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
-        .symbolbar .symbtn.off { color:#b6bec8; background:#f4f6f8; }
         .symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
         table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
         table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
@@ -717,27 +654,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
                             class = "btn-sm btn-outline-secondary")
       ),
-      shiny::div(class = "symbolbar", title = "Fenster ein-/ausklappen",
-        shiny::span(class = "symgroup",
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-docs", title = "Dokumente", fa("folder-tree")),
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-codes", title = "Code System", fa("tags")),
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-matrix", title = "Code-Matrix", fa("table-cells"))),
-        shiny::span(class = "symsep"),
-        shiny::span(class = "symgroup",
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-browser", title = "Dokument-Browser", fa("file-lines")),
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-segs", title = "Retrieved Segments", fa("highlighter"))),
-        shiny::span(class = "symsep"),
-        shiny::span(class = "symgroup",
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos", fa("note-sticky")),
-          shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list"))),
-        shiny::span(class = "symsep"),
-        shiny::tags$button(class = "symbtn", `data-side` = "left",
-                           title = "Nur LINKE Spalte ein-/ausklappen (Dokument-Browser bleibt)",
-                           fa("angles-left")),
-        shiny::tags$button(class = "symbtn", `data-side` = "right",
-                           title = "Nur RECHTE Spalte ein-/ausklappen (Dokument-Browser bleibt)",
-                           fa("angles-right")),
-        shiny::span(class = "symsep"),
+      shiny::div(class = "symbolbar",
         shiny::tags$button(class = "symbtn", `data-dark` = "1", title = "Dark Mode umschalten", fa("moon")),
         shiny::tags$button(class = "symbtn", `data-help` = "1", title = "Hilfe: Symbole, Tastenkuerzel", fa("circle-question")),
         shiny::span(class = "symsep"),
@@ -748,7 +665,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       # left column: document tree (top) + code system (bottom)
       shiny::div(class = "pane left", `data-pane` = "left",
         shiny::div(class = "panel docs", id = "panel-docs",
-          shiny::div(class = "panelhead", draggable = "true", fa("folder-tree"), shiny::span("Dokumente"), shiny::span(class = "toggler", `data-toggle` = "panel-docs", fontawesome::fa("chevron-down"))),
+          shiny::div(class = "panelhead", draggable = "true", fa("folder-tree"), shiny::span("Dokumente")),
           shiny::div(class = "panelbody",
             shiny::uiOutput("doc_tree"),
             shiny::hr(),
@@ -767,7 +684,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           )
         ),
         shiny::div(class = "panel codes", id = "panel-codes",
-          shiny::div(class = "panelhead", draggable = "true", fa("tags"), shiny::span("Code System"), shiny::span(class = "toggler", `data-toggle` = "panel-codes", fontawesome::fa("chevron-down"))),
+          shiny::div(class = "panelhead", draggable = "true", fa("tags"), shiny::span("Code System")),
           shiny::div(class = "panelbody",
             shiny::uiOutput("code_tree"),
             shiny::hr(),
@@ -785,7 +702,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         ),
         shiny::div(class = "panel matrix", id = "panel-matrix",
           shiny::div(class = "panelhead", draggable = "true", fa("table-cells"), shiny::span("Code-Matrix"),
-                     shiny::span(class = "toggler", `data-toggle` = "panel-matrix", fontawesome::fa("chevron-down"))),
+                     ),
           shiny::div(class = "panelbody", shiny::uiOutput("matrix_panel"))
         )
       ),
@@ -797,7 +714,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
                      shiny::span(class = "zoombtns",
                                  shiny::tags$button(`data-zoom` = "-0.1", title = "Schrift kleiner", "A-"),
                                  shiny::tags$button(`data-zoom` = "0.1", title = "Schrift groesser", "A+")),
-                     shiny::span(class = "toggler", `data-toggle` = "panel-browser", fontawesome::fa("chevron-down"))),
+                     ),
           shiny::div(class = "panelbody",
             shiny::uiOutput("clicked_bar"),
             shiny::uiOutput("actionbar"),
@@ -806,7 +723,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           )
         ),
         shiny::div(class = "panel segs", id = "panel-segs",
-          shiny::div(class = "panelhead", draggable = "true", fa("highlighter"), shiny::uiOutput("seg_head", inline = TRUE), shiny::span(class = "toggler", `data-toggle` = "panel-segs", fontawesome::fa("chevron-down"))),
+          shiny::div(class = "panelhead", draggable = "true", fa("highlighter"), shiny::uiOutput("seg_head", inline = TRUE)),
           shiny::div(class = "panelbody",
             shiny::div(style = "display:flex; gap:.3rem; margin-bottom:.3rem;",
               shiny::textInput("search_q", NULL, placeholder = "Im ganzen Projekt suchen ..."),
@@ -821,7 +738,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       # right column: memos
       shiny::div(class = "pane right", `data-pane` = "right",
         shiny::div(class = "panel memos", id = "panel-memos",
-          shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::span("Memos"), shiny::span(class = "toggler", `data-toggle` = "panel-memos", fontawesome::fa("chevron-down"))),
+          shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::span("Memos")),
           shiny::div(class = "panelbody",
             shiny::uiOutput("memo_detail"),
             shiny::p(class = "placeholder",
@@ -832,7 +749,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         ),
         shiny::div(class = "panel summary", id = "panel-summary",
           shiny::div(class = "panelhead", draggable = "true", fa("table-list"), shiny::span("Summary Grid"),
-                     shiny::span(class = "toggler", `data-toggle` = "panel-summary", fontawesome::fa("chevron-down"))),
+                     ),
           shiny::div(class = "panelbody",
             shiny::p(style = "font-size:.78rem;color:#6b7683;margin:0 0 .4rem 0",
                      "Zelle anklicken = Segmente + Summary bearbeiten."),
@@ -1354,7 +1271,6 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         shiny::tags$li(shiny::strong("Strg+1..9"), " - markierten Text dem n-ten Code der Aktionsleiste zuweisen"),
         shiny::tags$li(shiny::strong("Strg+M"), " - Memo speichern (Text markiert + Memo-Text in der Aktionsleiste)"),
         shiny::tags$li(shiny::strong("Seg-Badge"), " anklicken - ganzen Absatz markieren"),
-        shiny::tags$li(shiny::strong("Symbolleiste oben"), " - jedes Icon klappt sein Fenster ein/aus; << und >> klappen nur die linke/rechte Spalte ein (Dokument-Browser bleibt)"),
         shiny::tags$li(shiny::strong("Mond"), " - Dark Mode; ", shiny::strong("?"), " - diese Hilfe; ", shiny::strong("X"), " - App beenden (speichert + Backup)"),
         shiny::tags$li(shiny::strong("Codebaum"), " - Code auf einen anderen Code ziehen, um ihn umzuhaengen (Re-Parent)"),
         shiny::tags$li(shiny::strong("Dokumente-Panel"), " - Dateien per Drag & Drop importieren"),
