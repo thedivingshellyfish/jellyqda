@@ -117,9 +117,16 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
       for (j in seq_len(nrow(ov))) {
         cs <- max(ov$start[j], st); ce <- min(ov$end[j], en)
         if (cs > pos) inner <- c(inner, esc(substring(seg_txt, pos - st + 1, cs - st)))
-        inner <- c(inner, sprintf('<mark data-cid="%d" style="background-color:%s" title="%s">%s</mark>',
-                                  ov$id[j], esc(ov$color[j]), esc(ov$label[j]),
-                                  esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
+        # reserved "Memo" code -> underline mark (no background), so memo
+        # passages are visually distinct from real codings
+        if (ov$label[j] == "Memo") {
+          inner <- c(inner, sprintf('<mark class="memomark" data-cid="%d" title="Memo">%s</mark>',
+                                    ov$id[j], esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
+        } else {
+          inner <- c(inner, sprintf('<mark data-cid="%d" style="background-color:%s" title="%s">%s</mark>',
+                                    ov$id[j], esc(ov$color[j]), esc(ov$label[j]),
+                                    esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
+        }
         pos <- ce + 1
       }
     }
@@ -171,6 +178,10 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     $(document).on('click', '[data-delcoding]', function(e) {
       e.stopPropagation();
       Shiny.setInputValue('del_coding', parseInt($(this).attr('data-delcoding')), {priority: 'event'});
+    });
+    $(document).on('click', '[data-delmemo]', function(e) {
+      e.stopPropagation();
+      Shiny.setInputValue('del_memo', parseInt($(this).attr('data-delmemo')), {priority: 'event'});
     });
     $(document).on('click', '[data-goto]', function(e) {
       Shiny.setInputValue('goto_coding', parseInt($(this).attr('data-goto')), {priority: 'event'});
@@ -270,6 +281,18 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
                            font-family:monospace; font-size:.72rem; background:#eef1f4;
                            border:1px solid #d4dae0; border-radius:.35rem; padding:.1em .4em; color:#5a6672; }
         #doc mark { padding:0 .12em; border-radius:.25em; cursor:pointer; }
+        #doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
+                             border-radius:0; }
+        .memostrip { display:flex; gap:.4rem; align-items:flex-start; flex-wrap:wrap;
+                     background:#fffdf5; border:1px solid #e8d9a8; border-radius:.5rem;
+                     padding:.4rem .7rem; margin-bottom:.6rem; }
+        .memostrip .striptitle { font-weight:700; font-size:.8rem; color:#7a6414; margin-right:.3rem; }
+        .memochip { display:inline-flex; gap:.35rem; align-items:center; background:#fff;
+                    border:1px solid #e0d3a0; border-bottom:3px solid #b58900; border-radius:.4rem;
+                    padding:.15rem .45rem; font-size:.8rem; cursor:pointer; max-width:26rem;
+                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .memochip.free { border-bottom-color:#8a94a0; }
+        .memochip:hover { background:#fff8e1; }
         .coderow, .docrow, .codingrow, .memorow { display:flex; gap:.45rem; align-items:center;
           background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
         .codingrow { cursor:pointer; } .codingrow:hover { background:#eef4fb; }
@@ -295,6 +318,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     ),
     shiny::uiOutput("clicked_bar"),
     shiny::uiOutput("actionbar"),
+    shiny::uiOutput("memo_strip"),
     shiny::div(class = "docarea", shiny::uiOutput("doc"))
   )
 }
@@ -356,6 +380,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     s <- rv$sel
     if (is.null(s)) return(NULL)
     codes <- qda_codes()
+    codes <- codes[codes$label != "Memo", , drop = FALSE]  # reserved code: not assignable
     btns <- if (nrow(codes) > 0) {
       paste(vapply(seq_len(nrow(codes)), function(i) {
         sprintf('<button class="codebtn" data-codeid="%d" style="background-color:%s" title="%s">%s</button>',
@@ -378,15 +403,29 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     bump()
     shiny::showNotification("Coding gespeichert (Audit-Trail aktualisiert).", type = "message")
   })
+  # reserved code for memo passages (rendered as underline, not background)
+  memo_code_id <- function() {
+    con <- qda_con()
+    row <- DBI::dbGetQuery(con, "SELECT id FROM codes WHERE label = 'Memo' AND IFNULL(parent_id, 0) = 0")
+    if (nrow(row) > 0) return(row$id[1])
+    qda_code_add("Memo", color = "#999999",
+                 description = "reserviert fuer Memo-Markierungen (Unterstreichung)")
+    DBI::dbGetQuery(con, "SELECT id FROM codes WHERE label = 'Memo' AND IFNULL(parent_id, 0) = 0")$id[1]
+  }
   shiny::observeEvent(input$add_memo_only, {
-    shiny::req(rv$sel)
+    shiny::req(rv$src, rv$sel)
     s <- rv$sel
-    txt <- substring(.resolve_source(rv$src)$frozen_text, s$start, min(s$end, nchar(.resolve_source(rv$src)$frozen_text, type = "chars")))
-    qda_memo_add(paste0("[Zeichen ", s$start, "-", s$end, "] ", txt,
-                        if (nzchar(input$memo_field %||% "")) paste0(" - ", input$memo_field) else ""))
+    frozen <- .resolve_source(rv$src)$frozen_text
+    n <- nchar(frozen, type = "chars")
+    end <- min(s$end, n)
+    txt <- substring(frozen, s$start, end)
+    memo_txt <- input$memo_field %||% ""
+    if (!nzchar(memo_txt)) memo_txt <- txt
+    # store as coding with the reserved Memo code -> underlined in the browser
+    qda_code(rv$src, memo_code_id(), start = s$start, end = end, memo = memo_txt)
     rv$sel <- NULL
     bump()
-    shiny::showNotification("Memo gespeichert.", type = "message")
+    shiny::showNotification("Memo-Markierung gespeichert (Absatz unterstrichen).", type = "message")
   })
 
   # click on a highlight -> inspect / delete ----------------------------------
@@ -500,10 +539,53 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE) {
     m <- qda_memos()
     if (nrow(m) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Memos."))
     rows <- vapply(seq_len(nrow(m)), function(i) {
-      sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span></div>',
-              m$id[i], esc(m$created_at[i]), esc(m$text_[i]))
+      sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span>
+               <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+              m$id[i], esc(m$created_at[i]), esc(m$text_[i]), m$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
+  })
+  shiny::observeEvent(input$del_memo, {
+    qda_memo_delete(input$del_memo)
+    bump()
+    shiny::showNotification("Memo geloescht (Audit-Trail).", type = "message")
+  })
+
+  # memo strip directly in the document-browser area --------------------------
+  output$memo_strip <- shiny::renderUI({
+    rv$tick
+    id <- rv$src
+    chips <- character()
+    if (!is.null(id)) {
+      mc <- DBI::dbGetQuery(qda_con(), "
+        SELECT c.id, c.start, c.end, c.memo, s.frozen_text
+        FROM codings c JOIN codes k ON k.id = c.code_id JOIN sources s ON s.id = c.source_id
+        WHERE k.label = 'Memo' AND c.source_id = ? ORDER BY c.start", params = list(id))
+      for (i in seq_len(nrow(mc))) {
+        snippet <- substring(mc$frozen_text[i], mc$start[i], mc$end[i])
+        if (nchar(snippet) > 60) snippet <- paste0(substr(snippet, 1, 60), "...")
+        label <- if (nzchar(mc$memo[i])) mc$memo[i] else snippet
+        if (nchar(label) > 60) label <- paste0(substr(label, 1, 60), "...")
+        chips <- c(chips, sprintf(
+          '<span class="memochip" data-goto="%d" title="%s">Memo #%d: %s</span>',
+          mc$id[i], esc(snippet), mc$id[i], esc(label)))
+      }
+    }
+    m <- qda_memos()
+    if (nrow(m) > 0) {
+      for (i in seq_len(nrow(m))) {
+        label <- m$text_[i]
+        if (nchar(label) > 60) label <- paste0(substr(label, 1, 60), "...")
+        chips <- c(chips, sprintf(
+          '<span class="memochip free" title="freies Memo">Memo #%d: %s
+           <button class="mini" data-delmemo="%d"><i class="fa-solid fa-trash"></i></button></span>',
+          m$id[i], esc(label), m$id[i]))
+      }
+    }
+    if (length(chips) == 0) return(NULL)
+    shiny::div(class = "memostrip",
+      shiny::span(class = "striptitle", "Memos:"),
+      shiny::HTML(paste(chips, collapse = "")))
   })
 
   # header: stats + backup + export -------------------------------------------

@@ -23,3 +23,18 @@ qda_memos <- function() {
   df <- DBI::dbGetQuery(con, "SELECT id, text_, created_at FROM memos ORDER BY id")
   tibble::tibble(id = df$id, text_ = df$text_, created_at = df$created_at)
 }
+
+#' Delete a memo
+#'
+#' @param memo Memo id.
+#' @return Invisibly `NULL`.
+#' @export
+qda_memo_delete <- function(memo) {
+  con <- qda_con()
+  id <- as.integer(memo)
+  row <- DBI::dbGetQuery(con, "SELECT id FROM memos WHERE id = ?", params = list(id))
+  if (nrow(row) == 0) stop(sprintf("No memo found with id '%s'.", memo), call. = FALSE)
+  DBI::dbExecute(con, "DELETE FROM memos WHERE id = ?", params = list(id))
+  log_event("memo_delete", list(memo_id = id))
+  invisible(NULL)
+}

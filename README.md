@@ -82,8 +82,14 @@ button (or "Nur Memo") — the coding is stored at the exact character offsets
 in the same `.jellyqda` file, with audit event. Click a highlight to inspect
 or delete its coding. In the **Codings** list, click any row to jump the
 document browser straight to that passage (highlighted, memo shown). In
-**Memos** you can save free-text memos. Backup/Export buttons in the top bar.
-Needs `shiny`, `bslib`, `colourpicker`, `fontawesome` (Suggests; install once).
+**Memos** you can save free-text memos (deletable via the trash icon). Marking
+text + **"Nur Memo"** stores the passage under a reserved *Memo* code, which
+renders as an **underline** (not a background highlight) — and a memo strip
+directly above the document lists all memo passages of the open document
+(click to jump) plus free memos. Codes can be deleted via the trash icon in
+the code tree or the delete button (audited). Backup/Export buttons in the
+top bar. Needs `shiny`, `bslib`, `colourpicker`, `fontawesome` (Suggests;
+install once).
 
 Note: RStudio itself cannot show toolbar icons that act on a text selection
 inside the Viewer — that is why the interactive UI is a local Shiny app, the

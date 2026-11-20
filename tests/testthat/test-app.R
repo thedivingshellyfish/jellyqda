@@ -56,16 +56,40 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     frozen <- DBI::dbGetQuery(qda_con(), "SELECT frozen_text FROM sources WHERE id = 1")$frozen_text
     expect_equal(cod$text, substring(frozen, 10, 40))
 
-    # memo-only button -> free memo with the quoted selection
-    session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"))
+    # memo-only button -> coding with reserved "Memo" code (underline mark)
+    session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"), memo_field = "kurz")
     session$setInputs(add_memo_only = 1L)
-    expect_equal(nrow(qda_memos()), 1)
-    expect_true(grepl("Zeichen 1", qda_memos()$text_[1], fixed = TRUE))
+    mc <- qda_codings()
+    expect_equal(nrow(mc), 2)  # KMU coding from before + Memo coding
+    memo_cod <- mc[mc$code == "Memo", ]
+    expect_equal(nrow(memo_cod), 1)
+    expect_equal(memo_cod$memo, "kurz")
+    expect_equal(memo_cod$start, 1L)
+    expect_equal(memo_cod$end, 5L)
+    # document renders it as underline mark (memomark, no background)
+    session$setInputs(backup_btn = 1L)
+    doc_html <- htmltools::renderTags(output$doc)$html
+    expect_true(grepl('class="memomark"', doc_html, fixed = TRUE))
+    # action bar does not offer the reserved Memo code as a button
+    session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"))
+    ab <- htmltools::renderTags(output$actionbar)$html
+    memo_id <- qda_codes()$id[qda_codes()$label == "Memo"]
+    expect_false(grepl(sprintf('data-codeid="%d"', memo_id), ab, fixed = TRUE))
+    # memo strip in the browser area lists the memo passage
+    strip <- htmltools::renderTags(output$memo_strip)$html
+    expect_true(grepl("memochip", strip, fixed = TRUE))
+    expect_true(grepl("kurz", strip, fixed = TRUE))
 
     # free-text memo via the memo form
     session$setInputs(memo_text = "Leitfaden-Frage 3 nachschaerfen", memo_save_btn = 1L)
-    expect_equal(nrow(qda_memos()), 2)
-    expect_equal(qda_memos()$text_[2], "Leitfaden-Frage 3 nachschaerfen")
+    expect_equal(nrow(qda_memos()), 1)
+    expect_equal(qda_memos()$text_[1], "Leitfaden-Frage 3 nachschaerfen")
+    # free memo shows in the strip and can be deleted via data-delmemo
+    session$setInputs(backup_btn = 1L)
+    strip <- htmltools::renderTags(output$memo_strip)$html
+    expect_true(grepl("memochip free", strip, fixed = TRUE))
+    session$setInputs(del_memo = qda_memos()$id[1])
+    expect_equal(nrow(qda_memos()), 0)
 
     # add a code via the form
     session$setInputs(new_code_label = "Motivation", new_code_parent = "",
@@ -75,11 +99,13 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     # rename + delete via selects
     session$setInputs(ren_code_select = "1", ren_code_label = "WerdegangNeu", rename_code_btn = 1L)
     expect_true("WerdegangNeu" %in% qda_codes()$label)
-    session$setInputs(ren_code_select = "3", delete_code_btn = 1L)
+    mot_id <- as.character(qda_codes()$id[qda_codes()$label == "Motivation"])
+    session$setInputs(ren_code_select = mot_id, delete_code_btn = 1L)
     expect_false("Motivation" %in% qda_codes()$label)
 
-    # delete a coding via the list button
+    # delete codings via the list button (KMU coding + reserved Memo coding)
     session$setInputs(del_coding = cod$id)
+    session$setInputs(del_coding = memo_cod$id)
     expect_equal(nrow(qda_codings()), 0)
 
     # clicked coding bar

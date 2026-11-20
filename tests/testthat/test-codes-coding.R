@@ -56,3 +56,14 @@ test_that("memos work and are audited", {
   ev <- DBI::dbGetQuery(qda_con(), "SELECT action FROM events")$action
   expect_true("memo_add" %in% ev)
 })
+
+test_that("qda_memo_delete removes a memo and is audited", {
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  qda_memo_add("eins"); qda_memo_add("zwei")
+  qda_memo_delete(1)
+  expect_equal(qda_memos()$text_, "zwei")
+  expect_error(qda_memo_delete(99), "No memo")
+  ev <- DBI::dbGetQuery(qda_con(), "SELECT action FROM events")$action
+  expect_true("memo_delete" %in% ev)
+})
