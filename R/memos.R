@@ -32,10 +32,10 @@ qda_memos <- function() {
 qda_memo_delete <- function(memo) {
   con <- qda_con()
   id <- as.integer(memo)
-  row <- DBI::dbGetQuery(con, "SELECT id FROM memos WHERE id = ?", params = list(id))
+  row <- DBI::dbGetQuery(con, "SELECT id, text_, created_at FROM memos WHERE id = ?", params = list(id))
   if (nrow(row) == 0) stop(sprintf("No memo found with id '%s'.", memo), call. = FALSE)
   DBI::dbExecute(con, "DELETE FROM memos WHERE id = ?", params = list(id))
-  log_event("memo_delete", list(memo_id = id))
+  log_event("memo_delete", list(memo_id = id, text = row$text_[1], created_at = row$created_at[1]))
   invisible(NULL)
 }
 
@@ -48,10 +48,11 @@ qda_memo_delete <- function(memo) {
 qda_memo_update <- function(memo, text_) {
   con <- qda_con()
   id <- as.integer(memo)
-  row <- DBI::dbGetQuery(con, "SELECT id FROM memos WHERE id = ?", params = list(id))
+  row <- DBI::dbGetQuery(con, "SELECT id, text_ FROM memos WHERE id = ?", params = list(id))
   if (nrow(row) == 0) stop(sprintf("No memo found with id '%s'.", memo), call. = FALSE)
   DBI::dbExecute(con, "UPDATE memos SET text_ = ? WHERE id = ?",
                  params = list(as.character(text_), id))
-  log_event("memo_update", list(memo_id = id, text = as.character(text_)))
+  log_event("memo_update", list(memo_id = id, text = as.character(text_),
+                                old_text = row$text_[1]))
   invisible(tibble::tibble(id = id, text_ = as.character(text_)))
 }

@@ -118,3 +118,33 @@ qda_code_delete <- function(code) {
                                 deleted_code_ids = ids, deleted_codings = n_cod))
   invisible(tibble::tibble(codes_deleted = length(ids), codings_deleted = n_cod))
 }
+
+#' Move a code to a new parent (re-parent), e.g. after drag & drop in the app
+#'
+#' @param code Code id or label to move.
+#' @param parent New parent code id/label, or `NULL` to move to the top level.
+#' @return Invisibly, a one-row tibble with the updated code.
+#' @export
+qda_code_move <- function(code, parent = NULL) {
+  con <- qda_con()
+  row <- .resolve_code(code)
+  parent_id <- if (is.null(parent) || parent == "") NA_integer_ else .resolve_code(parent)$id
+  if (!is.na(parent_id) && parent_id == row$id) {
+    stop("A code cannot be its own parent.", call. = FALSE)
+  }
+  if (!is.na(parent_id)) {
+    # cycle check: walk up from the new parent; must never reach the moved code
+    cur <- parent_id
+    while (!is.na(cur) && cur != 0) {
+      if (cur == row$id) stop("Cannot move a code under one of its own sub-codes.", call. = FALSE)
+      cur <- DBI::dbGetQuery(con, "SELECT IFNULL(parent_id, 0) AS p FROM codes WHERE id = ?",
+                            params = list(cur))$p[1]
+    }
+  }
+  DBI::dbExecute(con, "UPDATE codes SET parent_id = ? WHERE id = ?",
+                 params = list(if (is.na(parent_id)) NA_integer_ else parent_id, row$id))
+  log_event("code_move", list(code_id = row$id,
+                              old_parent_id = if (is.na(row$parent_id)) NULL else row$parent_id,
+                              new_parent_id = if (is.na(parent_id)) NULL else parent_id))
+  invisible(tibble::tibble(id = row$id, parent_id = parent_id))
+}

@@ -31,3 +31,55 @@ qda_sources <- function() {
     }, character(1))
   )
 }
+
+# --- variables (case attributes) per source ---------------------------------
+# Stored inside sources.meta_json$variables as a named list: key = value.
+
+#' Get the variables (case attributes) of a source
+#'
+#' @param source Source id or name.
+#' @return Named character vector, e.g. `c(age = "32", gender = "f")`.
+#' @export
+qda_source_vars <- function(source) {
+  m <- jsonlite::fromJSON(.resolve_source(source)$meta_json)
+  v <- m$variables
+  if (is.null(v)) return(character())
+  v <- unlist(v)
+  stats::setNames(as.character(v), names(v))
+}
+
+#' Set a variable (case attribute) on a source
+#'
+#' @param source Source id or name.
+#' @param key Variable name (e.g. `"age"`).
+#' @param value Value (character).
+#' @return Invisibly, the named character vector of all variables.
+#' @export
+qda_source_set_var <- function(source, key, value) {
+  con <- qda_con()
+  src <- .resolve_source(source)
+  m <- jsonlite::fromJSON(src$meta_json)
+  if (is.null(m$variables)) m$variables <- list()
+  m$variables[[as.character(key)]] <- as.character(value)
+  DBI::dbExecute(con, "UPDATE sources SET meta_json = ? WHERE id = ?",
+                 params = list(.to_json(m), src$id))
+  log_event("source_var_set", list(source_id = src$id, key = key, value = as.character(value)))
+  invisible(qda_source_vars(src$id))
+}
+
+#' Delete a variable from a source
+#'
+#' @param source Source id or name.
+#' @param key Variable name to remove.
+#' @return Invisibly, the remaining named character vector.
+#' @export
+qda_source_del_var <- function(source, key) {
+  con <- qda_con()
+  src <- .resolve_source(source)
+  m <- jsonlite::fromJSON(src$meta_json)
+  if (!is.null(m$variables)) m$variables[[as.character(key)]] <- NULL
+  DBI::dbExecute(con, "UPDATE sources SET meta_json = ? WHERE id = ?",
+                 params = list(.to_json(m), src$id))
+  log_event("source_var_del", list(source_id = src$id, key = key))
+  invisible(qda_source_vars(src$id))
+}

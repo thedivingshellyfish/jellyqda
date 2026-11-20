@@ -119,6 +119,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     SELECT c.id, c.start, c.end, k.label, k.color
     FROM codings c JOIN codes k ON k.id = c.code_id
     WHERE c.source_id = ? ORDER BY c.start", params = list(src$id))
+  # double-coded passages (identical range coded more than once) get a dashed outline
+  key <- paste(cods$start, cods$end)
+  dup_ids <- if (nrow(cods) > 0) cods$id[duplicated(key) | duplicated(key, fromLast = TRUE)] else integer()
   esc <- htmltools::htmlEscape
   divs <- character()
   for (i in seq_len(nrow(segs))) {
@@ -134,11 +137,12 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         # passages are visually distinct from real codings
         if (ov$label[j] == "Memo") {
           cls <- if (!is.null(sel_cid) && ov$id[j] == sel_cid) "memomark sel" else "memomark"
+          if (ov$id[j] %in% dup_ids) cls <- paste(cls, "dup")
           inner <- c(inner, sprintf('<mark class="%s" data-cid="%d" title="Memo">%s</mark>',
                                     cls, ov$id[j], esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
         } else {
-          inner <- c(inner, sprintf('<mark data-cid="%d" style="background-color:%s" title="%s">%s</mark>',
-                                    ov$id[j], esc(ov$color[j]), esc(ov$label[j]),
+          inner <- c(inner, sprintf('<mark class="%s" data-cid="%d" style="background-color:%s" title="%s">%s</mark>',
+                                    if (ov$id[j] %in% dup_ids) "dup" else "", ov$id[j], esc(ov$color[j]), esc(ov$label[j]),
                                     esc(substring(seg_txt, cs - st + 1, ce - st + 1))))
         }
         pos <- ce + 1
@@ -211,6 +215,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     // server asks us to scroll to a coding inside the freshly rendered document
     Shiny.addCustomMessageHandler('jellyqdaScroll', function(msg) {
       setTimeout(function() {
+        var doc = document.getElementById('doc');
+        if (doc && msg.pos != null) { scrollToChar(doc, msg.pos); return; }
         var m = document.querySelector('#doc mark[data-cid=\"' + msg.cid + '\"]');
         if (m) {
           m.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -238,6 +244,119 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       e.stopPropagation();
       Shiny.setInputValue('clear_detail', Date.now(), {priority: 'event'});
     });
+    $(document).on('click', '[data-delvar]', function(e) {
+      e.stopPropagation();
+      Shiny.setInputValue('del_var',
+        $(this).attr('data-varsrc') + '|' + $(this).attr('data-varkey'), {priority: 'event'});
+    });
+    // keyboard shortcuts: Ctrl+1..9 = n-th code button of the action bar, Ctrl+M = memo save
+    $(document).on('keydown', function(e) {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      var t = ((e.target && e.target.tagName) || '').toLowerCase();
+      if (t === 'input' || t === 'textarea' || t === 'select') return;
+      if (e.key >= '1' && e.key <= '9') {
+        var btns = document.querySelectorAll('.actionbar .codebtn');
+        var i = parseInt(e.key, 10) - 1;
+        if (btns[i]) { e.preventDefault(); btns[i].click(); }
+      } else if (e.key === 'm' || e.key === 'M') {
+        var b = document.getElementById('memo_only_btn');
+        if (b) { e.preventDefault(); b.click(); }
+      }
+    });
+    // click a segment badge -> select the whole segment
+    $(document).on('click', '.segtext', function(e) {
+      if (e.target.closest('mark')) return;
+      Shiny.setInputValue('seg_click', parseInt($(this).attr('data-seg'), 10), {priority: 'event'});
+    });
+    // search result -> jump to that position in its document
+    $(document).on('click', '[data-gotopos]', function(e) {
+      Shiny.setInputValue('goto_pos', {
+        src: parseInt($(this).attr('data-src'), 10),
+        pos: parseInt($(this).attr('data-pos'), 10)
+      }, {priority: 'event'});
+    });
+    // re-parent codes by drag & drop inside the code tree
+    var dragCode = null;
+    $(document).on('dragstart', '.coderow', function(e) {
+      dragCode = parseInt($(this).attr('data-codeid'), 10);
+    });
+    $(document).on('dragover', '.coderow', function(e) {
+      if (dragCode !== null) e.preventDefault();
+    });
+    $(document).on('drop', '.coderow', function(e) {
+      if (dragCode === null) return;
+      e.preventDefault();
+      var target = parseInt($(this).attr('data-codeid'), 10);
+      if (target && target !== dragCode) {
+        Shiny.setInputValue('reparent_code', {code: dragCode, parent: target}, {priority: 'event'});
+      }
+      dragCode = null;
+    });
+    // drop files onto the documents panel -> forward to the file input
+    (function() {
+      var panel = document.getElementById('panel-docs');
+      var inp = document.getElementById('import_files');
+      if (!panel || !inp) return;
+      panel.addEventListener('dragover', function(e) {
+        var types = e.dataTransfer ? e.dataTransfer.types : [];
+        if (types && Array.prototype.indexOf.call(types, 'Files') >= 0) {
+          e.preventDefault(); panel.classList.add('dropfiles');
+        }
+      });
+      panel.addEventListener('dragleave', function() { panel.classList.remove('dropfiles'); });
+      panel.addEventListener('drop', function(e) {
+        panel.classList.remove('dropfiles');
+        if (!e.dataTransfer || !e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+        e.preventDefault();
+        var dt = new DataTransfer();
+        for (var i = 0; i < e.dataTransfer.files.length; i++) dt.items.add(e.dataTransfer.files[i]);
+        inp.files = dt.files;
+        inp.dispatchEvent(new Event('change', {bubbles: true}));
+      });
+    })();
+    // dark mode toggle (Bootstrap 5.3 color mode + our CSS overrides)
+    $(document).on('click', '[data-dark]', function(e) {
+      e.preventDefault();
+      var dark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+      document.documentElement.setAttribute('data-bs-theme', dark ? 'light' : 'dark');
+      try { localStorage.setItem('jellyqda_dark', dark ? '0' : '1'); } catch (err) {}
+    });
+    $(document).on('click', '[data-help]', function(e) {
+      e.preventDefault();
+      Shiny.setInputValue('help_btn', Date.now(), {priority: 'event'});
+    });
+    // remember last open document (session resume on next start)
+    $(document).on('click', '[data-src]', function() {
+      try { localStorage.setItem('jellyqda_last_src', $(this).attr('data-src')); } catch (err) {}
+    });
+    // browser zoom (persisted, applied via CSS var so re-renders keep it)
+    function applyZoom(z) {
+      z = Math.min(1.6, Math.max(0.7, z));
+      document.documentElement.style.setProperty('--jqzoom', z);
+      try { localStorage.setItem('jellyqda_zoom', String(z)); } catch (err) {}
+    }
+    $(document).on('click', '[data-zoom]', function(e) {
+      e.preventDefault();
+      var cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--jqzoom')) || 1;
+      applyZoom(cur + parseFloat($(this).attr('data-zoom')));
+    });
+    // scroll to a character position inside #doc
+    function scrollToChar(doc, pos) {
+      var walker = document.createTreeWalker(doc, NodeFilter.SHOW_TEXT, null);
+      var n, acc = 0;
+      while ((n = walker.nextNode())) {
+        var len = n.nodeValue.length;
+        if (acc + len >= pos) {
+          var r = document.createRange();
+          r.setStart(n, Math.max(0, pos - acc));
+          r.collapse(true);
+          r.scrollIntoView({behavior: 'smooth', block: 'center'});
+          return true;
+        }
+        acc += len;
+      }
+      return false;
+    }
     $(document).on('click', '[data-closeapp]', function(e) {
       if (confirm('jellyqda beenden? Arbeit wird gespeichert (Export + Backup).')) {
         Shiny.setInputValue('close_app', Date.now(), {priority: 'event'});
@@ -347,6 +466,16 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         } catch (e) {}
       }
       restoreLayout();
+      // restore zoom, dark mode and the last open document (session resume)
+      try {
+        var z = parseFloat(localStorage.getItem('jellyqda_zoom'));
+        if (z) document.documentElement.style.setProperty('--jqzoom', z);
+        if (localStorage.getItem('jellyqda_dark') === '1') {
+          document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+        var last = parseInt(localStorage.getItem('jellyqda_last_src'), 10);
+        if (last) Shiny.setInputValue('open_source', last);
+      } catch (e2) {}
       // drag panels by their header into any pane (insert at mouse position)
       var dragEl = null;
       document.addEventListener('dragstart', function(e) {
@@ -427,7 +556,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
                  fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
                  fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"),
                  fa("table-cells"), fa("table-list"), fa("xmark"), fa("check"),
-                 fa("angles-left"), fa("angles-right")),
+                 fa("angles-left"), fa("angles-right"), fa("rotate-left"), fa("moon"),
+                 fa("circle-question"), fa("magnifying-glass"), fa("trash")),
       shiny::tags$style(shiny::HTML("
         body { background:#f4f6f8; }
         .topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
@@ -453,12 +583,23 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         .panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }
         .browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
         .docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
-        #doc { font-family:Georgia,'Times New Roman',serif; font-size:.95rem; line-height:1.6;
+        #doc { font-family:Georgia,'Times New Roman',serif; font-size:calc(.95rem * var(--jqzoom, 1)); line-height:1.6;
                white-space:pre-wrap; word-break:break-word; }
-        .segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; }
+        .segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; cursor:pointer; }
         .segtext::before { content:'Seg ' attr(data-seg); position:absolute; left:0; top:.2em;
                            font-family:monospace; font-size:.72rem; background:#eef1f4;
                            border:1px solid #d4dae0; border-radius:.35rem; padding:.1em .4em; color:#5a6672; }
+        .segtext:hover::before { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+        #doc mark.dup, mark.dup { outline:2px dashed #d81b60; outline-offset:1px; }
+        .pbar { display:block; height:4px; background:#e2e7ec; border-radius:2px; margin-top:.15rem; overflow:hidden; }
+        .pbar > span { display:block; height:100%; background:#2c6fbb; }
+        .docvars { font-size:.7rem; color:#6b7683; margin:.1rem 0 .3rem 0; }
+        .docvars .chip { background:#eef1f4; border:1px solid #d4dae0; border-radius:.6rem;
+                         padding:.05rem .45rem; margin-right:.25rem; white-space:nowrap; }
+        .zoombtns { margin-left:auto; display:flex; gap:.2rem; }
+        .zoombtns button { border:1px solid #d6dbe1; background:#fff; border-radius:.3rem;
+                           font-size:.68rem; padding:0 .35rem; cursor:pointer; line-height:1.5; }
+        .dropfiles { outline:2px dashed #2c6fbb; outline-offset:-3px; }
         #doc mark { padding:0 .12em; border-radius:.25em; cursor:pointer; }
         #doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
                              border-radius:0; }
@@ -526,11 +667,51 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         td.sumcell.has { background:#fff8e1; }
         tr.sumrow td { font-weight:700; background:#f4f6f8; }
         .sumdetail-segs { max-height:10rem; overflow:auto; margin-bottom:.4rem; }
+        /* ---- dark mode (toggled via [data-bs-theme=dark] on <html>) ---- */
+        [data-bs-theme=\"dark\"] body { background:#16191d; color:#dfe3e8; }
+        [data-bs-theme=\"dark\"] .topbar { background:#1e2329; border-color:#343b44; }
+        [data-bs-theme=\"dark\"] .topbar .stats { color:#7fb0e8; }
+        [data-bs-theme=\"dark\"] .panel { background:#1e2329; border-color:#343b44; }
+        [data-bs-theme=\"dark\"] .panelhead { background:#252b33; color:#dfe3e8; border-color:#343b44; }
+        [data-bs-theme=\"dark\"] .panelbody { color:#dfe3e8; }
+        [data-bs-theme=\"dark\"] .colhandle { background:#343b44; }
+        [data-bs-theme=\"dark\"] .docarea { background:#16191d; }
+        [data-bs-theme=\"dark\"] #doc { color:#e6e8eb; }
+        [data-bs-theme=\"dark\"] .segtext::before { background:#252b33; border-color:#343b44; color:#9aa4b0; }
+        [data-bs-theme=\"dark\"] .docrow:hover, [data-bs-theme=\"dark\"] .coderow:hover,
+        [data-bs-theme=\"dark\"] .segrow:hover, [data-bs-theme=\"dark\"] .memorow.memomark-row:hover {
+          background:#252b33; }
+        [data-bs-theme=\"dark\"] .docrow.sel, [data-bs-theme=\"dark\"] .coderow.sel { background:#274060; }
+        [data-bs-theme=\"dark\"] .docrow, [data-bs-theme=\"dark\"] .coderow, [data-bs-theme=\"dark\"] .segrow,
+        [data-bs-theme=\"dark\"] .memorow { color:#dfe3e8; border-color:#343b44; }
+        [data-bs-theme=\"dark\"] .symbolbar .symbtn, [data-bs-theme=\"dark\"] .zoombtns button,
+        [data-bs-theme=\"dark\"] .mini { background:#252b33; border-color:#3a4250; color:#c8d2de; }
+        [data-bs-theme=\"dark\"] .symbolbar .symbtn.active { background:#2c6fbb; color:#fff; }
+        [data-bs-theme=\"dark\"] .symbolbar .symsep { background:#3a4250; }
+        [data-bs-theme=\"dark\"] .actionbar { background:#2a2f1e; border-color:#4a4426; }
+        [data-bs-theme=\"dark\"] .actionbar .selinfo { color:#d8c26a; }
+        [data-bs-theme=\"dark\"] .clickedbar { background:#252b33; border-color:#343b44; color:#dfe3e8; }
+        [data-bs-theme=\"dark\"] .memodetail { background:#2a2f1e; border-color:#4a4426; color:#e8e0c0; }
+        [data-bs-theme=\"dark\"] .memodetail .who, [data-bs-theme=\"dark\"] .memogroup { color:#d8c26a; }
+        [data-bs-theme=\"dark\"] .placeholder { color:#7c8794; }
+        [data-bs-theme=\"dark\"] .memorow.memomark-row { border-left-color:#b58900; }
+        [data-bs-theme=\"dark\"] .pbar { background:#343b44; }
+        [data-bs-theme=\"dark\"] .docvars .chip { background:#252b33; border-color:#3a4250; color:#9aa4b0; }
+        [data-bs-theme=\"dark\"] .form-control, [data-bs-theme=\"dark\"] .form-select,
+        [data-bs-theme=\"dark\"] textarea { background-color:#252b33; color:#dfe3e8; border-color:#3a4250; }
+        [data-bs-theme=\"dark\"] .btn-outline-secondary { color:#c8d2de; border-color:#3a4250; }
+        [data-bs-theme=\"dark\"] hr { border-color:#343b44; }
+        [data-bs-theme=\"dark\"] table.mx th, [data-bs-theme=\"dark\"] tr.sumrow td { background:#252b33; }
+        [data-bs-theme=\"dark\"] table.mx th, [data-bs-theme=\"dark\"] table.mx td { border-color:#343b44; color:#dfe3e8; }
+        [data-bs-theme=\"dark\"] td.sumcell { background:#1e2329; }
+        [data-bs-theme=\"dark\"] td.sumcell.has { background:#2a2f1e; }
       "))
     ),
     shiny::div(class = "topbar",
       shiny::span(class = "stats", shiny::textOutput("stats_line", inline = TRUE)),
+      shiny::span(class = "savedline", shiny::textOutput("saved_line", inline = TRUE)),
       shiny::div(class = "btnsection",
+        shiny::actionButton("undo_btn", "Undo", icon = fa("rotate-left"), class = "btn-sm btn-outline-secondary"),
         shiny::actionButton("backup_btn", "Backup", icon = fa("floppy-disk"), class = "btn-sm btn-outline-secondary"),
         shiny::actionButton("export_btn", "Export", icon = fa("file-export"), class = "btn-sm btn-outline-secondary"),
         shiny::actionButton("layout_reset", "Layout reset", icon = fa("table-columns"),
@@ -557,6 +738,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
                            title = "Nur RECHTE Spalte ein-/ausklappen (Dokument-Browser bleibt)",
                            fa("angles-right")),
         shiny::span(class = "symsep"),
+        shiny::tags$button(class = "symbtn", `data-dark` = "1", title = "Dark Mode umschalten", fa("moon")),
+        shiny::tags$button(class = "symbtn", `data-help` = "1", title = "Hilfe: Symbole, Tastenkuerzel", fa("circle-question")),
+        shiny::span(class = "symsep"),
         shiny::tags$button(class = "symbtn closeapp", `data-closeapp` = "1", title = "App beenden (speichert + stoppt)", fa("xmark"))
       )
     ),
@@ -570,7 +754,16 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
             shiny::hr(),
             shiny::fileInput("import_files", NULL, multiple = TRUE,
                              accept = c(".txt", ".md", ".docx", ".pdf"), buttonLabel = "Dateien..."),
-            shiny::actionButton("import_btn", "Importieren", icon = fa("plus"), class = "btn-sm btn-primary")
+            shiny::p(class = "placeholder", style = "padding:.2rem;margin:.2rem 0",
+                     "oder Dateien hierher ziehen"),
+            shiny::actionButton("import_btn", "Importieren", icon = fa("plus"), class = "btn-sm btn-primary"),
+            shiny::hr(),
+            shiny::selectInput("var_doc", "Variablen fuer Dokument", choices = character()),
+            shiny::div(style = "display:flex; gap:.3rem;",
+              shiny::textInput("var_key", NULL, placeholder = "Variable (z.B. Alter)"),
+              shiny::textInput("var_val", NULL, placeholder = "Wert")),
+            shiny::actionButton("var_add_btn", "Variable setzen", icon = fa("plus"), class = "btn-sm btn-secondary"),
+            shiny::uiOutput("var_list")
           )
         ),
         shiny::div(class = "panel codes", id = "panel-codes",
@@ -600,16 +793,28 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       # center: document browser (top) + retrieved segments (bottom)
       shiny::div(class = "pane center", `data-pane` = "center",
         shiny::div(class = "panel browser", id = "panel-browser",
-          shiny::div(class = "panelhead", draggable = "true", fa("file-lines"), shiny::textOutput("doc_title", inline = TRUE), shiny::span(class = "toggler", `data-toggle` = "panel-browser", fontawesome::fa("chevron-down"))),
+          shiny::div(class = "panelhead", draggable = "true", fa("file-lines"), shiny::textOutput("doc_title", inline = TRUE),
+                     shiny::span(class = "zoombtns",
+                                 shiny::tags$button(`data-zoom` = "-0.1", title = "Schrift kleiner", "A-"),
+                                 shiny::tags$button(`data-zoom` = "0.1", title = "Schrift groesser", "A+")),
+                     shiny::span(class = "toggler", `data-toggle` = "panel-browser", fontawesome::fa("chevron-down"))),
           shiny::div(class = "panelbody",
             shiny::uiOutput("clicked_bar"),
             shiny::uiOutput("actionbar"),
+            shiny::uiOutput("doc_vars"),
             shiny::div(class = "docarea", shiny::uiOutput("doc"))
           )
         ),
         shiny::div(class = "panel segs", id = "panel-segs",
           shiny::div(class = "panelhead", draggable = "true", fa("highlighter"), shiny::uiOutput("seg_head", inline = TRUE), shiny::span(class = "toggler", `data-toggle` = "panel-segs", fontawesome::fa("chevron-down"))),
-          shiny::div(class = "panelbody", shiny::uiOutput("seg_panel"))
+          shiny::div(class = "panelbody",
+            shiny::div(style = "display:flex; gap:.3rem; margin-bottom:.3rem;",
+              shiny::textInput("search_q", NULL, placeholder = "Im ganzen Projekt suchen ..."),
+              shiny::actionButton("search_btn", "Suchen", icon = fa("magnifying-glass"), class = "btn-sm btn-secondary")),
+            shiny::selectInput("var_filter", "Nur Dokumente mit Variable", choices = c("(alle)" = "")),
+            shiny::uiOutput("search_results"),
+            shiny::uiOutput("seg_panel")
+          )
         )
       ),
       shiny::div(class = "colhandle", `data-a` = "2", `data-b` = "4"),
@@ -645,8 +850,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
 #' @noRd
 .jellyqda_server <- function(input, output, session) {
   rv <- shiny::reactiveValues(src = NULL, sel = NULL, clicked = NULL, sel_code = NULL,
-                              edit_entry = NULL, sum_cell = NULL, sel_memo = NULL, tick = 0)
-  bump <- function() rv$tick <- shiny::isolate(rv$tick) + 1
+                              edit_entry = NULL, sum_cell = NULL, sel_memo = NULL, tick = 0,
+                              search = NULL, var_filter = "")
+  bump <- function() {
+    rv$tick <- shiny::isolate(rv$tick) + 1
+    rv$last_saved <- format(Sys.time(), "%H:%M:%S")
+  }
+  rv$last_saved <- format(Sys.time(), "%H:%M:%S")
   esc <- htmltools::htmlEscape
 
   code_choices <- function() {
@@ -667,11 +877,14 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     rv$tick
     s <- qda_sources()
     if (nrow(s) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Dokumente importiert."))
+    ps <- qda_stats()$per_source
     rows <- vapply(seq_len(nrow(s)), function(i) {
       cls <- if (!is.null(rv$src) && rv$src == s$id[i]) "docrow sel" else "docrow"
+      pct <- if (s$id[i] %in% ps$id) ps$pct_coded[match(s$id[i], ps$id)] else 0
       sprintf('<div class="%s" data-src="%d"><i class="fa-solid fa-file-lines"></i>
-               <span>%s</span><span class="fmt">%s - %d Seg.</span></div>',
-              cls, s$id[i], esc(s$name[i]), esc(s$format[i]), s$segments[i])
+               <span>%s</span><span class="fmt">%s - %d Seg.</span>
+               <span class="pbar" title="%.1f %% codiert"><span style="width:%.1f%%"></span></span></div>',
+              cls, s$id[i], esc(s$name[i]), esc(s$format[i]), s$segments[i], pct, pct)
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
   })
@@ -807,11 +1020,11 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     if (nrow(codes) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Codes."))
     rows <- vapply(seq_len(nrow(codes)), function(i) {
       cls <- if (!is.null(rv$sel_code) && rv$sel_code == codes$id[i]) "coderow sel" else "coderow"
-      sprintf('<div class="%s" data-selcode="%d" title="Klicken = Segmente abajo anzeigen">
+      sprintf('<div class="%s" draggable="true" data-selcode="%d" data-codeid="%d" title="Klicken = Segmente anzeigen; auf anderen Code ziehen = umhaengen">
                <span class="swatch" style="background-color:%s"></span>
                <span class="codelabel" title="%s">%s</span><span class="fmt">%d</span>
                <button class="mini" data-delcode="%d" title="Code loeschen"><i class="fa-solid fa-trash"></i> Del</button></div>',
-              cls, codes$id[i], esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]),
+              cls, codes$id[i], codes$id[i], esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]),
               codes$n_codings[i], codes$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
@@ -861,6 +1074,15 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     } else {
       qda_codings()
     }
+    # optional filter: only documents having a certain variable value
+    if (!is.null(rv$var_filter) && nzchar(rv$var_filter)) {
+      kv <- strsplit(rv$var_filter, "=", fixed = TRUE)[[1]]
+      keep <- vapply(qda_sources()$id, function(sid) {
+        v <- qda_source_vars(sid)
+        !is.null(v[[kv[1]]]) && v[[kv[1]]] == kv[2]
+      }, logical(1))
+      df <- df[df$source_id %in% qda_sources()$id[keep], , drop = FALSE]
+    }
     if (nrow(df) == 0) return(shiny::tags$div(class = "placeholder", "Noch keine Codings."))
     rows <- vapply(seq_len(nrow(df)), function(i) {
       snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
@@ -873,6 +1095,119 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
               df$id[i])
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))
+  })
+
+  # project-wide full-text search ----------------------------------------------
+  shiny::observeEvent(input$search_btn, {
+    q <- input$search_q
+    if (is.null(q) || !nzchar(trimws(q))) return()
+    q <- trimws(q)
+    hits <- list()
+    for (sid in qda_sources()$id) {
+      txt <- .resolve_source(sid)$frozen_text
+      low <- tolower(txt); ql <- tolower(q)
+      pos <- 1L
+      while (length(hits) < 200) {
+        p <- regexpr(ql, substring(low, pos), fixed = TRUE)
+        if (p < 0) break
+        at <- pos + p - 1L
+        hits[[length(hits) + 1]] <- list(
+          src = sid, pos = at,
+          snippet = substring(txt, max(1L, at - 40L), min(nchar(txt, "chars"), at + nchar(q, "chars") + 40L)))
+        pos <- at + 1L
+      }
+    }
+    rv$search <- hits
+    bump()
+    shiny::showNotification(sprintf("Suche '%s': %d Treffer", q, length(hits)), type = "message")
+  })
+  output$search_results <- shiny::renderUI({
+    rv$tick
+    hits <- rv$search
+    if (is.null(hits)) return(NULL)
+    if (length(hits) == 0) return(shiny::tags$div(class = "placeholder", "Keine Treffer."))
+    rows <- vapply(hits, function(h) {
+      nm <- .resolve_source(h$src)$name
+      sprintf('<div class="segrow" data-gotopos data-src="%d" data-pos="%d" title="Im Dokument-Browser springen">
+               <span class="snippet"><b>%s</b> (Pos %d): ...%s...</span></div>',
+              h$src, h$pos, esc(nm), h$pos, esc(h$snippet))
+    }, character(1))
+    shiny::HTML(paste0('<div class="memogroup">Treffer (Klick = springen)</div>', paste(rows, collapse = "")))
+  })
+  shiny::observeEvent(input$goto_pos, {
+    rv$src <- input$goto_pos$src
+    rv$sel <- NULL; rv$clicked <- NULL
+    bump()
+    session$sendCustomMessage("jellyqdaScroll", list(pos = input$goto_pos$pos))
+  })
+
+  # variables (case attributes) per document ------------------------------------
+  shiny::observe({
+    rv$tick
+    s <- qda_sources()
+    shiny::updateSelectInput(session, "var_doc",
+                             choices = stats::setNames(as.character(s$id), s$name),
+                             selected = if (nrow(s) && !is.null(rv$src)) as.character(rv$src) else NULL)
+    # variable filter options across all sources
+    opts <- character()
+    for (sid in s$id) {
+      v <- qda_source_vars(sid)
+      if (length(v)) opts <- c(opts, paste0(names(v), "=", v))
+    }
+    shiny::updateSelectInput(session, "var_filter",
+                             choices = c("(alle)" = "", sort(unique(opts))),
+                             selected = rv$var_filter %||% "")
+  })
+  shiny::observeEvent(input$var_filter, { rv$var_filter <- input$var_filter %||% "" })
+  shiny::observeEvent(input$var_add_btn, {
+    shiny::req(input$var_doc, input$var_key)
+    if (!nzchar(trimws(input$var_key))) return()
+    qda_source_set_var(as.integer(input$var_doc), trimws(input$var_key), input$var_val %||% "")
+    shiny::updateTextInput(session, "var_key", value = "")
+    shiny::updateTextInput(session, "var_val", value = "")
+    bump()
+    shiny::showNotification("Variable gesetzt.", type = "message")
+  })
+  shiny::observeEvent(input$del_var, {
+    parts <- strsplit(input$del_var, "|", fixed = TRUE)[[1]]
+    qda_source_del_var(as.integer(parts[1]), parts[2])
+    bump()
+  })
+  output$var_list <- shiny::renderUI({
+    rv$tick
+    sid <- if (!is.null(input$var_doc)) as.integer(input$var_doc) else rv$src
+    if (is.null(sid)) return(NULL)
+    v <- qda_source_vars(sid)
+    if (length(v) == 0) return(shiny::tags$div(class = "placeholder", "Keine Variablen."))
+    rows <- vapply(seq_along(v), function(i) {
+      sprintf('<div class="segrow"><span class="snippet"><b>%s</b> = %s</span>
+               <button class="mini" data-delvar="1" data-varsrc="%d" data-varkey="%s"><i class="fa-solid fa-trash"></i> Del</button></div>',
+              esc(names(v)[i]), esc(v[i]), sid, esc(names(v)[i]))
+    }, character(1))
+    shiny::HTML(paste(rows, collapse = ""))
+  })
+  # JS: del-var button carries data-varsrc/data-varkey -> single input
+  output$doc_vars <- shiny::renderUI({
+    rv$tick
+    if (is.null(rv$src)) return(NULL)
+    v <- qda_source_vars(rv$src)
+    if (length(v) == 0) return(NULL)
+    shiny::div(class = "docvars",
+      lapply(seq_along(v), function(i) shiny::span(class = "chip", paste0(names(v)[i], " = ", v[i]))))
+  })
+
+  # re-parent a code by drag & drop in the code tree ----------------------------
+  shiny::observeEvent(input$reparent_code, {
+    res <- tryCatch(
+      qda_code_move(input$reparent_code$code, input$reparent_code$parent),
+      error = function(e) {
+        shiny::showNotification(paste("Umhaengen nicht moeglich:", conditionMessage(e)), type = "warning")
+        NULL
+      })
+    if (!is.null(res)) {
+      bump()
+      shiny::showNotification("Code verschoben (neuer Parent).", type = "message")
+    }
   })
 
   # memos (right column) ---------------------------------------------------------
@@ -986,6 +1321,47 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     st <- qda_stats()$overall
     sprintf("%d Quellen - %d Codes - %d Codings - %.1f %% codiert",
             st$n_sources, st$n_codes, st$n_codings, st$pct_coded)
+  })
+  output$saved_line <- shiny::renderText({
+    rv$tick
+    sprintf("Gespeichert: %s", rv$last_saved %||% "-")
+  })
+  shiny::observeEvent(input$undo_btn, {
+    res <- tryCatch(qda_undo(), error = function(e) {
+      shiny::showNotification(paste("Undo nicht moeglich:", conditionMessage(e)), type = "warning")
+      NULL
+    })
+    if (!is.null(res)) {
+      bump()
+      shiny::showNotification(paste("Undo:", res$detail), type = "message")
+    }
+  })
+  # click on a segment badge -> select the whole segment (action bar appears)
+  shiny::observeEvent(input$seg_click, {
+    shiny::req(rv$src)
+    segs <- .split_segments_full(.resolve_source(rv$src)$frozen_text)$segs
+    i <- as.integer(input$seg_click)
+    if (i < 1 || i > nrow(segs)) return()
+    rv$sel <- list(start = segs$start[i], end = segs$end[i],
+                   text = substring(.resolve_source(rv$src)$frozen_text, segs$start[i], segs$end[i]))
+    bump()
+  })
+  # help modal: legend of icons + shortcuts
+  shiny::observeEvent(input$help_btn, {
+    shiny::showModal(shiny::modalDialog(
+      title = "Hilfe: Symbole & Tastenkuerzel",
+      shiny::tags$ul(
+        shiny::tags$li(shiny::strong("Strg+1..9"), " - markierten Text dem n-ten Code der Aktionsleiste zuweisen"),
+        shiny::tags$li(shiny::strong("Strg+M"), " - Memo speichern (Text markiert + Memo-Text in der Aktionsleiste)"),
+        shiny::tags$li(shiny::strong("Seg-Badge"), " anklicken - ganzen Absatz markieren"),
+        shiny::tags$li(shiny::strong("Symbolleiste oben"), " - jedes Icon klappt sein Fenster ein/aus; << und >> klappen nur die linke/rechte Spalte ein (Dokument-Browser bleibt)"),
+        shiny::tags$li(shiny::strong("Mond"), " - Dark Mode; ", shiny::strong("?"), " - diese Hilfe; ", shiny::strong("X"), " - App beenden (speichert + Backup)"),
+        shiny::tags$li(shiny::strong("Codebaum"), " - Code auf einen anderen Code ziehen, um ihn umzuhaengen (Re-Parent)"),
+        shiny::tags$li(shiny::strong("Dokumente-Panel"), " - Dateien per Drag & Drop importieren"),
+        shiny::tags$li(shiny::strong("Doppel-Codierung"), " - derselbe Text mehrfach codiert: gestrichelter pinker Rahmen")
+      ),
+      easyClose = TRUE, footer = shiny::modalButton("Schliessen")
+    ))
   })
   shiny::observeEvent(input$backup_btn, {
     z <- qda_backup(quiet = TRUE)

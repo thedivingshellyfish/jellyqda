@@ -129,6 +129,30 @@ Note: RStudio itself cannot show toolbar icons that act on a text selection
 inside the Viewer — that is why the interactive UI is a local Shiny app, the
 "V2 door" reserved in the concept (§3).
 
+## App features (V2, `qda_app()`)
+
+- **Shortcuts:** `Ctrl+1..9` assign the marked text to the n-th code button,
+  `Ctrl+M` saves a memo (text marked + memo field in the action bar).
+- **Segment badges** in the browser are clickable (selects the whole
+  paragraph); **A− / A+** in the browser header zoom the text (persisted).
+- **Undo** button in the top bar reverts the last action (codings, memos,
+  code add/rename/move) via the audit trail — API: `qda_undo()`.
+- **Project-wide search** (segments panel) jumps to every hit in the browser.
+- **Variables** (case attributes like age/gender) per document: editor in the
+  Dokumente panel, chips in the browser header, filter for the segment list —
+  API: `qda_source_set_var()` / `qda_source_vars()` / `qda_source_del_var()`.
+- **Re-parent codes** by dragging a code onto another code in the code tree
+  (cycle-safe) — API: `qda_code_move()`.
+- **Double-coded passages** (identical range, coded twice) get a dashed pink
+  outline in the browser.
+- **Dark mode** (moon icon, persisted), **help modal** (? icon) explaining all
+  symbols/shortcuts, **progress bars** per document in the tree,
+  **"Gespeichert: HH:MM:SS"** in the top bar, **session resume** (last open
+  document), **file drag & drop** onto the Dokumente panel.
+- **HTML report:** `qda_export("report")` (also included in `"all"`) writes a
+  standalone `exports/report_*.html` with all documents + colored coding
+  marks, codebook, memos and stats.
+
 ## Customizing the look of `qda_app()`
 
 Everything visual lives in **`R/app.R`** (single file, no build step):

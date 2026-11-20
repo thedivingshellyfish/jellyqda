@@ -151,6 +151,38 @@ test_that("qda_app server wiring works (shiny::testServer)", {
 
     # stats line renders
     expect_true(grepl("Quellen", output$stats_line))
+    # saved-line renders
+    expect_true(grepl("Gespeichert", output$saved_line))
+
+    # seg badge click selects the whole segment -> action bar appears
+    session$setInputs(seg_click = 1L)
+    ab2 <- as_html(output$actionbar)
+    expect_true(grepl('class="actionbar"', ab2, fixed = TRUE))
+
+    # project-wide search finds a hit and goto_pos jumps
+    session$setInputs(search_q = "Projektleiterin", search_btn = 1L)
+    sr <- as_html(output$search_results)
+    expect_true(grepl("data-gotopos", sr, fixed = TRUE))
+    session$setInputs(goto_pos = list(src = 1L, pos = 10L))
+    expect_true(grepl("interview_01", as_html(output$doc_title), fixed = TRUE))
+
+    # variables: set via UI inputs, shown as chips + filter choices
+    session$setInputs(var_doc = "1", var_key = "Alter", var_val = "32", var_add_btn = 1L)
+    expect_equal(qda_source_vars(1)[["Alter"]], "32")
+    expect_true(grepl("Alter = 32", as_html(output$doc_vars), fixed = TRUE))
+    vl <- as_html(output$var_list)
+    expect_true(grepl("data-delvar", vl, fixed = TRUE))
+    session$setInputs(del_var = "1|Alter")
+    expect_equal(length(qda_source_vars(1)), 0)
+
+    # reparent via drag&drop input (Untethema: parent 1 -> parent 2 = KMU)
+    qda_code_add("Untethema", parent = 1L)
+    session$setInputs(reparent_code = list(code = qda_codes()$id[qda_codes()$label == "Untethema"], parent = 2L))
+    expect_equal(qda_codes()$path[qda_codes()$label == "Untethema"], "WerdegangNeu / KMU / Untethema")
+
+    # undo button reverts the last action (the code_move)
+    session$setInputs(undo_btn = 1L)
+    expect_equal(qda_codes()$path[qda_codes()$label == "Untethema"], "WerdegangNeu / Untethema")
 
     # free memo via console API; per-entry inline edit + save in the memo section
     qda_memo_add("erstes Memo")
@@ -246,6 +278,24 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   # inline edit handler for memo entries + no free-memo form in the static UI
   expect_true(grepl("[data-editmemo]", ui, fixed = TRUE))
   expect_false(grepl('id="memo_text"', ui, fixed = TRUE))
+  # new controls: undo, dark mode, help, zoom, search, variables
+  expect_true(grepl('id="undo_btn"', ui, fixed = TRUE))
+  expect_true(grepl('id="saved_line"', ui, fixed = TRUE))
+  expect_true(grepl('data-dark="1"', ui, fixed = TRUE))
+  expect_true(grepl('data-help="1"', ui, fixed = TRUE))
+  expect_true(grepl('data-zoom="0.1"', ui, fixed = TRUE))
+  expect_true(grepl('id="search_q"', ui, fixed = TRUE))
+  expect_true(grepl('id="var_doc"', ui, fixed = TRUE))
+  # new JS: shortcuts, zoom, seg click, search jump, reparent, file drop, resume
+  expect_true(grepl("keydown", ui, fixed = TRUE))
+  expect_true(grepl("seg_click", ui, fixed = TRUE))
+  expect_true(grepl("goto_pos", ui, fixed = TRUE))
+  expect_true(grepl("reparent_code", ui, fixed = TRUE))
+  expect_true(grepl("scrollToChar", ui, fixed = TRUE))
+  expect_true(grepl("jellyqda_last_src", ui, fixed = TRUE))
+  expect_true(grepl("data-bs-theme", ui, fixed = TRUE))
+  # doc rows carry a progress bar, code rows are draggable with data-codeid
+  expect_true(grepl("pbar", ui, fixed = TRUE))
   # backup / export / layout-reset grouped in one button section
   expect_true(grepl("btnsection", ui, fixed = TRUE))
   expect_true(grepl('id="backup_btn"', ui, fixed = TRUE))

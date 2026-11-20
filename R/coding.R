@@ -97,7 +97,8 @@ qda_coding_set_memo <- function(coding, memo) {
   row <- .resolve_coding(coding)
   DBI::dbExecute(con, "UPDATE codings SET memo = ? WHERE id = ?",
                  params = list(as.character(memo), row$id))
-  log_event("coding_memo", list(coding_id = row$id, memo = as.character(memo)))
+  log_event("coding_memo", list(coding_id = row$id, memo = as.character(memo),
+                                old_memo = as.character(row$memo)))
   invisible(tibble::tibble(id = row$id, source_id = row$source_id, code_id = row$code_id,
                            start = row$start, end = row$end, memo = as.character(memo)))
 }
@@ -112,7 +113,8 @@ qda_coding_delete <- function(coding) {
   row <- .resolve_coding(coding)
   DBI::dbExecute(con, "DELETE FROM codings WHERE id = ?", params = list(row$id))
   log_event("coding_delete", list(coding_id = row$id, source_id = row$source_id,
-                                  code_id = row$code_id, start = row$start, end = row$end))
+                                  code_id = row$code_id, start = row$start, end = row$end,
+                                  memo = as.character(row$memo)))
   invisible(NULL)
 }
 

@@ -8,7 +8,7 @@ qda_export(what = "all", path = NULL)
 }
 \arguments{
 \item{what}{One or more of \code{"all"}, \code{"segments"}, \code{"codings"}, \code{"codebook"},
-\code{"audit"}.}
+\code{"audit"}, \code{"report"}.}
 
 \item{path}{Output directory (created if missing).}
 }
@@ -25,6 +25,8 @@ Writes files into \code{path} (default: \verb{exports/} next to the project file
 \item \code{"codings"}: raw codings table -- CSV
 \item \code{"codebook"}: the code tree -- CSV and \code{.docx} (via officer)
 \item \code{"audit"}: the full events audit trail -- CSV
+\item \code{"report"}: a standalone HTML report -- all documents with colored coding
+marks, the codebook, all memos and project statistics
 \item \code{"all"}: all of the above
 }
 }
