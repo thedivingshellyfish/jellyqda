@@ -2,14 +2,15 @@
 
 ![Screenshot jellyQDA](https://github.com/thedivingshellyfish/jellyqda/blob/main/demo/Screenshot_jellyqda_001.png)
 
-**RStudio-native, fully offline coding of interview transcripts.**
+**R & RStudio-native, fully offline coding of interview transcripts.**
 
 jellyqda is a small R package for qualitative coding (QDA) of interview
 transcripts and field notes — built for a master's thesis, designed to never
 touch the network. All project data lives in **one SQLite file per project**
 (`*.jellyqda`); imported text is **frozen** at import time, so character
 offsets in codings never drift. Every action is recorded in an audit trail
-(`events` table) that can be exported for the methods section.
+(`events` table) that can be exported for the methods section. JellyQDA run
+in a browser like Firefox. JellyQDA can start via R script and or R consol.
 
 - 100 % offline, local-only storage (DSGVO-friendly: no cloud, no uploads)
 - Import `.txt`, `.md`, `.docx`, `.pdf` (encoding detection, UTF-8)
