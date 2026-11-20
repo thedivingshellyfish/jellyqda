@@ -1,3 +1,6 @@
+
+[![R-CMD-check](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml)
+
 # jellyqda
 
 ![Screenshot jellyQDA](https://github.com/thedivingshellyfish/jellyqda/blob/main/demo/Screenshot_jellyqda_001.png)
