@@ -234,6 +234,10 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       e.stopPropagation();
       Shiny.setInputValue('cancel_edit', Date.now(), {priority: 'event'});
     });
+    $(document).on('click', '[data-cleardetail]', function(e) {
+      e.stopPropagation();
+      Shiny.setInputValue('clear_detail', Date.now(), {priority: 'event'});
+    });
     $(document).on('click', '[data-closeapp]', function(e) {
       if (confirm('jellyqda beenden? Arbeit wird gespeichert (Export + Backup).')) {
         Shiny.setInputValue('close_app', Date.now(), {priority: 'event'});
@@ -273,6 +277,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       function setSide(which, collapsed, skipSave) {
         var pane = document.querySelector('.pane[data-pane=\"' + which + '\"]');
         if (!pane) return;
+        // safety: never hide a pane that contains the center panels
+        if (collapsed && pane.querySelector('#panel-browser, #panel-segs')) return;
         var handle = which === 'left'
           ? document.querySelector('.colhandle[data-a=\"0\"]')
           : document.querySelector('.colhandle[data-b=\"4\"]');
@@ -362,6 +368,10 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       document.addEventListener('drop', function(e) {
         var pane = e.target.closest('.pane');
         if (!pane || !dragEl) return;
+        // the document browser + segments always stay in the center column,
+        // so the side collapse buttons can never hide them
+        if ((dragEl.id === 'panel-browser' || dragEl.id === 'panel-segs') &&
+            pane.dataset.pane !== 'center') return;
         e.preventDefault();
         var others = Array.from(pane.querySelectorAll('.panel:not(.dragging)'));
         var before = null;
@@ -471,8 +481,9 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
         .coderow.sel { border-color:#2c6fbb; background:#eef4fb; }
         .swatch { width:1rem; height:1rem; border-radius:.3rem; flex:none; border:1px solid rgba(0,0,0,.25); }
         .codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .mini { margin-left:auto; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
-                padding:.1rem .45rem; cursor:pointer; color:#b03a2e; flex:none; }
+        .mini { margin-left:.25rem; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+                font-size:.62rem; line-height:1.2; padding:.1rem .3rem; white-space:nowrap;
+                cursor:pointer; color:#b03a2e; flex:none; }
         .docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.68rem; color:#6b7683; flex:none; }
         .segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
         .segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
@@ -539,9 +550,11 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-memos", title = "Memos", fa("note-sticky")),
           shiny::tags$button(class = "symbtn", `data-toggle` = "panel-summary", title = "Summary Grid", fa("table-list"))),
         shiny::span(class = "symsep"),
-        shiny::tags$button(class = "symbtn", `data-side` = "left", title = "Linke Spalte zu/auf",
+        shiny::tags$button(class = "symbtn", `data-side` = "left",
+                           title = "Nur LINKE Spalte ein-/ausklappen (Dokument-Browser bleibt)",
                            fa("angles-left")),
-        shiny::tags$button(class = "symbtn", `data-side` = "right", title = "Rechte Spalte zu/auf",
+        shiny::tags$button(class = "symbtn", `data-side` = "right",
+                           title = "Nur RECHTE Spalte ein-/ausklappen (Dokument-Browser bleibt)",
                            fa("angles-right")),
         shiny::span(class = "symsep"),
         shiny::tags$button(class = "symbtn closeapp", `data-closeapp` = "1", title = "App beenden (speichert + stoppt)", fa("xmark"))
@@ -667,7 +680,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
   })
   shiny::observeEvent(input$import_btn, {
     shiny::req(input$import_files)
-    qda_import(input$import_files$datapath)
+    # original upload names (datapath is only a temp name like 0.pdf)
+    qda_import(input$import_files$datapath, names = input$import_files$name)
     bump(); shiny::showNotification("Importiert (Text eingefroren, Original in originals/).", type = "message")
   })
 
@@ -796,7 +810,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       sprintf('<div class="%s" data-selcode="%d" title="Klicken = Segmente abajo anzeigen">
                <span class="swatch" style="background-color:%s"></span>
                <span class="codelabel" title="%s">%s</span><span class="fmt">%d</span>
-               <button class="mini" data-delcode="%d" title="Code loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+               <button class="mini" data-delcode="%d" title="Code loeschen"><i class="fa-solid fa-trash"></i> Del</button></div>',
               cls, codes$id[i], esc(codes$color[i]), esc(codes$path[i]), esc(codes$label[i]),
               codes$n_codings[i], codes$id[i])
     }, character(1))
@@ -852,7 +866,7 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
       sprintf('<div class="segrow" data-goto="%d" title="Im Dokument-Browser zeigen">
                <span class="snippet">#%d <b>%s</b> &rarr; <b>%s</b> (%d-%d) %s%s</span>
-               <button class="mini" data-delcoding="%d"><i class="fa-solid fa-trash"></i></button></div>',
+               <button class="mini" data-delcoding="%d"><i class="fa-solid fa-trash"></i> Del</button></div>',
               df$id[i], df$id[i], esc(df$source[i]), esc(df$code[i]), df$start[i], df$end[i],
               esc(snippet),
               if (nzchar(df$memo[i])) sprintf('<span class="memo">Memo: %s</span>', esc(df$memo[i])) else "",
@@ -875,6 +889,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     if (nrow(row) == 0) return(NULL)
     shiny::tags$div(class = "memodetail",
       shiny::tags$span(class = "who", sprintf("Memo zu Coding #%d (%s / %s)", row$id, row$source, row$code)),
+      shiny::tags$button(class = "mini", `data-cleardetail` = "1",
+                         title = "Bereich loeschen (schliessen)", "X"),
       if (nzchar(row$memo)) row$memo else shiny::tags$em("(kein Memo)"))
   })
   # memo section: two groups -- memo-marked passages (jump to text) + free memos.
@@ -891,15 +907,15 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       key <- paste0("cod_", mc$id[i])
       if (!is.null(rv$edit_entry) && rv$edit_entry == key) {
         sprintf('<div class="memorow editing"><textarea id="memo_edit_%s" rows="2" style="width:100%%">%s</textarea>
-                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i></button>
-                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>',
+                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i> Save</button>
+                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i> X</button></div>',
                 key, esc2(mc$memo[i]), key)
       } else {
         lab <- if (nzchar(mc$memo[i])) mc$memo[i] else paste0("Zeichen ", mc$start[i], "-", mc$end[i])
         sprintf('<div class="memorow memomark-row" data-gotomemo="%d" title="Zur Markierung springen">
                  <span class="snippet">#%d %s (%d-%d): %s</span>
-                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                 <button class="mini" data-delcoding="%d" title="Markierung loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i> Edit</button>
+                 <button class="mini" data-delcoding="%d" title="Markierung loeschen"><i class="fa-solid fa-trash"></i> Del</button></div>',
                 mc$id[i], mc$id[i], esc2(mc$source[i]), mc$start[i], mc$end[i], esc2(lab), key, mc$id[i])
       }
     }, character(1))
@@ -909,13 +925,13 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
       key <- paste0("memo_", m$id[i])
       if (!is.null(rv$edit_entry) && rv$edit_entry == key) {
         sprintf('<div class="memorow editing"><textarea id="memo_edit_%s" rows="2" style="width:100%%">%s</textarea>
-                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i></button>
-                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i></button></div>',
+                 <button class="mini ok" data-savememo="%s" title="Speichern"><i class="fa-solid fa-check"></i> Save</button>
+                 <button class="mini" data-canceledit="1" title="Abbrechen"><i class="fa-solid fa-xmark"></i> X</button></div>',
                 key, esc2(m$text_[i]), key)
       } else {
         sprintf('<div class="memorow"><span class="snippet">#%d - %s - %s</span>
-                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                 <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i></button></div>',
+                 <button class="mini" data-editmemo="%s" title="Memo bearbeiten"><i class="fa-solid fa-pen"></i> Edit</button>
+                 <button class="mini" data-delmemo="%d" title="Memo loeschen"><i class="fa-solid fa-trash"></i> Del</button></div>',
                 m$id[i], esc2(m$created_at[i]), esc2(m$text_[i]), key, m$id[i])
       }
     }, character(1))
@@ -929,6 +945,8 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
   })
   shiny::observeEvent(input$edit_memo_entry, { rv$edit_entry <- input$edit_memo_entry })
   shiny::observeEvent(input$cancel_edit, { rv$edit_entry <- NULL; bump() })
+  # "Bereich loeschen" on the memo detail card: close/clear the detail area
+  shiny::observeEvent(input$clear_detail, { rv$clicked <- NULL; rv$sel_memo <- NULL; bump() })
   shiny::observeEvent(input$save_memo_entry, {
     key <- input$save_memo_entry
     txt <- input[[paste0("memo_edit_", key)]]

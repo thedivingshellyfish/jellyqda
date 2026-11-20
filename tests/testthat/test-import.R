@@ -18,6 +18,27 @@ test_that("all four import formats work and freeze text", {
   expect_equal(frozen, expected)
 })
 
+test_that("qda_import uses provided display names (e.g. original upload names)", {
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  # simulate a shiny upload: temp datapath named 0.txt, original name given
+  tmp <- tempfile(fileext = ".txt")
+  file.copy(ext("interview_01.txt"), tmp)
+  tmp0 <- file.path(dirname(tmp), "0.txt")
+  file.rename(tmp, tmp0)
+  res <- qda_import(tmp0, names = "Interview Leitfaden A.txt")
+  expect_equal(res$name[1], "Interview Leitfaden A.txt")
+  expect_equal(qda_sources()$name[1], "Interview Leitfaden A.txt")
+  # original is copied under the display name, meta records it
+  expect_true(file.exists(file.path(project_dir(), "originals", "Interview Leitfaden A.txt")))
+  meta <- jsonlite::fromJSON(
+    DBI::dbGetQuery(qda_con(), "SELECT meta_json FROM sources")$meta_json[1])
+  expect_equal(meta$file, "Interview Leitfaden A.txt")
+  # names = NULL falls back to basename
+  res2 <- qda_import(ext("interview_02.md"))
+  expect_equal(res2$name[1], "interview_02.md")
+})
+
 test_that("latin1 txt is detected and converted to UTF-8", {
   new_project()
   on.exit(qda_close(), add = TRUE)

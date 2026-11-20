@@ -129,6 +129,22 @@ Note: RStudio itself cannot show toolbar icons that act on a text selection
 inside the Viewer — that is why the interactive UI is a local Shiny app, the
 "V2 door" reserved in the concept (§3).
 
+## Customizing the look of `qda_app()`
+
+Everything visual lives in **`R/app.R`** (single file, no build step):
+
+| What | Where in `R/app.R` |
+|---|---|
+| All CSS (colors, fonts, panel/button styles, `memomark` underline colors) | the big `shiny::tags$style(...)` block inside `.jellyqda_ui()` — e.g. `#doc mark.memomark { border-bottom:3px solid #b58900; }` and `.memomark.sel { border-bottom:5px solid #d81b60; }` |
+| Base theme color + font scale | `bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.82)` at the top of `.jellyqda_ui()` |
+| Icons | `fontawesome::fa("name")` calls; every icon used in dynamically rendered HTML must also be registered once in the hidden icon `<div>` (otherwise it renders blank). Mini buttons carry a text label (Edit/Save/Del/X) as fallback |
+| Labels / German UI text | the `shiny::*Input(...)` / `shiny::span(...)` calls in `.jellyqda_ui()` and the `sprintf(...)` strings in `.jellyqda_server()` |
+| Code colors | per code in the Code System form (`colourpicker::colourInput`) or `qda_code_add(color = "#...")`; reserved Memo code = gold underline |
+| Panel layout behavior | the JS in `.jellyqda_js()` (drag & drop, column handles, side collapse, localStorage persistence key `jellyqda_layout`) |
+
+After editing: `pkgload::load_all(".")` in dev, or rebuild/reinstall
+(`R CMD build` + `R CMD INSTALL`) and restart `qda_app()`.
+
 ## Demo & tests
 
 ```r

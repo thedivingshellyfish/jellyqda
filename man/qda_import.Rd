@@ -4,12 +4,16 @@
 \alias{qda_import}
 \title{Import text files into the active project (text gets frozen)}
 \usage{
-qda_import(files, copy_originals = TRUE)
+qda_import(files, copy_originals = TRUE, names = NULL)
 }
 \arguments{
 \item{files}{Character vector of file paths.}
 
 \item{copy_originals}{Logical; copy the original files into \verb{originals/}.}
+
+\item{names}{Optional character vector of display names (one per file) --
+e.g. the original file names when importing uploads whose temp paths are
+meaningless (\verb{0.pdf}, ...). Defaults to \code{basename(files)}.}
 }
 \value{
 A tibble with one row per input file: \code{id}, \code{name}, \code{format},

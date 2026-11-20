@@ -87,13 +87,16 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     # segments header label (no code selected yet)
     expect_true(grepl("All Codings", htmltools::renderTags(output$seg_head)$html, fixed = TRUE))
 
-    # free memos (console API) show in the memo panel with edit + delete icons
+    # free memos (console API) show in the memo panel with edit + delete buttons
+    # (icon + text label, so they are visible even if the icon font fails)
     qda_memo_add("Leitfaden-Frage 3 nachschaerfen")
     expect_equal(nrow(qda_memos()), 1)
     session$setInputs(backup_btn = 1L)
     ml <- htmltools::renderTags(output$memos_list)$html
     expect_true(grepl("data-editmemo", ml, fixed = TRUE))
     expect_true(grepl("data-delmemo", ml, fixed = TRUE))
+    expect_true(grepl("> Edit</button>", ml, fixed = TRUE))
+    expect_true(grepl("> Del</button>", ml, fixed = TRUE))
     expect_true(grepl("nachschaerfen", ml, fixed = TRUE))
     session$setInputs(del_memo = qda_memos()$id[1])
     expect_equal(nrow(qda_memos()), 0)
@@ -121,6 +124,9 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(backup_btn = 1L)   # any app action bumps the tick -> lists re-render
     session$setInputs(clicked_coding = cid)
     expect_true(!is.null(output$clicked_bar))
+    # memo detail card has a "Bereich loeschen" (clear) button
+    expect_true(grepl("data-cleardetail",
+                      htmltools::renderTags(output$memo_detail)$html, fixed = TRUE))
     # segment rows are navigable (data-goto) and show the memo
     as_html <- function(x) htmltools::renderTags(x)$html
     expect_true(grepl("data-goto", as_html(output$seg_panel), fixed = TRUE))
@@ -233,6 +239,10 @@ test_that("qda_app UI has the flexible pane layout (draggable panels, handles, p
   expect_true(grepl("sides", ui, fixed = TRUE))  # persisted in localStorage
   # side-toggle must collapse a visible pane (not the inverted check)
   expect_true(grepl("pane.style.display !== 'none'", ui, fixed = TRUE))
+  # document browser + segments can never be dragged into a side column,
+  # and a side pane containing them is never hidden by the side collapse
+  expect_true(grepl("dragEl.id === 'panel-browser'", ui, fixed = TRUE))
+  expect_true(grepl("#panel-browser, #panel-segs", ui, fixed = TRUE))
   # inline edit handler for memo entries + no free-memo form in the static UI
   expect_true(grepl("[data-editmemo]", ui, fixed = TRUE))
   expect_false(grepl('id="memo_text"', ui, fixed = TRUE))

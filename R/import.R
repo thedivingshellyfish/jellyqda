@@ -16,6 +16,9 @@
 #'
 #' @param files Character vector of file paths.
 #' @param copy_originals Logical; copy the original files into `originals/`.
+#' @param names Optional character vector of display names (one per file) --
+#'   e.g. the original file names when importing uploads whose temp paths are
+#'   meaningless (`0.pdf`, ...). Defaults to `basename(files)`.
 #' @return A tibble with one row per input file: `id`, `name`, `format`,
 #'   `chars`, `status`.
 #' @export
@@ -24,11 +27,17 @@
 #' qda_open("meinarbeit.jellyqda")
 #' qda_import(c("interview_01.txt", "interview_02.docx", "feldnotizen.pdf"))
 #' }
-qda_import <- function(files, copy_originals = TRUE) {
+qda_import <- function(files, copy_originals = TRUE, names = NULL) {
   con <- qda_con()
   files <- normalizePath(as.character(files), mustWork = TRUE)
   rows <- list()
-  for (f in files) {
+  for (i in seq_along(files)) {
+    f <- files[i]
+    nm <- if (!is.null(names) && i <= length(names) && !is.na(names[i]) && nzchar(names[i])) {
+      basename(names[i])  # display name (original upload name), path-safe
+    } else {
+      basename(f)
+    }
     fmt <- tolower(tools::file_ext(f))
     if (!fmt %in% c("txt", "md", "docx", "pdf")) {
       stop(sprintf("Unsupported format '.%s' (%s). Supported: txt, md, docx, pdf.",
@@ -42,7 +51,7 @@ qda_import <- function(files, copy_originals = TRUE) {
     )
     if (any(known)) {
       rows[[length(rows) + 1]] <- tibble::tibble(
-        id = NA_integer_, name = basename(f), format = fmt,
+        id = NA_integer_, name = nm, format = fmt,
         chars = NA_integer_,
         status = "already imported -- text stays frozen, skipped"
       )
@@ -58,33 +67,33 @@ qda_import <- function(files, copy_originals = TRUE) {
     if (warn) {
       warning(sprintf(
         "'%s': PDF has no usable text layer (only %d chars extracted). Original kept in originals/; consider manual OCR (tesseract) and re-import.",
-        basename(f), nchar(text, type = "chars")), call. = FALSE)
+        nm, nchar(text, type = "chars")), call. = FALSE)
     }
     orig_rel <- NA_character_
     if (isTRUE(copy_originals)) {
       odir <- file.path(project_dir(), "originals")
       dir.create(odir, recursive = TRUE, showWarnings = FALSE)
-      if (file.copy(f, odir, overwrite = TRUE)) {
-        orig_rel <- file.path("originals", basename(f))
+      if (file.copy(f, file.path(odir, nm), overwrite = TRUE)) {
+        orig_rel <- file.path("originals", nm)
       }
     }
     meta <- list(
-      file = basename(f), original = orig_rel, sha256 = sha,
+      file = nm, original = orig_rel, sha256 = sha,
       encoding = extracted$encoding, pages = extracted$pages,
       format = fmt, imported_at = .now()
     )
     DBI::dbExecute(
       con,
       "INSERT INTO sources (name, format, frozen_text, meta_json) VALUES (?, ?, ?, ?)",
-      params = list(basename(f), fmt, text, .to_json(meta))
+      params = list(nm, fmt, text, .to_json(meta))
     )
     id <- DBI::dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
     log_event("import", list(
-      source_id = id, file = basename(f), format = fmt,
+      source_id = id, file = nm, format = fmt,
       chars = nchar(text, type = "chars"), sha256 = sha, warning = warn
     ))
     rows[[length(rows) + 1]] <- tibble::tibble(
-      id = id, name = basename(f), format = fmt,
+      id = id, name = nm, format = fmt,
       chars = nchar(text, type = "chars"),
       status = if (warn) "imported with warning (broken text layer?)" else "ok"
     )
