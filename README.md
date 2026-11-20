@@ -1,5 +1,7 @@
 # jellyqda
 
+![Screenshot jellyQDA](https://github.com/thedivingshellyfish/jellyqda/blob/main/demo/Screenshot_jellyqda_001.png)
+
 **RStudio-native, fully offline coding of interview transcripts.**
 
 jellyqda is a small R package for qualitative coding (QDA) of interview
