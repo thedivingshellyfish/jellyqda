@@ -2,7 +2,7 @@
 % Please edit documentation in R/undo.R
 \name{qda_undo}
 \alias{qda_undo}
-\title{Undo the last undoable action}
+\title{Undo the last action}
 \usage{
 qda_undo()
 }
@@ -11,13 +11,18 @@ Invisibly, a one-row tibble: \code{undone} (action that was reverted) and
 \code{detail} (human-readable description).
 }
 \description{
-Reverts the most recent action that can be reverted exactly:
-\code{coding_add} / \code{coding_delete} / \code{coding_memo}, \code{memo_add} / \code{memo_delete} /
-\code{memo_update}, \code{code_add} (only while the code has no sub-codes/codings) and
-\code{code_rename}. System actions (\code{import}, \code{export}, \code{backup},
-\code{auto_snapshot}, project open/close) are not undoable. Repeated calls walk
-backwards through the history (each reverted event is remembered in the
-audit trail via \code{undo} events).
+Reverts the most recent action. Every content change can be undone:
+codings (add, delete, memo), memos, codes (add, rename, move and
+\strong{delete} -- including all sub-codes, codings and summaries that were
+removed with it), document variables, summaries and segment changes.
+System actions (\code{import}, \code{export}, \code{backup}, \code{auto_snapshot}, project
+open/close) are not undoable. Repeated calls walk backwards through the
+history; \code{\link[=qda_redo]{qda_redo()}} re-applies undone actions. In the app: button
+"Rueckgaengig" or Strg+Z, redo with Strg+Y.
+}
+\details{
+Actions recorded by older jellyqda versions (without snapshot) are
+reverted with the previous per-action logic where possible.
 }
 \examples{
 \dontrun{
@@ -25,5 +30,9 @@ qda_code_add("Theme A")
 qda_code("interview_01.txt", "Theme A", segment = 1)
 qda_undo()  # removes the coding again
 qda_undo()  # removes the code again
+qda_redo()  # the code is back
 }
+}
+\seealso{
+\code{\link[=qda_redo]{qda_redo()}}, \code{\link[=qda_history]{qda_history()}}
 }

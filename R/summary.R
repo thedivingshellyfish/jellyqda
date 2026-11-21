@@ -22,6 +22,10 @@ qda_summary_set <- function(code, source, text_) {
   con <- qda_con()
   cod <- .resolve_code(code)
   src <- .resolve_source(source)
+  sum_id <- function() DBI::dbGetQuery(con,
+    "SELECT id FROM summaries WHERE code_id = ? AND source_id = ?",
+    params = list(cod$id, src$id))$id
+  before <- .snap("summaries", sum_id())
   DBI::dbExecute(con, "
     INSERT INTO summaries (code_id, source_id, text_, updated_at)
     VALUES (?, ?, ?, ?)
@@ -29,7 +33,9 @@ qda_summary_set <- function(code, source, text_) {
       text_ = excluded.text_, updated_at = excluded.updated_at",
     params = list(cod$id, src$id, as.character(text_), .now()))
   log_event("summary_set", list(code_id = cod$id, source_id = src$id,
-                                text = as.character(text_)))
+                                text = as.character(text_)),
+            changes = list(.chg("summaries", before, .snap("summaries", sum_id()))),
+            desc = sprintf("Summary geaendert: '%s' x %s", cod$label, src$name))
   invisible(tibble::tibble(code_id = cod$id, source_id = src$id,
                            text_ = as.character(text_), updated_at = .now()))
 }

@@ -41,6 +41,7 @@ qda_open <- function(path, auto_snapshot = 25) {
   .jellyqda_env$auto_busy <- FALSE
   log_event(if (is_new) "project_create" else "project_open",
             list(file = basename(path)))
+  .migrate_memo_codings()   # older projects: memo passages -> memos (memos.R)
   invisible(qda_project())
 }
 

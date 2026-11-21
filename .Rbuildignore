@@ -4,3 +4,5 @@
 ^\.github
 ^\.gitignore
 ^\.Rbuildignore
+^install_jellyqda\.R$
+^docs$

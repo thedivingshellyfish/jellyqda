@@ -23,36 +23,18 @@
 qda_view <- function(source, open = TRUE) {
   con <- qda_con()
   src <- .resolve_source(source)
-  segs <- .segments_of(src$frozen_text)
-  cods <- DBI::dbGetQuery(con, "
-    SELECT c.id, c.start, c.end, c.memo, k.label, k.color
-    FROM codings c JOIN codes k ON k.id = c.code_id
-    WHERE c.source_id = ? ORDER BY c.start", params = list(src$id))
-
+  segs <- .segments_for(src)            # stored or automatic segments
+  cods <- .codings_of(src$id)
+  dup_ids <- .dup_ids(cods)
+  memos <- .passage_memos_of(src$id)
   esc <- htmltools::htmlEscape
-  body <- character()
-  for (i in seq_len(nrow(segs))) {
-    st <- segs$start[i]; en <- segs$end[i]
-    seg_txt <- substring(src$frozen_text, st, en)
-    ov <- cods[cods$start <= en & cods$end >= st, , drop = FALSE]
-    html_txt <- character(); pos <- st
-    if (nrow(ov) > 0) {
-      for (j in seq_len(nrow(ov))) {
-        cs <- max(ov$start[j], st); ce <- min(ov$end[j], en)
-        if (cs > pos) html_txt <- c(html_txt, esc(substring(seg_txt, pos - st + 1, cs - st)))
-        html_txt <- c(html_txt, sprintf(
-          '<mark style="background-color:%s" title="%s">%s</mark>',
-          esc(ov$color[j]), esc(ov$label[j]), esc(substring(seg_txt, cs - st + 1, ce - st + 1))
-        ))
-        pos <- ce + 1
-      }
-    }
-    if (pos <= en) html_txt <- c(html_txt, esc(substring(seg_txt, pos - st + 1, en - st + 1)))
-    body <- c(body, sprintf(
-      '<div class="seg"><span class="segnum">Segment %d</span><span class="segtext">%s</span></div>',
-      i, paste(html_txt, collapse = "")
-    ))
-  }
+  # same marking as the app (render.R): overlaps grey with a number, the
+  # code names appear as tooltip
+  body <- vapply(seq_len(nrow(segs)), function(i) {
+    sprintf('<div class="seg"><span class="segnum">Segment %d</span><span class="segtext">%s</span></div>',
+            i, .marked_html(src$frozen_text, segs$start[i], segs$end[i], cods, dup_ids,
+                            memos = memos))
+  }, character(1))
   html <- paste0(
     "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>",
     "body{font-family:Georgia,serif;max-width:52em;margin:1.5em auto;line-height:1.55;color:#222}",
@@ -63,6 +45,10 @@ qda_view <- function(source, open = TRUE) {
     ".segnum{position:absolute;left:0;top:.15em;font-family:monospace;font-size:.8em;",
     "background:#eee;border:1px solid #ccc;border-radius:4px;padding:.1em .4em;color:#444}",
     "mark{padding:0 .1em;border-radius:2px}",
+    "mark.memomark{background:transparent;border-bottom:3px solid #b58900}",
+    "mark.dup{outline:2px dashed #d81b60;outline-offset:1px}",
+    "mark.ovl{background-color:#dde1e6;background-size:100% 3px;background-position:left bottom;background-repeat:no-repeat}",
+    "mark.ovl.ovl-start::before{content:attr(data-n);font:700 .62rem/1.25 sans-serif;color:#fff;background:#5a6672;border-radius:.7rem;padding:0 .32rem;margin-right:.18rem;vertical-align:.18em}",
     "</style></head><body>",
     sprintf('<div class="src">%s <small>(%s, %d chars, %d segments)</small></div>',
             esc(src$name), esc(src$format), nchar(src$frozen_text, type = "chars"), nrow(segs)),

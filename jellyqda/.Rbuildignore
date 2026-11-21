@@ -1,8 +1,0 @@
-^\.git
-^data-raw
-^demo
-^\.github
-^\.gitignore
-^\.Rbuildignore
-^install_jellyqda\.R$
-^docs$

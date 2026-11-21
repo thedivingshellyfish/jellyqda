@@ -1,24 +1,30 @@
-# jellyqda :: undo.R -- qda_undo(): revert the last undoable action using the
-# audit trail (events.details carries old values for exact restores);
-# repeated calls walk backwards; already-undone events are skipped.
+# jellyqda :: undo.R -- qda_undo(): revert the last action. Uses the
+# snapshot-based history from history.R; events from older versions are
+# reverted by .legacy_undo(). Redo: qda_redo() in history.R.
 
 # Undo -----------------------------------------------------------------------
-# Reverts the last undoable action, using the audit trail (events.details).
-# Undone events are remembered (in the undo event's details) so repeated
-# qda_undo() calls walk backwards through the history, not in circles.
+# The undo/redo stacks are computed from the audit trail in history.R
+# (.history_state). New events carry a before/after snapshot and are reverted
+# generically (.apply_changes). Events from older jellyqda versions have no
+# snapshot; they are reverted by .legacy_undo() below (the original logic).
 
-#' Undo the last undoable action
+#' Undo the last action
 #'
-#' Reverts the most recent action that can be reverted exactly:
-#' `coding_add` / `coding_delete` / `coding_memo`, `memo_add` / `memo_delete` /
-#' `memo_update`, `code_add` (only while the code has no sub-codes/codings) and
-#' `code_rename`. System actions (`import`, `export`, `backup`,
-#' `auto_snapshot`, project open/close) are not undoable. Repeated calls walk
-#' backwards through the history (each reverted event is remembered in the
-#' audit trail via `undo` events).
+#' Reverts the most recent action. Every content change can be undone:
+#' codings (add, delete, memo), memos, codes (add, rename, move and
+#' **delete** -- including all sub-codes, codings and summaries that were
+#' removed with it), document variables, summaries and segment changes.
+#' System actions (`import`, `export`, `backup`, `auto_snapshot`, project
+#' open/close) are not undoable. Repeated calls walk backwards through the
+#' history; [qda_redo()] re-applies undone actions. In the app: button
+#' "Rueckgaengig" or Strg+Z, redo with Strg+Y.
+#'
+#' Actions recorded by older jellyqda versions (without snapshot) are
+#' reverted with the previous per-action logic where possible.
 #'
 #' @return Invisibly, a one-row tibble: `undone` (action that was reverted) and
 #'   `detail` (human-readable description).
+#' @seealso [qda_redo()], [qda_history()]
 #' @export
 #' @examples
 #' \dontrun{
@@ -26,27 +32,30 @@
 #' qda_code("interview_01.txt", "Theme A", segment = 1)
 #' qda_undo()  # removes the coding again
 #' qda_undo()  # removes the code again
+#' qda_redo()  # the code is back
 #' }
 qda_undo <- function() {
-  con <- qda_con()
-  skip <- c("undo", "auto_snapshot", "backup", "export", "project_create",
-            "project_open", "project_close", "import")
-  # event ids already reverted by previous undo calls
-  undone_ids <- integer()
-  und <- DBI::dbGetQuery(con, "SELECT details FROM events WHERE action = 'undo'")
-  if (nrow(und) > 0) {
-    undone_ids <- unique(unlist(lapply(und$details, function(j) {
-      jsonlite::fromJSON(j)$undid_event_id
-    })))
-  }
-  ev <- DBI::dbGetQuery(con, "SELECT id, action, details FROM events ORDER BY id DESC")
-  ev <- ev[!ev$action %in% skip & !ev$id %in% undone_ids, , drop = FALSE]
-  if (nrow(ev) > 0) ev <- ev[1, , drop = FALSE]
-  if (nrow(ev) == 0) {
+  st <- .history_state()
+  if (nrow(st$undo) == 0) {
     return(invisible(tibble::tibble(undone = "nothing", detail = "no undoable action")))
   }
-  d <- jsonlite::fromJSON(ev$details[1], simplifyVector = FALSE)
-  action <- ev$action[1]
+  ev <- st$undo[nrow(st$undo), , drop = FALSE]
+  action <- ev$action
+  if (grepl("\"changes\"", ev$details, fixed = TRUE)) {
+    .apply_changes(.changes_from_json(ev$details), "before")
+    out <- .describe_event(action, ev$details)
+  } else {
+    out <- .legacy_undo(action, ev$details)
+  }
+  log_event("undo", list(undid_event_id = ev$id, action = action, detail = out))
+  invisible(tibble::tibble(undone = action, detail = out))
+}
+
+#' Original per-action undo for events without snapshot (older versions).
+#' @noRd
+.legacy_undo <- function(action, details_json) {
+  con <- qda_con()
+  d <- jsonlite::fromJSON(details_json, simplifyVector = FALSE)
   out <- switch(action,
     coding_add = {
       DBI::dbExecute(con, "DELETE FROM codings WHERE id = ?", params = list(d$coding_id))
@@ -106,6 +115,5 @@ qda_undo <- function() {
       stop(sprintf("Action '%s' is not undoable.", action), call. = FALSE)
     }
   )
-  log_event("undo", list(undid_event_id = ev$id[1], action = action, detail = out))
-  invisible(tibble::tibble(undone = action, detail = out))
+  out
 }

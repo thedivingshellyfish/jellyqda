@@ -1,9 +1,0 @@
-Name: jellyqda: Backup project
-Description: Create a timestamped zip backup of the open jellyqda project (rotating).
-Binding: qda_addin_backup
-Position: 1000
-
-Name: jellyqda: Show coding stats
-Description: Print progress statistics (sources, codes, % coded) of the open jellyqda project.
-Binding: qda_addin_stats
-Position: 1001

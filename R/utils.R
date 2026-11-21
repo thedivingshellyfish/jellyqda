@@ -60,11 +60,17 @@ default_backup_dir <- function() {
 
 #' Write one row to the events audit trail; triggers auto-snapshot if due.
 #' @noRd
-log_event <- function(action, details = list()) {
+log_event <- function(action, details = list(), changes = NULL, desc = NULL) {
   con <- qda_con()
+  # undo/redo: optional before/after snapshot of the affected rows
+  # (see history.R) and a German one-line description for the UI
+  if (!is.null(desc)) details$desc <- desc
+  if (!is.null(changes)) details$changes <- changes
+  json <- if (is.null(changes)) .to_json(details) else
+    jsonlite::toJSON(details, auto_unbox = TRUE, dataframe = "rows", na = "null")
   DBI::dbAppendTable(con, "events", data.frame(
     action = action,
-    details = .to_json(details),
+    details = as.character(json),
     created_at = .now(),
     stringsAsFactors = FALSE
   ))

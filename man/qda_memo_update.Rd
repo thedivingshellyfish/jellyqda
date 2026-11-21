@@ -2,18 +2,20 @@
 % Please edit documentation in R/memos.R
 \name{qda_memo_update}
 \alias{qda_memo_update}
-\title{Edit (overwrite) the text of an existing memo}
+\title{Edit an existing memo}
 \usage{
-qda_memo_update(memo, text_)
+qda_memo_update(memo, text_ = NULL, title = NULL)
 }
 \arguments{
 \item{memo}{Memo id.}
 
-\item{text_}{New memo text.}
+\item{text_}{New memo text (\code{NULL} = keep).}
+
+\item{title}{New title (\code{NULL} = keep).}
 }
 \value{
 Invisibly, a one-row tibble with the updated memo.
 }
 \description{
-Edit (overwrite) the text of an existing memo
+Edit an existing memo
 }

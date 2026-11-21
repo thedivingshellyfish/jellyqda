@@ -24,6 +24,10 @@
 #' @param names Optional character vector of display names (one per file) --
 #'   e.g. the original file names when importing uploads whose temp paths are
 #'   meaningless (`0.pdf`, ...). Defaults to `basename(files)`.
+#' @param segments How the new documents are divided into segments:
+#'   `"blankline"` (paragraphs, default), `"speaker"` (one segment per
+#'   speaker turn, e.g. `"[00:01:12] P: ..."`) or `"line"`. Can be changed
+#'   later with [qda_segments_set()]; see also [qda_segment_split()].
 #' @return A tibble with one row per input file: `id`, `name`, `format`,
 #'   `chars`, `status`.
 #' @export
@@ -31,8 +35,11 @@
 #' \dontrun{
 #' qda_open("meinarbeit.jellyqda")
 #' qda_import(c("interview_01.txt", "interview_02.docx", "feldnotizen.pdf"))
+#' qda_import("transkript.txt", segments = "speaker")   # one segment per turn
 #' }
-qda_import <- function(files, copy_originals = TRUE, names = NULL) {
+qda_import <- function(files, copy_originals = TRUE, names = NULL,
+                       segments = c("blankline", "speaker", "line")) {
+  segments <- match.arg(segments)
   con <- qda_con()
   files <- normalizePath(as.character(files), mustWork = TRUE)
   rows <- list()
@@ -107,7 +114,13 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL) {
     return(tibble::tibble(id = integer(), name = character(), format = character(),
                          chars = integer(), status = character()))
   }
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  # segmentation rule for the NEW documents only (skipped re-imports keep
+  # their segments); blank lines = automatic, nothing to store
+  if (segments != "blankline") {
+    for (id in out$id[!is.na(out$id)]) qda_segments_set(id, segments)
+  }
+  out
 }
 
 #' Read a txt/md file as raw bytes, detect the encoding, convert to UTF-8.

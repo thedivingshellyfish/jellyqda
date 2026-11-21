@@ -68,7 +68,9 @@ qda_code_add <- function(label, parent = NULL, color = NULL, description = "") {
   )
   id <- DBI::dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
   log_event("code_add", list(code_id = id, label = label,
-                             parent_id = if (is.na(parent_id)) NULL else parent_id))
+                             parent_id = if (is.na(parent_id)) NULL else parent_id),
+            changes = list(.chg("codes", .snap("codes", integer()), .snap("codes", id))),
+            desc = sprintf("Code angelegt: '%s'", label))
   invisible(tibble::tibble(id = id, label = label, parent_id = parent_id,
                            color = color, description = as.character(description)))
 }
@@ -90,9 +92,12 @@ qda_code_rename <- function(code, new_label) {
   if (nrow(dup) > 0) {
     stop(sprintf("A code '%s' already exists under this parent.", new_label), call. = FALSE)
   }
+  before <- .snap("codes", row$id)
   DBI::dbExecute(con, "UPDATE codes SET label = ? WHERE id = ?",
                  params = list(new_label, row$id))
-  log_event("code_rename", list(code_id = row$id, old_label = row$label, new_label = new_label))
+  log_event("code_rename", list(code_id = row$id, old_label = row$label, new_label = new_label),
+            changes = list(.chg("codes", before, .snap("codes", row$id))),
+            desc = sprintf("Code umbenannt: '%s' -> '%s'", row$label, new_label))
   invisible(tibble::tibble(id = row$id, label = new_label, parent_id = row$parent_id))
 }
 
@@ -112,6 +117,15 @@ qda_code_delete <- function(code) {
   n_cod <- DBI::dbGetQuery(
     con, sprintf("SELECT COUNT(*) AS n FROM codings WHERE code_id IN (%s)",
                  paste(ids, collapse = ",")))$n
+  # snapshot for undo: the codes, ALL their codings and summaries (summaries
+  # are removed by ON DELETE CASCADE) -- so undo restores everything
+  in_ids <- paste(ids, collapse = ",")
+  cod_ids <- DBI::dbGetQuery(con, sprintf("SELECT id FROM codings WHERE code_id IN (%s)", in_ids))$id
+  sum_ids <- DBI::dbGetQuery(con, sprintf("SELECT id FROM summaries WHERE code_id IN (%s)", in_ids))$id
+  # code memos are removed by ON DELETE CASCADE as well
+  memo_ids <- DBI::dbGetQuery(con, sprintf("SELECT id FROM memos WHERE code_id IN (%s)", in_ids))$id
+  before <- list(codes = .snap("codes", ids), codings = .snap("codings", cod_ids),
+                 summaries = .snap("summaries", sum_ids), memos = .snap("memos", memo_ids))
   DBI::dbWithTransaction(con, {
     DBI::dbExecute(con, sprintf("DELETE FROM codings WHERE code_id IN (%s)",
                                 paste(ids, collapse = ",")))
@@ -119,7 +133,13 @@ qda_code_delete <- function(code) {
                                 paste(ids, collapse = ",")))
   })
   log_event("code_delete", list(code_id = row$id, label = row$label,
-                                deleted_code_ids = ids, deleted_codings = n_cod))
+                                deleted_code_ids = ids, deleted_codings = n_cod),
+            changes = list(.chg("codes", before$codes, .snap("codes", integer())),
+                           .chg("codings", before$codings, .snap("codings", integer())),
+                           .chg("summaries", before$summaries, .snap("summaries", integer())),
+                           .chg("memos", before$memos, .snap("memos", integer()))),
+            desc = sprintf("Code geloescht: '%s' (mit %d Unter-Codes und %d Codings)",
+                           row$label, length(ids) - 1L, n_cod))
   invisible(tibble::tibble(codes_deleted = length(ids), codings_deleted = n_cod))
 }
 
@@ -145,10 +165,13 @@ qda_code_move <- function(code, parent = NULL) {
                             params = list(cur))$p[1]
     }
   }
+  before <- .snap("codes", row$id)
   DBI::dbExecute(con, "UPDATE codes SET parent_id = ? WHERE id = ?",
                  params = list(if (is.na(parent_id)) NA_integer_ else parent_id, row$id))
   log_event("code_move", list(code_id = row$id,
                               old_parent_id = if (is.na(row$parent_id)) NULL else row$parent_id,
-                              new_parent_id = if (is.na(parent_id)) NULL else parent_id))
+                              new_parent_id = if (is.na(parent_id)) NULL else parent_id),
+            changes = list(.chg("codes", before, .snap("codes", row$id))),
+            desc = sprintf("Code verschoben: '%s'", row$label))
   invisible(tibble::tibble(id = row$id, parent_id = parent_id))
 }

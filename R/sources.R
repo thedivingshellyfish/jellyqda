@@ -23,7 +23,7 @@ qda_sources <- function() {
     name = s$name,
     format = s$format,
     chars = nchar(s$frozen_text, type = "chars"),
-    segments = vapply(s$frozen_text, function(t) nrow(.segments_of(t)), integer(1)),
+    segments = vapply(s$id, function(i) nrow(.segments_for(i)), integer(1)),
     coded_chars = vapply(s$id, function(i) {
       x <- cod[cod$source_id == i, , drop = FALSE]
       if (nrow(x) == 0) 0L else .union_len(x$start, x$end)
@@ -64,9 +64,12 @@ qda_source_set_var <- function(source, key, value) {
   m <- jsonlite::fromJSON(src$meta_json)
   if (is.null(m$variables)) m$variables <- list()
   m$variables[[as.character(key)]] <- as.character(value)
+  before <- .snap("sources", src$id)
   DBI::dbExecute(con, "UPDATE sources SET meta_json = ? WHERE id = ?",
                  params = list(.to_json(m), src$id))
-  log_event("source_var_set", list(source_id = src$id, key = key, value = as.character(value)))
+  log_event("source_var_set", list(source_id = src$id, key = key, value = as.character(value)),
+            changes = list(.chg("sources", before, .snap("sources", src$id))),
+            desc = sprintf("Variable gesetzt: %s = '%s' (%s)", key, value, src$name))
   invisible(qda_source_vars(src$id))
 }
 
@@ -81,8 +84,11 @@ qda_source_del_var <- function(source, key) {
   src <- .resolve_source(source)
   m <- jsonlite::fromJSON(src$meta_json)
   if (!is.null(m$variables)) m$variables[[as.character(key)]] <- NULL
+  before <- .snap("sources", src$id)
   DBI::dbExecute(con, "UPDATE sources SET meta_json = ? WHERE id = ?",
                  params = list(.to_json(m), src$id))
-  log_event("source_var_del", list(source_id = src$id, key = key))
+  log_event("source_var_del", list(source_id = src$id, key = key),
+            changes = list(.chg("sources", before, .snap("sources", src$id))),
+            desc = sprintf("Variable geloescht: %s (%s)", key, src$name))
   invisible(qda_source_vars(src$id))
 }

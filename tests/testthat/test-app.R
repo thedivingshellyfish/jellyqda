@@ -20,7 +20,7 @@ test_that(".render_doc_html: DOM text equals frozen text, codings are marks", {
   qda_code_add("Werdegang", color = "#FF0000")
   qda_code(1, segment = 2, code = "Werdegang")
   html <- jellyqda:::.render_doc_html(1)
-  expect_true(grepl('<div id="doc">', html, fixed = TRUE))
+  expect_true(grepl('<div id="doc"', html, fixed = TRUE))   # + data-codings attribute
   expect_true(grepl('class="segtext"', html, fixed = TRUE))
   expect_true(grepl("<mark", html, fixed = TRUE))
   expect_true(grepl("#FF0000", html, fixed = TRUE))
@@ -56,50 +56,63 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     frozen <- DBI::dbGetQuery(qda_con(), "SELECT frozen_text FROM sources WHERE id = 1")$frozen_text
     expect_equal(cod$text, substring(frozen, 10, 40))
 
-    # memo-only button -> coding with reserved "Memo" code (underline mark)
+    # memo-only button with text -> passage memo (own memos table, underlined);
+    # no pseudo coding with a reserved "Memo" code any more
     session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"), memo_field = "kurz")
     session$setInputs(add_memo_only = 1L)
-    mc <- qda_codings()
-    expect_equal(nrow(mc), 2)  # KMU coding from before + Memo coding
-    memo_cod <- mc[mc$code == "Memo", ]
-    expect_equal(nrow(memo_cod), 1)
-    expect_equal(memo_cod$memo, "kurz")
-    expect_equal(memo_cod$start, 1L)
-    expect_equal(memo_cod$end, 5L)
-    # document renders it as underline mark (memomark, no background);
-    # the selection stays visible -> mark is rendered as selected (thick underline)
+    expect_equal(nrow(qda_codings()), 1)
+    pm <- qda_memos(kind = "passage")
+    expect_equal(nrow(pm), 1)
+    expect_equal(pm$text_, "kurz")
+    expect_equal(pm$start, 1L)
+    expect_equal(pm$end, 5L)
+    expect_false("Memo" %in% qda_codes()$label)
+    # document renders it as underline mark; it stays highlighted (sel)
     session$setInputs(backup_btn = 1L)
     doc_html <- htmltools::renderTags(output$doc)$html
     expect_true(grepl("memomark", doc_html, fixed = TRUE))
     expect_true(grepl("memomark sel", doc_html, fixed = TRUE))
-    # action bar does not offer the reserved Memo code as a button
+    expect_true(grepl(sprintf('data-mid="%d"', pm$id), doc_html, fixed = TRUE))
+    # selection action bar contains the optional memo text field
     session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"))
     ab <- htmltools::renderTags(output$actionbar)$html
-    # selection action bar contains the optional memo text field
     expect_true(grepl('id="memo_field"', ab, fixed = TRUE))
     expect_true(grepl('class="actionbar"', ab, fixed = TRUE))
-    memo_id <- qda_codes()$id[qda_codes()$label == "Memo"]
-    expect_false(grepl(sprintf('data-codeid="%d"', memo_id), ab, fixed = TRUE))
-    # retrieved-segments panel lists the memo passage (clickable, with memo)
+    # memo-only button WITHOUT text -> new-memo form in the memo panel
+    session$setInputs(selection = list(start = 6L, end = 9L, text = "xyz"), memo_field = "")
+    session$setInputs(add_memo_only = 2L)
+    expect_true(grepl('id="memo_new_text"', htmltools::renderTags(output$memo_new_form)$html, fixed = TRUE))
+    session$setInputs(memo_new_save = list(text = "aus dem Formular", title = "Idee"))
+    pm <- qda_memos(kind = "passage")
+    expect_equal(nrow(pm), 2)
+    expect_equal(pm$title[2], "Idee")
+    expect_equal(c(pm$start[2], pm$end[2]), c(6L, 9L))
+    # retrieved-segments panel lists the coding with its comment
     segp <- htmltools::renderTags(output$seg_panel)$html
     expect_true(grepl("data-goto", segp, fixed = TRUE))
-    expect_true(grepl("kurz", segp, fixed = TRUE))
+    expect_true(grepl("Test-Memo", segp, fixed = TRUE))
     # segments header label (no code selected yet)
     expect_true(grepl("All Codings", htmltools::renderTags(output$seg_head)$html, fixed = TRUE))
 
-    # free memos (console API) show in the memo panel with edit + delete buttons
-    # (icon + text label, so they are visible even if the icon font fails)
+    # project memos (console API) show in the memo panel with edit + delete
+    # buttons (icon + German text label, visible even if the icon font fails)
     qda_memo_add("Leitfaden-Frage 3 nachschaerfen")
-    expect_equal(nrow(qda_memos()), 1)
+    expect_equal(nrow(qda_memos(kind = "project")), 1)
     session$setInputs(backup_btn = 1L)
     ml <- htmltools::renderTags(output$memos_list)$html
     expect_true(grepl("data-editmemo", ml, fixed = TRUE))
     expect_true(grepl("data-delmemo", ml, fixed = TRUE))
-    expect_true(grepl("> Edit</button>", ml, fixed = TRUE))
-    expect_true(grepl("> Del</button>", ml, fixed = TRUE))
+    expect_true(grepl("> Bearbeiten</button>", ml, fixed = TRUE))
+    expect_true(grepl("> L\u00f6schen</button>", ml, fixed = TRUE))
     expect_true(grepl("nachschaerfen", ml, fixed = TRUE))
-    session$setInputs(del_memo = qda_memos()$id[1])
-    expect_equal(nrow(qda_memos()), 0)
+    # filter chips with counts; filter "project" hides the passage memos
+    expect_true(grepl('data-memofilter="project"', htmltools::renderTags(output$memo_filters)$html, fixed = TRUE))
+    session$setInputs(memo_filter = "project")
+    ml <- htmltools::renderTags(output$memos_list)$html
+    expect_false(grepl("aus dem Formular", ml, fixed = TRUE))
+    session$setInputs(memo_filter = "all")
+    session$setInputs(del_memo = qda_memos(kind = "project")$id[1])
+    expect_equal(nrow(qda_memos(kind = "project")), 0)
 
     # add a code via the form
     session$setInputs(new_code_label = "Motivation", new_code_parent = "",
@@ -113,9 +126,8 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(ren_code_select = mot_id, delete_code_btn = 1L)
     expect_false("Motivation" %in% qda_codes()$label)
 
-    # delete codings via the list button (KMU coding + reserved Memo coding)
+    # delete the coding via the list button
     session$setInputs(del_coding = cod$id)
-    session$setInputs(del_coding = memo_cod$id)
     expect_equal(nrow(qda_codings()), 0)
 
     # clicked coding bar
@@ -124,9 +136,10 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(backup_btn = 1L)   # any app action bumps the tick -> lists re-render
     session$setInputs(clicked_coding = cid)
     expect_true(!is.null(output$clicked_bar))
-    # memo detail card has a "Bereich loeschen" (clear) button
-    expect_true(grepl("data-cleardetail",
-                      htmltools::renderTags(output$memo_detail)$html, fixed = TRUE))
+    # comments on codings appear in the memo panel (removable, coding stays)
+    ml <- htmltools::renderTags(output$memos_list)$html
+    expect_true(grepl("springt hierher", ml, fixed = TRUE))
+    expect_true(grepl("data-delcomment", ml, fixed = TRUE))
     # segment rows are navigable (data-goto) and show the memo
     as_html <- function(x) htmltools::renderTags(x)$html
     expect_true(grepl("data-goto", as_html(output$seg_panel), fixed = TRUE))
@@ -145,7 +158,7 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(open_source = 2L)
     session$setInputs(goto_coding = cid)
     expect_true(!is.null(output$clicked_bar))
-    expect_true(grepl("Memo: springt hierher", as_html(output$clicked_bar), fixed = TRUE))
+    expect_true(grepl("Kommentar: springt hierher", as_html(output$clicked_bar), fixed = TRUE))
     session$setInputs(del_clicked_coding = 1L)
     expect_equal(nrow(qda_codings()), 0)
 
@@ -184,9 +197,8 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     session$setInputs(undo_btn = 1L)
     expect_equal(qda_codes()$path[qda_codes()$label == "Untethema"], "WerdegangNeu / Untethema")
 
-    # free memo via console API; per-entry inline edit + save in the memo section
-    qda_memo_add("erstes Memo")
-    mid <- qda_memos()$id[1]
+    # project memo via console API; per-entry inline edit + save in the memo section
+    mid <- qda_memo_add("erstes Memo")$id
     key <- paste0("memo_", mid)
     session$setInputs(edit_memo_entry = key)
     session$setInputs(backup_btn = 1L)  # flush -> memo list re-renders in edit mode
@@ -198,21 +210,41 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_equal(qda_memos()$text_[qda_memos()$id == mid], "bearbeitet")
     session$setInputs(cancel_edit = 1L)  # no error
 
-    # memo-marked passage: click entry -> jump + highlight (memomark sel)
+    # title + text sent directly with the save click (as jellyqda.js does)
+    session$setInputs(edit_memo_entry = key)
+    session$setInputs(save_memo_entry = list(key = key, text = "mit Titel", title = "T1"))
+    m1 <- qda_memos()[qda_memos()$id == mid, ]
+    expect_equal(c(m1$text_, m1$title), c("mit Titel", "T1"))
+
+    # passage memo: jump from its card -> document opens, passage highlighted
     session$setInputs(selection = list(start = 1L, end = 5L, text = "abc"), memo_field = "spring")
-    session$setInputs(add_memo_only = 1L)
-    mcod <- qda_codings()
-    mcod <- mcod[mcod$code == "Memo", ]
-    session$setInputs(goto_memo = mcod$id[1])
+    session$setInputs(add_memo_only = 3L)
+    pmid <- max(qda_memos(kind = "passage")$id)
+    session$setInputs(open_source = 2L)
+    session$setInputs(memo_jump = paste0("memo_", pmid))
     doc_html2 <- as_html(output$doc)
-    expect_true(grepl('memomark sel', doc_html2, fixed = TRUE))
-    expect_true(grepl("data-gotomemo", as_html(output$memos_list), fixed = TRUE))
-    # per-entry edit of the memo-marked passage (coding memo)
-    ckey <- paste0("cod_", mcod$id[1])
-    session$setInputs(edit_memo_entry = ckey)
-    do.call(session$setInputs, stats::setNames(list("neu markiert"), paste0("memo_edit_", ckey)))
-    session$setInputs(save_memo_entry = ckey)
-    expect_equal(qda_codings()$memo[qda_codings()$id == mcod$id[1]], "neu markiert")
+    expect_true(grepl("memomark sel", doc_html2, fixed = TRUE))
+    expect_true(grepl("data-memojump", as_html(output$memos_list), fixed = TRUE))
+    # clicking the underline in the text focuses the card in the panel
+    session$setInputs(clicked_memo = pmid)
+    expect_true(grepl("memocard kind-passage focus", as_html(output$memos_list), fixed = TRUE))
+    # document memo + code memo via the "+" buttons
+    session$setInputs(new_memo = list(kind = "document"))
+    session$setInputs(memo_new_save = list(text = "Postskript", title = ""))
+    expect_equal(qda_memos(kind = "document")$text_, "Postskript")
+    session$setInputs(sel_code = 1L)
+    session$setInputs(new_memo = list(kind = "code"))
+    session$setInputs(memo_new_save = list(text = "Nur explizite Aussagen", title = "Kodierregel"))
+    expect_equal(qda_memos(kind = "code")$title, "Kodierregel")
+    expect_true(grepl("data-codememo", as_html(output$code_tree), fixed = TRUE))
+    expect_true(grepl("data-docmemo", as_html(output$doc_tree), fixed = TRUE))
+    # search
+    session$setInputs(memo_search = "explizite")
+    session$elapse(400)   # debounce of the search field (simulated time)
+    ml <- as_html(output$memos_list)
+    expect_true(grepl("Kodierregel", ml, fixed = TRUE))
+    expect_false(grepl("Postskript", ml, fixed = TRUE))
+    session$setInputs(memo_search = "")
 
     # code matrix renders with cells + SUM
     mtx <- as_html(output$matrix_panel)

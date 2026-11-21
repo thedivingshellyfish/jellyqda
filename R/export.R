@@ -102,12 +102,16 @@ qda_export <- function(what = "all", path = NULL) {
     "body{font-family:Georgia,serif;max-width:60rem;margin:2rem auto;color:#222;line-height:1.55}",
     "h1{border-bottom:3px solid #2c6fbb;padding-bottom:.3rem}",
     "h2{margin-top:2.2rem;border-bottom:1px solid #ccc;padding-bottom:.2rem}",
-    "#doc{margin:.6rem 0 1.4rem 0}",
+    "#doc{margin:.6rem 0 1.4rem 0;white-space:pre-wrap}",   # keep line breaks of the transcript
     ".segtext{position:relative;padding-left:3.2rem;margin:.35rem 0}",
     ".segtext::before{content:'Seg ' attr(data-seg);position:absolute;left:0;top:.15rem;font-size:.68rem;color:#8a94a0;font-family:sans-serif}",
     "mark{padding:0 .12em;border-radius:.25em}",
     "mark.memomark{background:transparent;border-bottom:3px solid #b58900}",
     "mark.dup{outline:2px dashed #d81b60;outline-offset:1px}",
+    # overlaps (2+ codings): grey + colour stripe + number; hover shows the
+    # code names via the title attribute (no JS in the report)
+    "mark.ovl{background-color:#dde1e6;background-size:100% 3px;background-position:left bottom;background-repeat:no-repeat}",
+    "mark.ovl.ovl-start::before{content:attr(data-n);font:700 .62rem/1.25 sans-serif;color:#fff;background:#5a6672;border-radius:.7rem;padding:0 .32rem;margin-right:.18rem;vertical-align:.18em}",
     "table{border-collapse:collapse;font-size:.85rem}td,th{border:1px solid #ccc;padding:.15rem .5rem}",
     ".swatch{display:inline-block;width:.8em;height:.8em;border-radius:.2em;margin-right:.4em;vertical-align:-.05em}",
     ".meta{color:#6b7683;font-size:.8rem;font-family:sans-serif}",
@@ -127,10 +131,29 @@ qda_export <- function(what = "all", path = NULL) {
            nchar(.resolve_source(srcs$id[i])$frozen_text, type = "chars"), " chars</div>",
            vars, .render_doc_html(srcs$id[i]))
   }, character(1)), collapse = "\n")
-  memo_html <- if (nrow(memos) == 0) "" else paste(vapply(seq_len(nrow(memos)), function(i) {
-    sprintf('<div class="memo"><b>#%d</b> <span class="meta">%s</span><br>%s</div>',
-            memos$id[i], esc(memos$created_at[i]), esc(memos$text_[i]))
-  }, character(1)), collapse = "\n")
+  # memos grouped by kind (project, document, code, passage), each with its
+  # reference; passage memos quote the passage
+  memo_html <- if (nrow(memos) == 0) "" else {
+    groups <- c(project = "Project memos", document = "Document memos",
+                code = "Code memos", passage = "Passage memos")
+    paste(vapply(names(groups), function(k) {
+      mk <- memos[memos$kind == k, , drop = FALSE]
+      if (nrow(mk) == 0) return("")
+      items <- vapply(seq_len(nrow(mk)), function(i) {
+        ref <- switch(k,
+          document = esc(mk$source[i]),
+          code = paste("Code:", esc(mk$code[i])),
+          passage = sprintf("%s, chars %d-%d: <q>%s</q>", esc(mk$source[i]), mk$start[i], mk$end[i],
+                            esc(mk$passage[i])),
+          "")
+        sprintf('<div class="memo"><b>#%d%s</b> <span class="meta">%s%s</span><br>%s</div>',
+                mk$id[i], if (nzchar(mk$title[i])) paste0(" ", esc(mk$title[i])) else "",
+                esc(mk$created_at[i]), if (nzchar(ref)) paste0(" | ", ref) else "",
+                esc(mk$text_[i]))
+      }, character(1))
+      paste0("<h3>", groups[[k]], " (", nrow(mk), ")</h3>", paste(items, collapse = "\n"))
+    }, character(1)), collapse = "\n")
+  }
   paste0(
     "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>jellyqda report - ",
     esc(basename(project_path())), "</title><style>", css, "</style></head><body>\n",

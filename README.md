@@ -1,257 +1,275 @@
-
 [![R-CMD-check](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml)
 
 # jellyqda
 
-![Screenshot jellyQDA](https://github.com/thedivingshellyfish/jellyqda/blob/main/demo/Screenshot_jellyqda_001.png)
+**Qualitative Inhaltsanalyse von Interviews in R & RStudio: kostenlos, komplett offline, ohne Cloud.**
 
-**R & RStudio-native, fully offline coding of interview transcripts.**
+<img src="docs/screenshots/01-uebersicht.png" alt="jellyqda: Dokumente, Codesystem, Dokument-Browser mit Codings, Memos und Summary Grid" width="1440">
 
-jellyqda is a small R package for qualitative coding (QDA) of interview
-transcripts and field notes — built for a master's thesis, designed to never
-touch the network. All project data lives in **one SQLite file per project**
-(`*.jellyqda`); imported text is **frozen** at import time, so character
-offsets in codings never drift. Every action is recorded in an audit trail
-(`events` table) that can be exported for the methods section. JellyQDA run
-in a browser like Firefox. JellyQDA can start via R script and or R consol.
+> **English summary:** jellyqda is a small R package and local web app for
+> qualitative coding of interview transcripts (deductive and inductive). All
+> data stays in one local SQLite file per project, nothing ever leaves your
+> computer. Install with one line (see below), then `qda_app()`. The UI is
+> German; the R API and function docs are English.
 
-- 100 % offline, local-only storage (DSGVO-friendly: no cloud, no uploads)
-- Import `.txt`, `.md`, `.docx`, `.pdf` (encoding detection, UTF-8)
-- Scriptable API, everything returns tibbles, Viewer output via `qda_view()`
-- Timestamped zip backups with rotation, outside the project folder
-- Free forever (MIT license)
+jellyqda ist ein kleines Werkzeug für die **qualitative Analyse von Interviews
+und Feldnotizen**, entstanden für eine Masterarbeit. Du importierst
+Transkripte, baust ein Kategoriensystem auf (deduktiv aus dem Leitfaden
+und/oder induktiv am Material), markierst Textstellen, schreibst Memos und
+wertest aus. Alles läuft **lokal auf deinem Rechner**, in RStudio oder im
+Browser.
 
-## Install
+- 🔒 **100 % offline:** keine Cloud, keine Uploads, DSGVO-freundlich. Ein Projekt ist **eine Datei** (`*.jellyqda`).
+- 📄 **Import** von `.txt`, `.md`, `.docx` und `.pdf`. Der Text wird beim Import „eingefroren“, Codings verrutschen nie.
+- 🏷️ **Kodieren mit der Maus:** Text markieren, Code anklicken, fertig. Überlappende Codings werden übersichtlich angezeigt.
+- ✂️ **Segmente** nach Absätzen oder **Sprecherwechseln** (`[00:01:12] P: …`), frei anpassbar.
+- 📝 **Memos** in vier Arten: Textstelle, Dokument, Code (Definition, Kodierregel), Projekt.
+- 📊 **Auswerten:** Codings je Code, Volltextsuche, Code-Matrix, Summary Grid, Export (CSV, Excel, Word, HTML-Bericht).
+- ↩️ **Rückgängig/Wiederholen** für alles (Strg+Z / Strg+Y) und ein lückenloses **Protokoll** für den Methodenteil.
+- 🌙 **Dark Mode**, gut lesbar (geprüfter Kontrast).
 
-You can download the the project as a zip file or via git, only the secound 
-step is the installation over the R consol and or RStudio:
+**Ausführliche Anleitung mit Screenshots zu allen Funktionen:**
+[📖 Wiki](https://github.com/thedivingshellyfish/jellyqda/wiki) (auch offline im Ordner [`docs/wiki/`](docs/wiki/Home.md))
 
-> install.packages("path/to/jellyqda", repos = NULL, type = "source")
+---
+
+## Installation (einmalig, ca. 5 Minuten)
+
+**Voraussetzung:** [R](https://cran.r-project.org) ab Version 4.0, am besten
+mit [RStudio](https://posit.co/download/rstudio-desktop/). Beides ist kostenlos.
+
+Öffne R oder RStudio und kopiere diese **eine Zeile** in die Konsole:
 
 ```r
-# from GitHub (needs remotes or pak once):
-# remotes::install_github("thedivingshellyfish/jellyqda")
-# pak::pak("thedivingshellyfish/jellyqda")
-
-# or from a local clone (no CRAN dependency needed):
-install.packages("path/to/jellyqda", repos = NULL, type = "source")
-# dependencies: DBI, RSQLite, readr, stringi, officer, pdftools, tibble,
-#               jsonlite, htmltools, digest, zip
-# for the Shiny app (Suggests): shiny, bslib, colourpicker, fontawesome
+source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")
 ```
 
-## Project structure
+Das Skript installiert alle benötigten Pakete, dann jellyqda, prüft die
+Installation und sagt dir am Ende, wie es weitergeht. Bei Problemen gibt es
+eine konkrete Anleitung aus, z. B. welcher Befehl unter Linux fehlende
+Systembibliotheken für den PDF-Import nachinstalliert.
 
+<details>
+<summary><b>Andere Wege</b> (ZIP-Datei, bestimmte Version, ohne Skript)</summary>
+
+```r
+# aus einer heruntergeladenen ZIP-Datei (z. B. von der Releases-Seite):
+options(jellyqda.install.path = "~/Downloads/jellyqda.zip")
+source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")
+
+# eine bestimmte Version / einen Branch:
+options(jellyqda.install.ref = "v0.4.0")
+
+# danach direkt eine Demo mit Beispiel-Interview starten:
+options(jellyqda.install.start_app = TRUE)
+
+# ganz ohne Skript, aus einem entpackten Ordner:
+install.packages(c("DBI", "RSQLite", "digest", "htmltools", "jsonlite", "officer", "pdftools",
+                   "readr", "stringi", "tibble", "zip", "shiny", "bslib", "colourpicker", "fontawesome",
+                   "writexl"))
+install.packages("pfad/zu/jellyqda", repos = NULL, type = "source")
 ```
-jellyqda/
-├── DESCRIPTION / LICENSE / CITATION      # package metadata (MIT license)
-├── R/                                    # all R code, one file per concern:
-│   ├── jellyqda-package.R                #   package docs -- start here
-│   ├── open.R / schema.R / utils.R       #   project lifecycle, DB schema, shared helpers
-│   ├── import.R / sources.R / view.R     #   import+freeze, source list+variables, Viewer HTML
-│   ├── codes.R / coding.R / memos.R      #   codebook, codings, memos (the core API)
-│   ├── summary.R / stats.R / undo.R      #   summary grid, progress stats, undo
-│   ├── export.R / backup.R / events.R    #   exports + HTML report, zip backups, audit trail
-│   ├── app.R                             #   the Shiny app qda_app() (UI+JS+server in one file)
-│   └── addins.R                          #   RStudio Addins menu entry
-├── inst/extdata/                         # bundled example data (fake transcripts)
-├── inst/examples/jellyqda-vorlage.R      # German template script with comments
-├── tests/testthat/                       # testthat suite (3rd edition)
-├── vignettes/ demo/                      # long-form docs / end-to-end demo
-└── .github/workflows/                    # CI: R CMD check on push/PR
-```
 
-**Architecture in one paragraph:** one SQLite file (`*.jellyqda`) per project
-holds everything (tables: `sources`, `codes`, `codings`, `memos`, `summaries`,
-`events` — see `R/schema.R`). Text is **frozen** at import into
-`sources.frozen_text`, and all codings are 1-based character offsets into that
-frozen text, so they can never drift. The console API (`qda_*()` functions)
-only reads/writes that DB and returns tibbles; the Shiny app (`qda_app()`)
-is a thin reactive layer on top: browser JS maps text selections to the same
-character offsets and calls the same handlers. Every mutation is logged to
-`events`, which powers both `qda_export("audit")` and `qda_undo()`.
+**Linux:** Für den PDF- und Word-Import braucht R einmalig Systembibliotheken,
+unter Ubuntu/Debian z. B.
+`sudo apt install libpoppler-cpp-dev libxml2-dev libssl-dev libcurl4-openssl-dev libfontconfig1-dev`.
+Das Installationsskript nennt den passenden Befehl für deine Distribution.
+</details>
 
-## Quickstart
+---
+
+## Los geht's in 3 Schritten
 
 ```r
 library(jellyqda)
-
-qda_open("meinarbeit.jellyqda")                       # open or create a project
-qda_import(c("interview_01.txt", "interview_02.docx")) # freeze texts (+ originals/)
-qda_code_add("Beruflicher Werdegang")                 # deductive start codebook
-qda_code_add("KMU", parent = "Beruflicher Werdegang")
-
-qda_view(1)                                           # transcript in the Viewer, numbered segments
-qda_code(source = 1, segment = 3, code = "KMU", memo = "5 Jahre KMU")
-qda_code(source = 1, start = 120, end = 340, code = "Beruflicher Werdegang") # or by offsets
-
-qda_segments("KMU")                                   # all passages per code
-qda_codes()                                           # codebook tree
-qda_stats()                                           # progress: % of material coded
-qda_export("all")                                     # segments / codebook / audit as files
-qda_backup()                                          # timestamped zip snapshot
+qda_open("meine-arbeit.jellyqda")   # 1. Projekt anlegen (oder später wieder öffnen)
+qda_app()                           # 2. App starten: öffnet sich im Browser
 ```
 
-## API (V1)
+3. In der App links bei **Dokumente** deine Transkripte importieren (oder
+   per Drag & Drop hineinziehen), im **Code System** erste Codes anlegen, im
+   Text markieren und auf einen Code klicken.
 
-| function | job |
+Beenden: rotes **X** oben rechts (speichert Export + Backup) oder `Esc` in der
+R-Konsole. Gespeichert wird ohnehin **sofort bei jeder Aktion**.
+
+> 💡 **Ausprobieren ohne eigene Daten:**
+> `qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))`
+> oder die fiktiven Transkripte aus dem Ordner [`demo/`](demo/) (mit Zeitmarken, ideal für
+> Segmente nach Sprecherwechsel).
+
+---
+
+## So sieht die Arbeit aus
+
+**Kodieren:** Text markieren, dann erscheint die Aktionsleiste mit allen Codes
+(oder **Strg+1…9**). Daneben: Kommentar zum Coding, Textstellen-Memo, „Als Segment“.
+
+<img src="docs/screenshots/06-markieren-aktionsleiste.png" alt="Markierter Text mit Aktionsleiste" width="798">
+
+**Überlappungen:** Stellen mit mehreren Codings sind grau mit einer Zahl.
+Fährst du mit der Maus darüber, siehst du alle Codings dieser Stelle.
+
+<img src="docs/screenshots/07-ueberlappung-popover.png" alt="Popover bei überlappenden Codings" width="1199">
+
+<table>
+<tr>
+<td width="50%" valign="top"><b>Memos</b> in vier Arten, mit Filter und Suche<br><img src="docs/screenshots/10-memos.png" alt="Memo-Panel" width="298"></td>
+<td width="50%" valign="top"><b>Summary Grid</b>: Zusammenfassung je Code und Dokument<br><img src="docs/screenshots/16-summary-grid.png" alt="Summary Grid" width="298"></td>
+</tr>
+</table>
+
+**Segmente** nach Sprecherwechseln; teilen und zusammenführen mit einem Klick in den Text:
+
+<img src="docs/screenshots/09-segmentleiste.png" alt="Segment-Leiste" width="798">
+
+**Dark Mode** (Mond-Symbol oben rechts):
+
+<img src="docs/screenshots/02-uebersicht-dark.png" alt="Dark Mode" width="1440">
+
+Alle Funktionen Schritt für Schritt: **[Wiki](https://github.com/thedivingshellyfish/jellyqda/wiki)**:
+[Erste Schritte](docs/wiki/Erste-Schritte.md) ·
+[Dokumente](docs/wiki/Dokumente-importieren.md) ·
+[Kodieren](docs/wiki/Kodieren.md) ·
+[Segmente](docs/wiki/Segmente.md) ·
+[Memos](docs/wiki/Memos.md) ·
+[Auswerten & Export](docs/wiki/Auswerten-und-Export.md) ·
+[Rückgängig & Sicherheit](docs/wiki/Rueckgaengig-und-Datensicherheit.md) ·
+[R-Funktionen](docs/wiki/R-Funktionen.md) ·
+[Tastenkürzel](docs/wiki/Tastenkuerzel.md) ·
+[Hilfe bei Problemen](docs/wiki/Hilfe-bei-Problemen.md)
+
+---
+
+## Tastenkürzel
+
+| Kürzel | Wirkung |
 |---|---|
-| `qda_open(path)` | open or create the project file |
-| `qda_import(files)` | import txt/md/docx/pdf, freeze text |
-| `qda_sources()` | list sources |
-| `qda_view(source)` | transcript with segment numbers + colored codings in the Viewer |
-| `qda_codes()` / `qda_code_add(label, parent)` | codebook tree |
-| `qda_code_rename()` / `qda_code_delete()` | codebook maintenance (audited) |
-| `qda_code(source, code, segment | start, end, memo)` | assign a code |
-| `qda_codings()` / `qda_coding_delete()` | list / remove codings |
-| `qda_segments(code)` | all segments per code |
-| `qda_memo_add()` / `qda_memos()` | free memos |
-| `qda_export(what)` | `segments` / `codings` / `codebook` / `audit` / `all` |
-| `qda_backup(path, keep)` | timestamped zip, rotating, outside the project folder |
-| `qda_stats()` | progress overview |
-| `qda_matrix()` | code x source counts (V1.5) |
+| **Strg+1 … 9** | markierten Text mit dem 1.–9. Code kodieren |
+| **Strg+M** | Textstellen-Memo zur Markierung |
+| **Strg+Z / Strg+Y** | Rückgängig / Wiederholen |
+| **Strg+Enter** | Memo speichern (im Memo-Feld) |
+| **Esc** | Überlappungs-Liste schließen |
 
-## Interactive app (V2): `qda_app()`
+Auf dem Mac jeweils **Cmd** statt Strg.
 
-One command starts a local web UI (loopback `127.0.0.1` only — still fully
-offline) in the RStudio Viewer pane:
+---
+
+## Deine Daten
+
+- Ein Projekt ist **eine Datei** (`meine-arbeit.jellyqda`, SQLite). Daneben
+  liegen `originals/` (unveränderte Originaldateien) und `exports/`.
+- **Backups:** Button „Backup“ bzw. `qda_backup()`, außerdem automatisch alle
+  25 Aktionen, als ZIP in `jellyqda-backups/` *außerhalb* des Projektordners.
+  Die letzten 10 werden behalten.
+- **Protokoll:** Jede Aktion wird mit Zeitstempel festgehalten
+  (`qda_export("audit")`), praktisch für den Methodenteil.
+- jellyqda baut **keine Netzwerkverbindung** auf; die App läuft nur auf
+  `127.0.0.1` (dein eigener Rechner). Das wird in den Tests geprüft.
+- **Interviewdaten gehören nicht in Git:** Die `.gitignore` schließt
+  `*.jellyqda`, `originals/`, `exports/` und Backups aus.
+
+---
+
+## Auch ohne App: per R-Skript
+
+Alles, was die App kann, geht auch als R-Code, praktisch für
+reproduzierbare Auswertungen. Eine kommentierte Vorlage liegt in
+[`inst/examples/jellyqda-vorlage.R`](inst/examples/jellyqda-vorlage.R).
 
 ```r
-qda_open("meinarbeit.jellyqda")
-qda_app()                    # opens in a NEW browser window (default, because
-                             # the RStudio Viewer pane is small); Esc stops it
-qda_app(new_window = FALSE)  # instead: inside the RStudio Viewer pane
-# the printed URL can be opened in more browser windows/tabs (shared session)
+library(jellyqda)
+qda_open("meine-arbeit.jellyqda")
+qda_import(c("interview_01.docx", "interview_02.txt"), segments = "speaker")
+qda_code_add("Berufsweg"); qda_code_add("KMU", parent = "Berufsweg")
+qda_code(source = 1, segment = 3, code = "KMU", memo = "5 Jahre KMU")   # ganzes Segment
+qda_code(source = 1, start = 120, end = 340, code = "Berufsweg")      # Zeichenbereich
+qda_memo_add("Nur explizite Aussagen codieren", code = "KMU", title = "Kodierregel")
+qda_segments("KMU")      # alle Textstellen eines Codes (Tabelle)
+qda_matrix()             # Codes × Dokumente
+qda_stats()              # Fortschritt: wie viel ist codiert?
+qda_export("all")        # CSV/Excel/Word/HTML nach exports/
+qda_backup()
 ```
 
-The layout shows all panes at once (workflow logic follows MAXQDA per concept
-§6 — in jellyqda's own look, the concept forbids copying MAXQDA's
-colors/icons/layout):
+Alle Funktionen: [Wiki: R-Funktionen](docs/wiki/R-Funktionen.md) bzw. `?qda_code` usw. in R.
 
-| Window | jellyqda pane (in `qda_app()`) | API |
-|---|---|---|
-| Document System | left top: **Dokumente** tree + import | `qda_sources()` |
-| Code System | left bottom: **Code System** tree, color swatches, add/rename/delete | `qda_codes()` |
-| Document Browser | center top: mark text → colored code buttons / memo field + "Memo speichern" | `qda_view()` |
-| Retrieved Segments | center bottom: segments of the code selected in the tree (click → jump) | `qda_segments()` |
-| (Memo panel) | right: **Memos** — memo of the clicked coding + free memos (editable) | `qda_memos()` |
-| Code Matrix Browser | left: **Code-Matrix** — codes x documents counts, SUM row/col, cell intensity; click cell = open code+document | `qda_matrix()` |
-| Summary Grid | right: **Summary Grid** — click a cell: its segments + editable summary text per cell (saved, audited) | `qda_summary_set()` / `qda_summaries()` |
+---
 
-Memos are captured **one uniform way**: mark text in the document browser,
-type the memo text into the action bar's memo field, click **"Memo
-speichern"** — the passage is stored under a reserved *Memo* code rendered as
-an **underline**, and the selection stays highlighted in the browser (thick
-pink underline) after saving. The memo section (right) lists **memo-marked
-passages** (click = jump to the passage) and **free memos** (console:
-`qda_memo_add()`), and **every entry** has inline edit (pen → textarea +
-save/check), cancel and delete (trash). The symbol bar has a **moon** (dark
-mode), a **?** (help: symbols & shortcuts) and a red **X button** that saves
-everything (export + backup) and stops the app. Each panel (window/section)
-can be collapsed/expanded via the symbol bar icons or the chevron in its
-panel header — persisted with the layout. Console memo API:
-`qda_memo_update()`, `qda_memo_delete()`, `qda_coding_set_memo()`.
+## Für Entwickler:innen
 
-Marking text + clicking a code button stores the coding at the exact
-character offsets in the same `.jellyqda` file (audit event included); click a
-highlight to inspect/delete it. Backup/Export buttons in
-the top bar.
+<details>
+<summary><b>Aufbau des Projekts</b></summary>
 
-**Flexible panes:** drag any panel by its header into another column (e.g.
-Memos to the right, browser stays center; the document browser and segments
-always stay in the center column), drag the gray column borders to
-resize (adjustable between left/center/right). Panel headers show the icon
-on the left and the label on the right. "Layout reset" (grouped with
-Undo/Backup/Export in the top bar) restores the
-default. The arrangement is saved in the browser's localStorage and restored
-on the next start. The optional memo text field appears in the selection
-action bar (only while text is marked). Needs `shiny`, `bslib`,
-`colourpicker`, `fontawesome` (Suggests; install once).
+```
+jellyqda/
+├── DESCRIPTION / LICENSE / CITATION   # Paket-Metadaten (MIT)
+├── install_jellyqda.R                 # Installationsskript (siehe oben)
+├── R/                                 # R-Code, eine Datei pro Thema:
+│   ├── open.R / schema.R / utils.R    #   Projekt öffnen, DB-Schema, Hilfsfunktionen
+│   ├── import.R / sources.R           #   Import + Einfrieren, Dokumente + Variablen
+│   ├── segments.R                     #   Segmente (Regeln, teilen, zusammenführen)
+│   ├── codes.R / coding.R / memos.R   #   Codesystem, Codings, Memos (4 Arten)
+│   ├── render.R / view.R              #   Text mit Markierungen als HTML (App, Bericht, Viewer)
+│   ├── history.R / undo.R / events.R  #   Rückgängig/Wiederholen, Protokoll
+│   ├── summary.R / stats.R            #   Summary Grid, Statistik, Matrix
+│   ├── export.R / backup.R            #   Export + HTML-Bericht, ZIP-Backups
+│   ├── app.R                          #   Shiny-App qda_app(): UI + Server
+│   └── addins.R                       #   RStudio-Addins (Backup, Statistik)
+├── inst/app/www/jellyqda.css|js       # Aussehen + Browser-Logik der App (kommentiert)
+├── inst/extdata/                      # Beispieldaten (fiktiv)
+├── inst/examples/jellyqda-vorlage.R   # kommentierte Vorlage (deutsch)
+├── tests/testthat/                    # Tests (testthat 3)
+└── docs/                              # Screenshots + Wiki-Seiten
+```
 
-**Backups** go to a `jellyqda-backups/` folder *outside* the project
-folder; if the parent directory is not writable (e.g. the project file sits
-directly in `$HOME`), jellyqda automatically falls back to
-`<project-dir>/jellyqda-backups/` with a warning.
+**Architektur in einem Absatz:** Eine SQLite-Datei pro Projekt enthält alles
+(Tabellen `sources`, `codes`, `codings`, `memos`, `segments`, `summaries`,
+`events`, siehe `R/schema.R`). Der Text wird beim Import in
+`sources.frozen_text` eingefroren; Codings, Textstellen-Memos und Segmente sind
+1-basierte Zeichenpositionen in diesem Text. Die `qda_*()`-Funktionen lesen
+und schreiben nur diese Datenbank und geben Tibbles zurück; die App ist eine
+dünne Schicht darüber. Jede Änderung landet mit einem Vorher/Nachher-Schnappschuss
+in `events`; daraus entstehen Protokoll-Export, Rückgängig und Wiederholen.
+Wichtigste Regel (getestet): Der im Browser angezeigte Text ist **Zeichen für
+Zeichen** identisch mit dem eingefrorenen Text, sonst würden Markierungen an
+falscher Stelle gespeichert.
+</details>
 
-Note: RStudio itself cannot show toolbar icons that act on a text selection
-inside the Viewer — that is why the interactive UI is a local Shiny app, the
-"V2 door" reserved in the concept (§3).
+<details>
+<summary><b>Aussehen anpassen</b></summary>
 
-## App features (V2, `qda_app()`)
-
-- **Shortcuts:** `Ctrl+1..9` assign the marked text to the n-th code button,
-  `Ctrl+M` saves a memo (text marked + memo field in the action bar).
-- **Segment badges** in the browser are clickable (selects the whole
-  paragraph); **A− / A+** in the browser header zoom the text (persisted).
-- **Undo** button in the top bar reverts the last action (codings, memos,
-  code add/rename/move) via the audit trail — API: `qda_undo()`.
-- **Project-wide search** (segments panel) jumps to every hit in the browser.
-- **Variables** (case attributes like age/gender) per document: editor in the
-  Dokumente panel, chips in the browser header, filter for the segment list —
-  API: `qda_source_set_var()` / `qda_source_vars()` / `qda_source_del_var()`.
-- **Re-parent codes** by dragging a code onto another code in the code tree
-  (cycle-safe) — API: `qda_code_move()`.
-- **Double-coded passages** (identical range, coded twice) get a dashed pink
-  outline in the browser.
-- **Dark mode** (moon icon, persisted), **help modal** (? icon) explaining all
-  symbols/shortcuts, **progress bars** per document in the tree,
-  **"Gespeichert: HH:MM:SS"** in the top bar, **session resume** (last open
-  document), **file drag & drop** onto the Dokumente panel.
-- **HTML report:** `qda_export("report")` (also included in `"all"`) writes a
-  standalone `exports/report_*.html` with all documents + colored coding
-  marks, codebook, memos and stats.
-
-## Customizing the look of `qda_app()`
-
-Everything visual lives in **`R/app.R`** (single file, no build step):
-
-| What | Where in `R/app.R` |
+| Was | Wo |
 |---|---|
-| All CSS (colors, fonts, panel/button styles, `memomark` underline colors) | the big `shiny::tags$style(...)` block inside `.jellyqda_ui()` — e.g. `#doc mark.memomark { border-bottom:3px solid #b58900; }` and `.memomark.sel { border-bottom:5px solid #d81b60; }` |
-| Base theme color + font scale | `bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.82)` at the top of `.jellyqda_ui()` |
-| Icons | `fontawesome::fa("name")` calls; every icon used in dynamically rendered HTML must also be registered once in the hidden icon `<div>` (otherwise it renders blank). Mini buttons carry a text label (Edit/Save/Del/X) as fallback |
-| Labels / German UI text | the `shiny::*Input(...)` / `shiny::span(...)` calls in `.jellyqda_ui()` and the `sprintf(...)` strings in `.jellyqda_server()` |
-| Code colors | per code in the Code System form (`colourpicker::colourInput`) or `qda_code_add(color = "#...")`; reserved Memo code = gold underline |
-| Panel layout behavior | the JS in `.jellyqda_js()` (drag & drop, column resize handles, localStorage persistence key `jellyqda_layout`) |
+| Farben, Schriften, Abstände, Dark Mode | `inst/app/www/jellyqda.css` (Abschnitte 1–7; Dark-Mode-Farbpalette als CSS-Variablen) |
+| Verhalten im Browser (Markieren, Klicks, Tastenkürzel, Popover, Layout) | `inst/app/www/jellyqda.js` (Abschnitte 1–14) |
+| Hauptfarbe + Schriftgröße | `bslib::bs_theme(primary = "#2c6fbb", font_scale = 0.82)` in `.jellyqda_ui()` (`R/app.R`) |
+| Beschriftungen | `R/app.R` (UI-Elemente und Texte im Server-Teil) |
+| Icons im vom Server erzeugten HTML | `<i class="fa-solid fa-NAME">`, Name in `.jq_icon_names()` eintragen (ein Test prüft das) |
+| Code-Farben | in der App beim Anlegen oder `qda_code_add(color = "#...")` |
 
-After editing: `pkgload::load_all(".")` in dev, or rebuild/reinstall
-(`R CMD build` + `R CMD INSTALL`) and restart `qda_app()`.
+Nach Änderungen: Paket neu installieren (`devtools::install()`) und R neu starten.
+</details>
 
-## Demo & tests
-
-```r
-pkgload::load_all(".")          # dev
-source("demo/jellyqda-demo.R")  # end-to-end demo with bundled example data
-testthat::test_local(".")       # full test suite (incl. offline guarantee)
-```
-
-Example data (fake transcripts + a broken PDF) lives in `inst/extdata/`.
-
-## Data hygiene
-
-- The R package lives in git; **interview data never enters a repo**
-  (`.gitignore` excludes `*.jellyqda`, `originals/`, backups, exports).
-- `qda_backup()` after each session; an auto-snapshot fires after every
-  `auto_snapshot` actions (default 25, see `qda_open()`).
-- Original transcript files are kept unchanged in `originals/`.
-
-## Development
+<details>
+<summary><b>Tests & Entwicklung</b></summary>
 
 ```r
-pkgload::load_all(".")     # dev load
-testthat::test_local(".")  # tests
-R CMD check --as-cran      # full package check (CI runs this on every push)
+pkgload::load_all(".")          # Entwicklungsversion laden
+testthat::test_local(".")       # alle Tests (inkl. Offline-Garantie)
 ```
 
-See `CONTRIBUTING.md`. R code in `R/` must stay ASCII-only (umlauts ->
-ae/oe/ue/ss). Each `R/*.R` file starts with a header comment explaining its
-role in the architecture (see "Project structure" above).
+Fiktive Beispiel-Interviews (10, 30, 60 und 120 Minuten, mit Zeitmarken) liegen
+in `demo/`, gut zum Ausprobieren von Import, Segmenten und Kodieren.
 
-## License & citation
+`R CMD check` läuft bei jedem Push (GitHub Actions). R-Code muss ASCII
+bleiben (Umlaute als `ä` usw.). Siehe `CONTRIBUTING.md`.
+</details>
 
-MIT license — see [LICENSE](LICENSE). Free to use, modify and share;
-interview data stays local in your `.jellyqda` files and is never part of
-the repository. If you use jellyqda in academic work, please cite it:
-`citation("jellyqda")` (see [CITATION](CITATION)).
+---
 
-Documentation is in English; see `vignette("jellyqda")` after installation.
+## Lizenz & Zitieren
+
+MIT-Lizenz, siehe [LICENSE](LICENSE). Frei nutzbar, veränderbar und teilbar.
+Wenn du jellyqda in einer wissenschaftlichen Arbeit verwendest, zitiere es bitte:
+`citation("jellyqda")` (siehe [CITATION](CITATION)).

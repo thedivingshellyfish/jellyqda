@@ -1,8 +1,8 @@
 # jellyqda :: coding.R -- codings: qda_code(), qda_codings(), qda_coding_delete(),
 # qda_coding_set_memo(), qda_segments()
 # Offsets are 1-based character positions into sources.frozen_text and are
-# validated against the frozen text length. The reserved code 'Memo' marks
-# memo passages (rendered as underline in the app).
+# validated against the frozen text length. Memos on passages are separate
+# (memos.R); every coding can carry a short comment (column memo).
 
 # Codings --------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ qda_code <- function(source, code, segment = NULL, start = NULL, end = NULL, mem
     if (!is.null(start) || !is.null(end)) {
       stop("Use either `segment` or `start`/`end`, not both.", call. = FALSE)
     }
-    segs <- .segments_of(src$frozen_text)
+    segs <- .segments_for(src)   # stored segments or automatic (segments.R)
     hit <- segs[segs$segment == as.integer(segment), , drop = FALSE]
     if (nrow(hit) == 0) {
       stop(sprintf("Source '%s' has no segment %s (it has %d).",
@@ -59,7 +59,10 @@ qda_code <- function(source, code, segment = NULL, start = NULL, end = NULL, mem
   )
   id <- DBI::dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
   log_event("coding_add", list(coding_id = id, source_id = src$id, code_id = cod$id,
-                               start = start, end = end, memo = as.character(memo)))
+                               start = start, end = end, memo = as.character(memo)),
+            changes = list(.chg("codings", .snap("codings", integer()), .snap("codings", id))),
+            desc = sprintf("Coding hinzugefuegt: '%s' in %s (Zeichen %d-%d)",
+                           cod$label, src$name, start, end))
   invisible(tibble::tibble(id = id, source_id = src$id, code_id = cod$id,
                            start = start, end = end, memo = as.character(memo)))
 }
@@ -101,10 +104,13 @@ qda_codings <- function(source = NULL, code = NULL) {
 qda_coding_set_memo <- function(coding, memo) {
   con <- qda_con()
   row <- .resolve_coding(coding)
+  before <- .snap("codings", row$id)
   DBI::dbExecute(con, "UPDATE codings SET memo = ? WHERE id = ?",
                  params = list(as.character(memo), row$id))
   log_event("coding_memo", list(coding_id = row$id, memo = as.character(memo),
-                                old_memo = as.character(row$memo)))
+                                old_memo = as.character(row$memo)),
+            changes = list(.chg("codings", before, .snap("codings", row$id))),
+            desc = sprintf("Memo von Coding #%d geaendert", row$id))
   invisible(tibble::tibble(id = row$id, source_id = row$source_id, code_id = row$code_id,
                            start = row$start, end = row$end, memo = as.character(memo)))
 }
@@ -117,10 +123,13 @@ qda_coding_set_memo <- function(coding, memo) {
 qda_coding_delete <- function(coding) {
   con <- qda_con()
   row <- .resolve_coding(coding)
+  before <- .snap("codings", row$id)
   DBI::dbExecute(con, "DELETE FROM codings WHERE id = ?", params = list(row$id))
   log_event("coding_delete", list(coding_id = row$id, source_id = row$source_id,
                                   code_id = row$code_id, start = row$start, end = row$end,
-                                  memo = as.character(row$memo)))
+                                  memo = as.character(row$memo)),
+            changes = list(.chg("codings", before, .snap("codings", integer()))),
+            desc = sprintf("Coding #%d geloescht (Zeichen %d-%d)", row$id, row$start, row$end))
   invisible(NULL)
 }
 

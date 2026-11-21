@@ -4,7 +4,12 @@
 \alias{qda_import}
 \title{Import text files into the active project (text gets frozen)}
 \usage{
-qda_import(files, copy_originals = TRUE, names = NULL)
+qda_import(
+  files,
+  copy_originals = TRUE,
+  names = NULL,
+  segments = c("blankline", "speaker", "line")
+)
 }
 \arguments{
 \item{files}{Character vector of file paths.}
@@ -14,6 +19,11 @@ qda_import(files, copy_originals = TRUE, names = NULL)
 \item{names}{Optional character vector of display names (one per file) --
 e.g. the original file names when importing uploads whose temp paths are
 meaningless (\verb{0.pdf}, ...). Defaults to \code{basename(files)}.}
+
+\item{segments}{How the new documents are divided into segments:
+\code{"blankline"} (paragraphs, default), \code{"speaker"} (one segment per
+speaker turn, e.g. \code{"[00:01:12] P: ..."}) or \code{"line"}. Can be changed
+later with \code{\link[=qda_segments_set]{qda_segments_set()}}; see also \code{\link[=qda_segment_split]{qda_segment_split()}}.}
 }
 \value{
 A tibble with one row per input file: \code{id}, \code{name}, \code{format},
@@ -34,5 +44,6 @@ remains the source of truth; consider manual OCR, e.g. tesseract).
 \dontrun{
 qda_open("meinarbeit.jellyqda")
 qda_import(c("interview_01.txt", "interview_02.docx", "feldnotizen.pdf"))
+qda_import("transkript.txt", segments = "speaker")   # one segment per turn
 }
 }
