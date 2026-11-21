@@ -1,0 +1,505 @@
+/* ==========================================================================
+   jellyqda.css -- Stylesheet der Shiny-App qda_app()
+
+   Wird in R/app.R ueber .jellyqda_assets() als htmlDependency eingebunden
+   (Quelle: inst/app/www/ im installierten Paket).
+
+   Aufbau (von oben nach unten):
+     1. Grundlayout: Seite, Topbar, 3-Spalten-Grid, Panels
+     2. Dokument-Browser: Text, Segment-Badges, Markierungen (<mark>)
+     3. Aktionsleiste (Codes zuweisen) und Coding-Leiste (angeklicktes Coding)
+     4. Listen: Code-Baum, Dokumente, Segmente, Memos
+     5. Symbolleiste in der Topbar
+     6. Tabellen: Code-Matrix und Summary Grid
+     7. Dark Mode (ueberschreibt Farben aus 1-6)
+
+   Hinweise:
+   - Die Reihenfolge der Regeln ist relevant (Kaskade), bitte beim Aendern
+     Regeln nicht wild umsortieren.
+   - Farben anpassen: Hauptfarbe ist #2c6fbb (blau), Memo-Farbe #b58900 (gelb),
+     Doppel-Codierung #d81b60 (pink).
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Grundlayout
+   -------------------------------------------------------------------------- */
+
+body { background:#f4f6f8; }
+
+/* Topbar: Statistik-Zeile, Buttons (Undo, Backup, Export ...) und Symbolleiste */
+.topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
+          padding:.5rem .9rem; border-radius:.6rem; margin-bottom:.6rem;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
+.topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; font-size:.82rem; }
+.btnsection { display:flex; gap:.4rem; align-items:center; }
+/* Rueckgaengig/Wiederholen ohne Eintrag: ausgegraut (bleibt klickbar, der
+   Server meldet dann "Nichts mehr rueckgaengig zu machen") */
+.btnsection .jq-disabled { opacity:.6; }
+.actionbar #memo_field { width:19rem; max-width:100%; margin-bottom:0; }
+
+/* Grid: linke Spalte | Griff | Mitte | Griff | rechte Spalte.
+   Die Spaltenbreiten werden per JS veraendert und im localStorage gemerkt. */
+.appgrid { display:grid; gap:0; height:calc(100vh - 118px);
+           grid-template-columns:300px 6px minmax(0,1fr) 6px 300px; }
+
+/* Ziehgriffe zum Veraendern der Spaltenbreite */
+.colhandle { cursor:col-resize; background:#e2e7ec; border-radius:3px; width:8px; }
+.colhandle:hover { background:#2c6fbb; }
+
+/* Pane = eine Spalte, enthaelt ein oder mehrere Panels (per Drag & Drop verschiebbar) */
+.pane { display:flex; flex-direction:column; min-height:0; min-width:0; gap:.6rem;
+        padding:0 .3rem; overflow:hidden; }
+.pane.droptarget { outline:2px dashed #2c6fbb; outline-offset:-2px; border-radius:.6rem; }
+
+/* Panel = Kachel mit Kopfzeile (.panelhead) und Inhalt (.panelbody) */
+.panel { background:#fff; border-radius:.6rem; box-shadow:0 1px 3px rgba(0,0,0,.08);
+         display:flex; flex-direction:column; min-height:0; flex:1; }
+.panel.dragging { opacity:.45; }
+.panelhead { padding:.35rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
+             display:flex; gap:.45rem; align-items:center; color:#2c6fbb; flex:none;
+             cursor:grab; user-select:none; font-size:.82rem; }
+.panelhead .hlabel { margin-left:auto; }
+
+/* Eingeklappte Panels: nur noch die Kopfzeile ist sichtbar */
+.panel.collapsed { flex:0 0 auto; }
+.panel.collapsed .panelbody { display:none; }
+.toggler { cursor:pointer; color:#8a94a0; }
+.panel.collapsed .toggler i { transform:rotate(-90deg); }
+.panelhead:active { cursor:grabbing; }
+.panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }
+
+
+/* --------------------------------------------------------------------------
+   2. Dokument-Browser
+   -------------------------------------------------------------------------- */
+
+.browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
+.docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
+
+/* #doc enthaelt exakt den eingefrorenen Text. white-space:pre-wrap ist
+   wichtig, damit Zeilenumbrueche erhalten bleiben und die Zeichen-Offsets
+   im Browser 1:1 zum Text in der Datenbank passen.
+   --jqzoom wird von den Buttons A-/A+ gesetzt. */
+#doc { font-family:Georgia,'Times New Roman',serif; font-size:calc(.95rem * var(--jqzoom, 1)); line-height:1.6;
+       white-space:pre-wrap; word-break:break-word; }
+
+/* Ein Segment (= Absatz). Im Textbereich normaler Text-Cursor, damit klar
+   ist: hier wird markiert, nicht geklickt. */
+.segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; cursor:text; }
+
+/* "Seg N"-Badge: ein CSS-Pseudo-Element (kein echter DOM-Text!), damit es die
+   Zeichen-Offsets nicht verfaelscht. Klick darauf markiert den ganzen Absatz
+   (siehe JS-Abschnitt "Segment-Badge"). Es sitzt im linken Innenabstand
+   (padding-left) von .segtext. */
+.segtext::before { content:'Seg ' attr(data-seg); position:absolute; left:0; top:.2em;
+                   font-family:monospace; font-size:.72rem; background:#eef1f4;
+                   border:1px solid #d4dae0; border-radius:.35rem; padding:.1em .4em; color:#5a6672;
+                   cursor:pointer; }
+.segtext:hover::before { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+
+/* Doppelt codierte Passage (gleicher Bereich mehrfach codiert): pinker Rahmen */
+#doc mark.dup, mark.dup { outline:2px dashed #d81b60; outline-offset:1px; }
+
+/* Fortschrittsbalken (Anteil codierter Text) in der Dokumentenliste */
+.pbar { display:block; height:4px; background:#e2e7ec; border-radius:2px; margin-top:.15rem; overflow:hidden; }
+.pbar > span { display:block; height:100%; background:#2c6fbb; }
+
+/* Dokument-Variablen als "Chips" ueber dem Text */
+.docvars { font-size:.7rem; color:#6b7683; margin:.1rem 0 .3rem 0; }
+.docvars .chip { background:#eef1f4; border:1px solid #d4dae0; border-radius:.6rem;
+                 padding:.05rem .45rem; margin-right:.25rem; white-space:nowrap; }
+
+/* Zoom-Buttons A- / A+ in der Kopfzeile des Dokument-Browsers */
+.zoombtns { display:flex; gap:.2rem; margin-left:.3rem; }
+.zoombtns button { border:1px solid #d6dbe1; background:#fff; border-radius:.3rem;
+                   font-size:.68rem; padding:0 .35rem; cursor:pointer; line-height:1.5; }
+
+/* Dateien werden ueber das Dokumente-Panel gezogen */
+.dropfiles { outline:2px dashed #2c6fbb; outline-offset:-3px; }
+
+/* Codings im Text: Hintergrundfarbe = Code-Farbe (inline gesetzt in R).
+   Kein Innenabstand: ein Coding kann an Ueberlappungsgrenzen in mehrere
+   <mark> geteilt sein, Abstaende wuerden dann mitten im Wort auftauchen. */
+#doc mark { padding:0; border-radius:.15em; cursor:pointer; }
+
+/* Ueberlappung (2+ Codings): hellgrau, unten ein 3px-Streifen in den Farben
+   der beteiligten Codes (linear-gradient inline aus R), Zahl am Anfang. */
+#doc mark.ovl { background-color:#dde1e6; background-size:100% 3px;
+                background-position:left bottom; background-repeat:no-repeat; }
+#doc mark.ovl:hover { background-color:#cfd5dc; }
+/* Die Zahl ist ein Pseudo-Element: sichtbar, aber kein Text im DOM
+   -> veraendert die Zeichen-Offsets nicht. */
+#doc mark.ovl.ovl-start::before { content:attr(data-n); display:inline-block;
+  font:700 .62rem/1.25 system-ui, sans-serif; color:#fff; background:#5a6672;
+  border-radius:.7rem; padding:0 .32rem; margin-right:.18rem; vertical-align:.18em;
+  user-select:none; }
+#doc mark.ovl.ovl-start:hover::before { background:#2c6fbb; }
+
+/* Popover mit den Codings einer Ueberlappung (haengt an <body>) */
+#jq-popover { display:none; position:fixed; z-index:2000; width:22rem; max-width:calc(100vw - 16px);
+              max-height:60vh; overflow:auto; background:#fff; border:1px solid #c9d1da;
+              border-radius:.55rem; box-shadow:0 6px 24px rgba(0,0,0,.18); font-size:.78rem; }
+#jq-popover .jqp-head { display:flex; align-items:center; padding:.35rem .6rem; font-weight:700;
+                        color:#2c6fbb; border-bottom:1px solid #e3e8ee; }
+#jq-popover .jqp-close { margin-left:auto; border:none; background:none; font-size:1.1rem;
+                         line-height:1; cursor:pointer; color:#6b7683; }
+#jq-popover .jqp-row { display:flex; gap:.45rem; align-items:flex-start; padding:.4rem .6rem;
+                       border-bottom:1px solid #f0f2f5; }
+#jq-popover .jqp-row:last-child { border-bottom:none; }
+#jq-popover .swatch { margin-top:.15rem; }
+#jq-popover .jqp-main { flex:1; min-width:0; }
+#jq-popover .jqp-pos { color:#6b7683; font-family:monospace; font-size:.7rem; }
+#jq-popover .jqp-text { color:#444; font-family:Georgia,serif; margin-top:.1rem; }
+#jq-popover .jqp-memo { color:#7a6414; font-style:italic; margin-top:.1rem; }
+#jq-popover .jqp-btns { display:flex; flex-direction:column; gap:.2rem; }
+#jq-popover .jqp-btns .mini { margin-left:0; }
+#jq-popover .jqp-show { color:#2c6fbb; }
+
+/* Memo-Markierungen: Unterstreichung statt Hintergrund */
+#doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
+                     border-radius:0; }
+#doc mark.memomark.sel { border-bottom:5px solid #d81b60; background:rgba(216,27,96,.14) !important; }
+
+
+/* --------------------------------------------------------------------------
+   3. Aktionsleiste und Coding-Leiste
+   -------------------------------------------------------------------------- */
+
+/* Gelbe Leiste ueber dem Text, erscheint sobald Text markiert ist:
+   "Markiert: Zeichen X-Y" + ein Button pro Code + Memo */
+.actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
+             border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
+             margin-bottom:.5rem; flex-wrap:wrap; }
+.actionbar .selinfo { font-family:monospace; font-size:.76rem; color:#7a6414; margin-right:.4rem; }
+.codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.25rem .55rem;
+           font-size:.76rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+.codebtn:hover { filter:brightness(1.12); }
+#memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
+                 padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* "Als Segment" in der Aktionsleiste */
+.segdefbtn { border:1px solid #5a6672; background:#fff; border-radius:.4rem;
+             padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* Segment-Leiste: erscheint nach einem Klick in den Text (ohne Markierung) */
+.segbar { flex:none; display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+          background:#f1f3f6; border:1px solid #d4dae0; border-radius:.5rem;
+          padding:.35rem .7rem; margin-bottom:.5rem; }
+.segbar .seginfo { font-family:monospace; font-size:.74rem; color:#5a6672; margin-right:.3rem; }
+.segbar .mini { color:#2c6fbb; font-size:.7rem; padding:.15rem .45rem; }
+.segbar .mini[disabled] { opacity:.4; cursor:default; }
+.segbar .segclose { margin-left:auto; color:#6b7683; }
+
+/* Blaue Leiste: Details zum angeklickten Coding + Loeschen-Button */
+.clickedbar { flex:none; display:flex; gap:.6rem; align-items:center; background:#eef4fb;
+              border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.5rem; }
+
+
+/* --------------------------------------------------------------------------
+   4. Listen: Codes, Dokumente, Segmente, Memos
+   -------------------------------------------------------------------------- */
+
+/* Gemeinsamer Zeilen-Stil fuer alle Listen */
+.coderow, .docrow, .segrow, .memorow { display:flex; gap:.45rem; align-items:center;
+  background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
+.coderow, .docrow, .segrow { cursor:pointer; }
+.coderow:hover, .docrow:hover, .segrow:hover { background:#eef4fb; }
+.coderow.sel { border-color:#2c6fbb; background:#eef4fb; }
+
+/* Farbfeld + Label im Code-Baum */
+/* inline-block: auch in Tabellenzellen (Matrix, Summary Grid) ein Quadrat,
+   nicht nur ein duenner Strich */
+.swatch { display:inline-block; vertical-align:-.15em; width:1rem; height:1rem; border-radius:.3rem;
+          flex:none; border:1px solid rgba(0,0,0,.25); }
+.codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Kleine Buttons (Del, Edit ...) innerhalb einer Zeile */
+.mini { margin-left:.25rem; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+        font-size:.62rem; line-height:1.2; padding:.1rem .3rem; white-space:nowrap;
+        cursor:pointer; color:#b03a2e; flex:none; }
+
+.docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.68rem; color:#56616d; flex:none; }
+.segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
+.segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
+
+/* Memos: mehrzeilig (ueberschreibt display:flex von oben) */
+.memorow { display:block; white-space:pre-wrap; }
+.memogroup { font-size:.68rem; font-weight:700; color:#7a6414; margin:.4rem 0 .2rem 0;
+             text-transform:uppercase; letter-spacing:.04em; }
+.memorow.memomark-row { cursor:pointer; border-left:3px solid #b58900; }
+.memorow.memomark-row:hover { background:#fff8e1; }
+.memorow.editing { border-color:#2c6fbb; }
+.memorow.editing textarea { border:1px solid #b9d2ec; border-radius:.35rem; padding:.2rem .4rem;
+                            font-size:.78rem; margin-bottom:.2rem; }
+.mini.ok { color:#1e7e34; }
+
+/* --- Memo-Panel ---------------------------------------------------------
+   Karten je Memo; linke Randfarbe = Art. Farben fuer den Dark Mode in
+   Abschnitt 7. */
+.memopanel { display:flex; flex-direction:column; gap:.4rem; }
+/* das Memo-Panel bekommt in seiner Spalte doppelt so viel Hoehe */
+.panel.memos { flex:2; }
+.memotoolbar { display:flex; flex-wrap:wrap; gap:.25rem; }
+.newmemo { border:1px solid #c9d1da; background:#fff; color:#2c6fbb; border-radius:.4rem;
+           font-size:.72rem; padding:.18rem .45rem; cursor:pointer; }
+.newmemo:hover:not([disabled]) { background:#eef4fb; }
+.newmemo[disabled] { color:#5f6b78; border-style:dashed; cursor:not-allowed; }
+.newmemo svg { height:.75em; margin-right:.15rem; }
+.memochips { display:flex; flex-wrap:wrap; gap:.2rem; }
+.memochip { border:1px solid #d6dbe1; background:#fff; color:#3f4a56; border-radius:1rem;
+            font-size:.68rem; padding:.05rem .5rem; cursor:pointer; }
+.memochip .n { color:#6b7683; font-weight:600; }
+.memochip.active { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+.memochip.active .n { color:#fff; }
+.memosearch { display:flex; flex-direction:column; gap:0; }
+.memosearch .form-group, .memosearch .shiny-input-container { margin-bottom:.1rem; width:100%; }
+.memosearch .checkbox { font-size:.74rem; margin:0; }
+.memocard { background:#fff; border:1px solid #e3e8ee; border-left:4px solid #8a94a0;
+            border-radius:.45rem; padding:.4rem .55rem; font-size:.78rem; }
+.memocard.kind-passage  { border-left-color:#b58900; }
+.memocard.kind-document { border-left-color:#2c6fbb; }
+.memocard.kind-code     { border-left-color:#7b4fb0; }
+.memocard.kind-project  { border-left-color:#1e7e34; }
+.memocard.kind-comment  { border-left-color:#8a94a0; }
+.memocard.focus { box-shadow:0 0 0 2px #2c6fbb; }
+.memocard.new { background:#fffdf3; }
+.memocard .mc-head { display:flex; align-items:center; gap:.3rem; font-size:.68rem;
+                     color:#5a6672; text-transform:uppercase; letter-spacing:.03em; font-weight:700; }
+.memocard .mc-date { margin-left:auto; font-weight:400; text-transform:none; letter-spacing:0; }
+.memocard .mc-title { font-weight:700; margin-top:.15rem; color:#222; }
+.memocard .mc-ref { color:#2c6fbb; font-size:.72rem; margin-top:.1rem; cursor:pointer;
+                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.memocard .mc-ref:hover { text-decoration:underline; }
+.memocard .mc-text { white-space:pre-wrap; margin-top:.2rem; color:#222; }
+.memocard .mc-btns { display:flex; gap:.25rem; justify-content:flex-end; margin-top:.3rem; }
+.memocard .mc-btns .mini { margin-left:0; color:#2c6fbb; }
+.memocard .mc-btns .mini.danger { color:#b03a2e; }
+.memocard .mc-btns .mini.ok { color:#1e7e34; }
+.memocard textarea, .memocard .mc-titlein { font-size:.78rem; margin-top:.3rem; }
+/* Memo-Symbol im Code-Baum / in der Dokumentenliste */
+.memoicon { color:#b58900; cursor:pointer; flex:none; font-size:.75rem; }
+.memoicon:hover { color:#7a6414; }
+
+/* Grauer Hinweistext, wenn ein Panel leer ist */
+/* Hinweistexte in leeren Panels ("Noch keine Memos." ...).
+   Bewusst NICHT "placeholder" genannt: Bootstrap 5 hat eine Klasse
+   .placeholder fuer graue Lade-Balken (Hintergrund = Textfarbe) -- damit
+   waren alle Hinweise nur graue Flaechen ohne lesbaren Text. */
+.jq-hint { color:#5f6b78; font-style:italic; padding:1rem; text-align:center; }
+
+/* Memo des angeklickten Codings (rechte Spalte oben) */
+.memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
+             padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
+.memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }
+
+
+/* --------------------------------------------------------------------------
+   5. Symbolleiste (Panels ein-/ausklappen, Dark Mode, Hilfe, Beenden)
+   -------------------------------------------------------------------------- */
+
+.symbolbar { display:flex; gap:.3rem; align-items:center; padding-left:.4rem;
+             border-left:1px solid #e3e8ee; }
+.symbolbar .symgroup { display:flex; gap:.2rem; align-items:center; }
+.symbolbar .symsep { width:1px; height:1.1rem; background:#d6dbe1; }
+.symbolbar .symbtn { border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+                    padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
+.symbolbar .symbtn:hover { background:#eef4fb; }
+.symbolbar .symbtn.active { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+.symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
+
+
+/* --------------------------------------------------------------------------
+   6. Tabellen: Code-Matrix (.mxcell) und Summary Grid (.sumcell)
+   -------------------------------------------------------------------------- */
+
+table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
+table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
+table.mx th { background:#f4f6f8; position:sticky; top:0; }
+table.mx td.rowlab { text-align:left; font-weight:600; cursor:pointer; white-space:nowrap; }
+table.mx td.rowlab:hover { background:#eef4fb; }
+/* Heatmap-Zellen (blauer Hintergrund inline): fast schwarze, fette Zahl */
+td.mxcell { cursor:pointer; min-width:2.2rem; color:#0b1622; font-weight:700; }
+td.mxcell:hover { outline:2px solid #2c6fbb; }
+td.sumcell { cursor:pointer; min-width:2.2rem; background:#fbfcfe; }
+td.sumcell:hover { outline:2px solid #b58900; }
+td.sumcell.has { background:#fff8e1; }   /* Zelle hat schon eine Summary */
+tr.sumrow td { font-weight:700; background:#f4f6f8; }
+.sumdetail-segs { max-height:10rem; overflow:auto; margin-bottom:.4rem; }
+
+
+/* kleine graue Nebeninfo (statt fester Farbe im HTML, damit der Dark Mode
+   sie umfaerben kann) */
+.jq-sub { font-size:.78rem; color:#5f6b78; margin:0 0 .4rem 0; }
+
+/* --------------------------------------------------------------------------
+   7. Dark Mode
+   Wird per JS ueber das Attribut data-bs-theme="dark" auf <html> aktiviert
+   (Bootstrap 5.3 Color Mode).
+
+   Regel: JEDE Komponente bekommt hier Hintergrund UND Schriftfarbe aus der
+   Palette unten -- nie nur eines von beiden (sonst z.B. helle Schrift auf
+   dem weissen Hintergrund aus dem hellen Modus). Alle Kombinationen
+   erreichen mindestens WCAG AA (4.5:1 fuer Text); geprueft mit einem
+   automatischen Kontrast-Test ueber alle sichtbaren Texte der App.
+   -------------------------------------------------------------------------- */
+
+[data-bs-theme="dark"] {
+  --jq-page:    #15181c;   /* Seitenhintergrund */
+  --jq-panel:   #1e2329;   /* Panels, Topbar */
+  --jq-raised:  #262c35;   /* Zeilen, Karten, Buttons */
+  --jq-hover:   #313946;   /* Hover / ausgewaehlt (neutral) */
+  --jq-selbg:   #22406a;   /* ausgewaehlte Zeile (blau) */
+  --jq-border:  #3d4654;
+  --jq-text:    #e6e9ed;   /* Haupttext   (~13:1 auf --jq-panel) */
+  --jq-muted:   #b4bdc8;   /* Nebentext   (~8:1)  */
+  --jq-subtle:  #9ea8b5;   /* Hinweise    (~6:1)  */
+  --jq-blue:    #8dbdf2;   /* Links, Buttons (~7:1) */
+  --jq-red:     #ff9b91;
+  --jq-green:   #86d695;
+  --jq-gold:    #e8cd6f;
+  --jq-purple:  #b99be6;
+  --jq-amberbg: #2e2a17;   /* Aktionsleiste / Memo-Formular */
+  --jq-amberbd: #6b5a1e;
+}
+
+/* Grundflaechen */
+[data-bs-theme="dark"] body { background:var(--jq-page); color:var(--jq-text); }
+[data-bs-theme="dark"] .topbar,
+[data-bs-theme="dark"] .panel { background:var(--jq-panel); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .topbar .stats { color:var(--jq-blue); }
+[data-bs-theme="dark"] .topbar .savedline { color:var(--jq-muted); }
+[data-bs-theme="dark"] .panelhead { background:var(--jq-raised); color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .toggler { color:var(--jq-muted); }
+[data-bs-theme="dark"] .panelbody { color:var(--jq-text); }
+[data-bs-theme="dark"] .colhandle { background:var(--jq-border); }
+[data-bs-theme="dark"] hr { border-color:var(--jq-border); opacity:1; }
+[data-bs-theme="dark"] .jq-hint { color:var(--jq-subtle); }
+[data-bs-theme="dark"] .jq-sub { color:var(--jq-subtle); }
+[data-bs-theme="dark"] label, [data-bs-theme="dark"] .control-label,
+[data-bs-theme="dark"] .checkbox { color:var(--jq-text); }
+
+/* Formulare (Bootstrap + selectize) inkl. Platzhaltertext */
+[data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] textarea, [data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] .selectize-input, [data-bs-theme="dark"] .selectize-dropdown {
+  background-color:var(--jq-raised) !important; color:var(--jq-text) !important;
+  border-color:var(--jq-border) !important; }
+[data-bs-theme="dark"] .selectize-input input, [data-bs-theme="dark"] .selectize-input .item,
+[data-bs-theme="dark"] .selectize-dropdown .option { color:var(--jq-text) !important; }
+[data-bs-theme="dark"] .selectize-dropdown .active { background:var(--jq-hover) !important; }
+[data-bs-theme="dark"] ::placeholder { color:var(--jq-subtle) !important; opacity:1; }
+[data-bs-theme="dark"] .form-check-input { background-color:var(--jq-raised); border-color:var(--jq-subtle); }
+[data-bs-theme="dark"] .btn-outline-secondary { color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .btn-outline-secondary:hover { background:var(--jq-hover); color:var(--jq-text); }
+[data-bs-theme="dark"] .btn-outline-danger { color:var(--jq-red); border-color:var(--jq-red); }
+[data-bs-theme="dark"] .btn-outline-danger:hover { background:var(--jq-red); color:#1a1a1a; }
+[data-bs-theme="dark"] .btn-default { color:var(--jq-text); background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .btn-default:hover { background:var(--jq-hover); color:var(--jq-text); }
+[data-bs-theme="dark"] .btn-primary { color:#fff; }
+[data-bs-theme="dark"] .btn-file { color:var(--jq-text); }
+[data-bs-theme="dark"] .progress-bar { color:#fff; }
+
+/* Symbolleiste, kleine Buttons */
+[data-bs-theme="dark"] .symbolbar { border-color:var(--jq-border); }
+[data-bs-theme="dark"] .symbolbar .symbtn, [data-bs-theme="dark"] .zoombtns button {
+  background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] .symbolbar .symbtn:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .symbolbar .symbtn.active { background:#2c6fbb; color:#fff; }
+[data-bs-theme="dark"] .symbolbar .symsep { background:var(--jq-border); }
+[data-bs-theme="dark"] .symbolbar .closeapp { color:var(--jq-red); border-color:#7a3a33; }
+[data-bs-theme="dark"] .mini { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-red); }
+[data-bs-theme="dark"] .mini:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .mini.ok, [data-bs-theme="dark"] .memocard .mc-btns .mini.ok { color:var(--jq-green); }
+[data-bs-theme="dark"] .mini.danger, [data-bs-theme="dark"] .memocard .mc-btns .mini.danger { color:var(--jq-red); }
+[data-bs-theme="dark"] .memocard .mc-btns .mini, [data-bs-theme="dark"] .segbar .mini,
+[data-bs-theme="dark"] #jq-popover .jqp-show { color:var(--jq-blue); }
+[data-bs-theme="dark"] .btnsection .jq-disabled { opacity:.6; }
+
+/* Listen: Dokumente, Codes, Segmente, Treffer */
+[data-bs-theme="dark"] .docrow, [data-bs-theme="dark"] .coderow, [data-bs-theme="dark"] .segrow,
+[data-bs-theme="dark"] .memorow { background:var(--jq-raised); color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .docrow:hover, [data-bs-theme="dark"] .coderow:hover,
+[data-bs-theme="dark"] .segrow:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .docrow.sel, [data-bs-theme="dark"] .coderow.sel { background:var(--jq-selbg); border-color:#4a7fc0; }
+[data-bs-theme="dark"] .docrow .fmt, [data-bs-theme="dark"] .coderow .fmt { color:var(--jq-muted); }
+[data-bs-theme="dark"] .codelabel { color:var(--jq-text); }
+[data-bs-theme="dark"] .snippet, [data-bs-theme="dark"] .segrow b { color:var(--jq-text); }
+[data-bs-theme="dark"] .segrow .memo, [data-bs-theme="dark"] .memorow .memo,
+[data-bs-theme="dark"] .memogroup { color:var(--jq-gold); }
+[data-bs-theme="dark"] .pbar { background:var(--jq-border); }
+[data-bs-theme="dark"] .pbar > span { background:var(--jq-blue); }
+[data-bs-theme="dark"] .docvars { color:var(--jq-muted); }
+[data-bs-theme="dark"] .docvars .chip { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-muted); }
+[data-bs-theme="dark"] .swatch { border-color:rgba(255,255,255,.35); }
+[data-bs-theme="dark"] .memoicon { color:var(--jq-gold); }
+
+/* Dokument-Browser */
+[data-bs-theme="dark"] .docarea { background:var(--jq-page); }
+[data-bs-theme="dark"] #doc { color:var(--jq-text); }
+[data-bs-theme="dark"] .segtext::before { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-muted); }
+[data-bs-theme="dark"] .segtext:hover::before { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+/* Codings haben helle Code-Farben als Hintergrund -> dunkle Schrift */
+[data-bs-theme="dark"] #doc mark { color:#141414; }
+[data-bs-theme="dark"] #doc mark.ovl { background-color:#3d4654; color:var(--jq-text); }
+[data-bs-theme="dark"] #doc mark.ovl:hover { background-color:#4a5566; }
+[data-bs-theme="dark"] #doc mark.memomark { color:var(--jq-text); border-bottom-color:var(--jq-gold); }
+[data-bs-theme="dark"] #doc mark.ovl mark.memomark, [data-bs-theme="dark"] #doc mark[data-cid] mark.memomark { color:inherit; }
+
+/* Aktionsleiste (markierter Text), Segment-Leiste, Coding-Leiste */
+[data-bs-theme="dark"] .actionbar { background:var(--jq-amberbg); border-color:var(--jq-amberbd); }
+[data-bs-theme="dark"] .actionbar .selinfo { color:var(--jq-gold); }
+[data-bs-theme="dark"] .actionbar .jq-sub { color:var(--jq-muted); }
+[data-bs-theme="dark"] #memo_only_btn { background:var(--jq-raised); color:var(--jq-gold); border-color:var(--jq-gold); }
+[data-bs-theme="dark"] #memo_only_btn:hover, [data-bs-theme="dark"] .segdefbtn:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .segdefbtn { background:var(--jq-raised); border-color:var(--jq-subtle); color:var(--jq-text); }
+[data-bs-theme="dark"] .codebtn { color:#141414; }
+[data-bs-theme="dark"] .segbar { background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .segbar .seginfo, [data-bs-theme="dark"] .segbar .segclose { color:var(--jq-muted); }
+[data-bs-theme="dark"] .clickedbar { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+
+/* Ueberlappungs-Popover */
+[data-bs-theme="dark"] #jq-popover { background:var(--jq-panel); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] #jq-popover .jqp-head { border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] #jq-popover .jqp-close, [data-bs-theme="dark"] #jq-popover .jqp-pos { color:var(--jq-muted); }
+[data-bs-theme="dark"] #jq-popover .jqp-row { border-color:var(--jq-raised); }
+[data-bs-theme="dark"] #jq-popover .jqp-text { color:var(--jq-text); }
+[data-bs-theme="dark"] #jq-popover .jqp-memo { color:var(--jq-gold); }
+
+/* Memo-Panel */
+[data-bs-theme="dark"] .newmemo { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] .newmemo:hover:not([disabled]) { background:var(--jq-hover); }
+[data-bs-theme="dark"] .newmemo[disabled] { color:var(--jq-subtle); opacity:1; border-style:dashed; }
+[data-bs-theme="dark"] .memochip { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .memochip .n { color:var(--jq-muted); }
+[data-bs-theme="dark"] .memochip.active { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+[data-bs-theme="dark"] .memochip.active .n { color:#fff; }
+[data-bs-theme="dark"] .memocard { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .memocard.kind-passage  { border-left-color:var(--jq-gold); }
+[data-bs-theme="dark"] .memocard.kind-document { border-left-color:var(--jq-blue); }
+[data-bs-theme="dark"] .memocard.kind-code     { border-left-color:var(--jq-purple); }
+[data-bs-theme="dark"] .memocard.kind-project  { border-left-color:var(--jq-green); }
+[data-bs-theme="dark"] .memocard.kind-comment  { border-left-color:var(--jq-subtle); }
+[data-bs-theme="dark"] .memocard.new { background:var(--jq-amberbg); }
+[data-bs-theme="dark"] .memocard.focus { box-shadow:0 0 0 2px var(--jq-blue); }
+[data-bs-theme="dark"] .memocard .mc-head, [data-bs-theme="dark"] .memocard .mc-date { color:var(--jq-muted); }
+[data-bs-theme="dark"] .memocard .mc-title, [data-bs-theme="dark"] .memocard .mc-text { color:var(--jq-text); }
+[data-bs-theme="dark"] .memocard .mc-ref { color:var(--jq-blue); }
+[data-bs-theme="dark"] .memodetail { background:var(--jq-amberbg); border-color:var(--jq-amberbd); color:var(--jq-text); }
+[data-bs-theme="dark"] .memodetail .who { color:var(--jq-gold); }
+
+/* Tabellen: Code-Matrix + Summary Grid */
+[data-bs-theme="dark"] table.mx th, [data-bs-theme="dark"] tr.sumrow td { background:var(--jq-raised); color:var(--jq-text); }
+[data-bs-theme="dark"] table.mx th, [data-bs-theme="dark"] table.mx td { border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] table.mx td.rowlab:hover { background:var(--jq-hover); }
+/* Heatmap-Zellen: blauer Hintergrund (inline) -> weisse, fette Zahl */
+[data-bs-theme="dark"] td.mxcell { color:#fff; font-weight:700; }
+[data-bs-theme="dark"] td.sumcell { background:var(--jq-panel); }
+[data-bs-theme="dark"] td.sumcell.has { background:var(--jq-amberbg); }
+
+/* Benachrichtigungen + Dialoge (Shiny / Bootstrap) */
+[data-bs-theme="dark"] .shiny-notification { background:#1f3a5a; color:var(--jq-text); border-color:#3d6a9e; }
+[data-bs-theme="dark"] .shiny-notification-warning { background:#4a3c12; border-color:#8a7020; }
+[data-bs-theme="dark"] .shiny-notification-error { background:#4a1f1b; border-color:#8a3a33; }
+[data-bs-theme="dark"] .shiny-notification-close { color:var(--jq-text); }
+[data-bs-theme="dark"] .modal-content { background:var(--jq-panel); color:var(--jq-text); border-color:var(--jq-border); }

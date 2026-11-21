@@ -1,0 +1,51 @@
+Package: jellyqda
+Type: Package
+Title: RStudio-Native, Fully Offline Coding of Interview Transcripts
+Version: 0.1.0
+Authors@R: person("Shelly", email = "shelly@systemli.org", role = c("aut", "cre"))
+Description: jellyqda is a small, RStudio-native tool for qualitative coding of
+    interview transcripts (and field notes) that works completely offline. All
+    project data lives in a single SQLite file (one '.jellyqda' file per
+    project); imported text is frozen at import time so character offsets
+    never drift. Coding happens through a narrow, scriptable API that returns
+    tibbles: qda_open(), qda_import(), qda_sources(), qda_view(), qda_codes(),
+    qda_code_add(), qda_code(), qda_segments(), qda_export(), qda_backup() and
+    qda_stats(). Every action is recorded in an audit trail (events table) that
+    can be exported for the methods section of a thesis. No network access is
+    ever required or attempted.
+License: MIT + file LICENSE
+Encoding: UTF-8
+URL: https://github.com/thedivingshellyfish/jellyqda
+BugReports: https://github.com/thedivingshellyfish/jellyqda/issues
+Depends: R (>= 4.0.0)
+Imports:
+    DBI,
+    RSQLite,
+    digest,
+    htmltools,
+    jsonlite,
+    officer,
+    pdftools,
+    readr,
+    stats,
+    stringi,
+    tibble,
+    tools,
+    utils,
+    zip
+Suggests:
+    bslib,
+    colourpicker,
+    fontawesome,
+    knitr,
+    pkgload,
+    rmarkdown,
+    roxygen2,
+    rstudioapi,
+    shiny,
+    testthat (>= 3.0.0),
+    writexl
+Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1
