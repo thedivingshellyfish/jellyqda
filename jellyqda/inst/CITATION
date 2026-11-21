@@ -1,0 +1,11 @@
+citHeader("To cite jellyqda in publications, please use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "jellyqda: RStudio-Native, Fully Offline Coding of Interview Transcripts",
+  author = person("Shelly"),
+  year = "2026",
+  note = "R package version 0.1.0",
+  url = "https://github.com/shelly/jellyqda",
+  textVersion = "Shelly (2026). jellyqda: RStudio-Native, Fully Offline Coding of Interview Transcripts. R package version 0.1.0. https://github.com/shelly/jellyqda"
+)

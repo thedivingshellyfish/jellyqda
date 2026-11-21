@@ -1,0 +1,6 @@
+^\.git
+^data-raw
+^demo
+^\.github
+^\.gitignore
+^\.Rbuildignore

@@ -1,0 +1,18 @@
+# never commit interview data -- code only (see concept section 7)
+*.jellyqda
+*.jellyqda-journal
+originals/
+jellyqda-backups/
+exports/
+*.zip
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# R build artifacts
+*.Rcheck/
+*.tar.gz
+*.zip
+revdep/
+.Rproj.user
