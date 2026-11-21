@@ -45,9 +45,11 @@
 #' Choices for the segment-rule select inputs in the app (label -> rule).
 #' @noRd
 .segrule_choices <- function() {
-  c("Leerzeilen (Abs\u00e4tze)" = "blankline",
-    "Sprecherwechsel ([00:01:12] P: ...)" = "speaker",
-    "Jede Zeile" = "line")
+  # setNames statt c("Abs\u00e4tze" = ...): Namen mit Umlauten in c() werden
+  # beim Installieren in die System-Kodierung uebersetzt und erscheinen in
+  # Nicht-UTF-8-Umgebungen als "<U+00E4>"; Werte (Strings) bleiben UTF-8.
+  stats::setNames(c("blankline", "speaker", "line"),
+                  c("Leerzeilen (Abs\u00e4tze)", "Sprecherwechsel ([00:01:12] P: ...)", "Jede Zeile"))
 }
 
 #' Start/end of every line of `text` (character positions, without "\n").

@@ -128,6 +128,22 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
 }
 
 
+# --- Icon-Verzeichnis ----------------------------------------------------------
+# Alle Font-Awesome-Icons, die als <i class="fa-solid fa-NAME"> im vom Server
+# erzeugten HTML vorkommen (und die der UI-Buttons).
+#' @noRd
+.jq_icon_names <- function() {
+  c("folder-tree", "tags", "tag", "highlighter", "note-sticky", "trash", "floppy-disk",
+    "file-export", "plus", "file-lines", "table-columns", "pen", "chevron-down",
+    "table-cells", "table-list", "xmark", "check", "rotate-left", "rotate-right", "moon",
+    "scissors", "circle-question", "magnifying-glass", "book", "comment")
+}
+#' @noRd
+.jq_icon_registry <- function() {
+  shiny::div(id = "jq-icons", style = "display:none",
+    lapply(.jq_icon_names(), function(n) shiny::span(`data-faicon` = n, fontawesome::fa(n))))
+}
+
 # --- UI: four-pane layout (MAXQDA workflow logic, jellyqda look) -------------
 #' @noRd
 .jellyqda_ui <- function() {
@@ -136,15 +152,14 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
     theme = bslib::bs_theme(version = 5, primary = "#2c6fbb", font_scale = 0.82),
     shiny::tags$head(
       .jellyqda_assets(),   # CSS + JS aus inst/app/www/ (siehe oben)
-      # Unsichtbare Icons: sorgen nur dafuer, dass Font Awesome (CSS + Fonts)
-      # beim Start geladen wird. Das HTML, das der Server spaeter per renderUI
-      # erzeugt, benutzt <i class="fa-solid ..."> und braucht diese Fonts.
-      shiny::div(style = "display:none", fa("folder-tree"), fa("tags"), fa("highlighter"),
-                 fa("note-sticky"), fa("trash"), fa("floppy-disk"), fa("file-export"),
-                 fa("plus"), fa("file-lines"), fa("table-columns"), fa("pen"), fa("chevron-down"),
-                 fa("table-cells"), fa("table-list"), fa("xmark"), fa("check"),
-                 fa("rotate-left"), fa("rotate-right"), fa("moon"), fa("scissors"),
-                 fa("circle-question"), fa("magnifying-glass"), fa("trash"))
+      # Icon-Verzeichnis (unsichtbar): fontawesome::fa() liefert SVG-Grafiken,
+      # KEINE Icon-Schrift. HTML, das der Server schreibt, nutzt aber
+      # <i class="fa-solid fa-NAME"></i> -- ohne Schrift waere das 0x0 Pixel
+      # gross (unsichtbar). jellyqda.js (Abschnitt 14) ersetzt jedes solche
+      # <i> durch eine Kopie des SVG aus diesem Verzeichnis.
+      # Neues Icon im Server-HTML? -> Namen in .jq_icon_names() ergaenzen
+      # (ein Test prueft das: test-app.R, "icon registry").
+      .jq_icon_registry()
     ),
     shiny::div(class = "topbar",
       shiny::span(class = "stats", shiny::textOutput("stats_line", inline = TRUE)),
@@ -229,7 +244,7 @@ shiny::div(class = "panelhead", draggable = "true", fa("tags"), shiny::span(clas
             shiny::selectInput("ren_code_select", "Code waehlen", choices = character()),
             shiny::textInput("ren_code_label", "Umbenennen in", placeholder = "neues Label"),
             shiny::actionButton("rename_code_btn", "Umbenennen", class = "btn-sm btn-secondary"),
-            shiny::actionButton("delete_code_btn", "Loeschen", icon = fa("trash"), class = "btn-sm btn-outline-danger")
+            shiny::actionButton("delete_code_btn", "L\u00f6schen", icon = fa("trash"), class = "btn-sm btn-outline-danger")
           )
         ),
         shiny::div(class = "panel matrix", id = "panel-matrix",
@@ -467,7 +482,7 @@ shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::sp
                 row$id, row$source, row$code, row$start, row$end,
                 if (nchar(row$text) > 90) paste0(substr(row$text, 1, 90), "...") else row$text,
                 if (nzchar(row$memo)) paste0("  |  Kommentar: ", row$memo) else "")),
-      shiny::actionButton("del_clicked_coding", "Loeschen", icon = fontawesome::fa("trash"),
+      shiny::actionButton("del_clicked_coding", "L\u00f6schen", icon = fontawesome::fa("trash"),
                           class = "btn-sm btn-outline-danger")
     )
   })
@@ -575,7 +590,7 @@ shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::sp
       snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
       sprintf('<div class="segrow" data-goto="%d" title="Im Dokument-Browser zeigen">
                <span class="snippet">#%d <b>%s</b> &rarr; <b>%s</b> (%d-%d) %s%s</span>
-               <button class="mini" data-delcoding="%d"><i class="fa-solid fa-trash"></i> Del</button></div>',
+               <button class="mini" data-delcoding="%d" title="Coding l\u00f6schen (Strg+Z macht es r\u00fcckg\u00e4ngig)"><i class="fa-solid fa-trash"></i> L\u00f6schen</button></div>',
               df$id[i], df$id[i], esc(df$source[i]), esc(df$code[i]), df$start[i], df$end[i],
               esc(snippet),
               if (nzchar(df$memo[i])) sprintf('<span class="memo">Memo: %s</span>', esc(df$memo[i])) else "",
@@ -668,7 +683,7 @@ shiny::div(class = "panelhead", draggable = "true", fa("note-sticky"), shiny::sp
     if (length(v) == 0) return(shiny::tags$div(class = "jq-hint", "Keine Variablen."))
     rows <- vapply(seq_along(v), function(i) {
       sprintf('<div class="segrow"><span class="snippet"><b>%s</b> = %s</span>
-               <button class="mini" data-delvar="1" data-varsrc="%d" data-varkey="%s"><i class="fa-solid fa-trash"></i> Del</button></div>',
+               <button class="mini" data-delvar="1" data-varsrc="%d" data-varkey="%s"><i class="fa-solid fa-trash"></i> L\u00f6schen</button></div>',
               esc(names(v)[i]), esc(v[i]), sid, esc(names(v)[i]))
     }, character(1))
     shiny::HTML(paste(rows, collapse = ""))

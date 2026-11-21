@@ -101,6 +101,17 @@ body { background:#f4f6f8; }
 /* Doppelt codierte Passage (gleicher Bereich mehrfach codiert): pinker Rahmen */
 #doc mark.dup, mark.dup { outline:2px dashed #d81b60; outline-offset:1px; }
 
+/* Fortschrittsbalken (Anteil codierter Text) in der Dokumentenliste:
+   eigene Zeile unter Name + Format (sonst 0 px breit im Flex-Layout) */
+.docrow { flex-wrap:wrap; }
+.docrow .pbar { flex-basis:100%; }
+/* Icons aus dem Icon-Verzeichnis (jellyqda.js, Abschnitt 14) */
+/* fa()-SVGs bringen inline "margin:auto" mit -- im Flex-Layout wuerde das den
+   freien Platz schlucken (Text rueckt nach rechts) -> ueberschreiben */
+.jq-ico { height:.85em; width:auto; vertical-align:-.1em; fill:currentColor;
+          margin-left:0 !important; margin-right:.25em !important; }
+.memoicon .jq-ico { height:.8em; }
+
 /* Fortschrittsbalken (Anteil codierter Text) in der Dokumentenliste */
 .pbar { display:block; height:4px; background:#e2e7ec; border-radius:2px; margin-top:.15rem; overflow:hidden; }
 .pbar > span { display:block; height:100%; background:#2c6fbb; }
@@ -238,8 +249,10 @@ body { background:#f4f6f8; }
    Karten je Memo; linke Randfarbe = Art. Farben fuer den Dark Mode in
    Abschnitt 7. */
 .memopanel { display:flex; flex-direction:column; gap:.4rem; }
-/* das Memo-Panel bekommt in seiner Spalte doppelt so viel Hoehe */
+/* das Memo-Panel bekommt in seiner Spalte doppelt so viel Hoehe -- aber
+   nicht, wenn es eingeklappt ist (sonst bleibt eine leere Flaeche) */
 .panel.memos { flex:2; }
+.panel.memos.collapsed { flex:0 0 auto; }
 .memotoolbar { display:flex; flex-wrap:wrap; gap:.25rem; }
 .newmemo { border:1px solid #c9d1da; background:#fff; color:#2c6fbb; border-radius:.4rem;
            font-size:.72rem; padding:.18rem .45rem; cursor:pointer; }

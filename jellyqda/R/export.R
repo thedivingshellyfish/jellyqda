@@ -102,7 +102,7 @@ qda_export <- function(what = "all", path = NULL) {
     "body{font-family:Georgia,serif;max-width:60rem;margin:2rem auto;color:#222;line-height:1.55}",
     "h1{border-bottom:3px solid #2c6fbb;padding-bottom:.3rem}",
     "h2{margin-top:2.2rem;border-bottom:1px solid #ccc;padding-bottom:.2rem}",
-    "#doc{margin:.6rem 0 1.4rem 0}",
+    "#doc{margin:.6rem 0 1.4rem 0;white-space:pre-wrap}",   # keep line breaks of the transcript
     ".segtext{position:relative;padding-left:3.2rem;margin:.35rem 0}",
     ".segtext::before{content:'Seg ' attr(data-seg);position:absolute;left:0;top:.15rem;font-size:.68rem;color:#8a94a0;font-family:sans-serif}",
     "mark{padding:0 .12em;border-radius:.25em}",
