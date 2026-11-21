@@ -30,6 +30,7 @@
      11. Beim Laden der Seite: Layout, Datei-Drop, Spalten-Griffe
      12. Ueberlappende Codings: Popover mit allen Codings einer Stelle
      13. Memo-Panel: neue Memos, Filter, Springen, Fokus
+     14. Icons: <i class="fa-solid fa-NAME"> -> SVG aus dem Icon-Verzeichnis
    ========================================================================== */
 
 
@@ -773,4 +774,34 @@ Shiny.addCustomMessageHandler('jellyqdaMemoFocus', function(msg) {
     var c = document.querySelector('.memocard[data-memokey="' + msg.key + '"]');
     if (c) c.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }, 350);
+});
+
+
+/* --------------------------------------------------------------------------
+   14. Icons
+   Die App laedt KEINE Font-Awesome-Schrift (fontawesome::fa() in R liefert
+   SVG). Server-HTML mit <i class="fa-solid fa-NAME"></i> waere deshalb
+   unsichtbar (0x0 Pixel). Hier wird jedes solche <i> durch eine Kopie des
+   passenden SVG aus dem unsichtbaren Icon-Verzeichnis #jq-icons ersetzt --
+   beim Laden und fuer alles, was Shiny spaeter neu zeichnet.
+   -------------------------------------------------------------------------- */
+
+function jqIcons(root) {
+  if (!root || !root.querySelectorAll) return;
+  var list = root.matches && root.matches('i.fa-solid') ? [root] : root.querySelectorAll('i.fa-solid');
+  Array.prototype.forEach.call(list, function(i) {
+    var name = null;
+    i.classList.forEach(function(c) { if (c.indexOf('fa-') === 0 && c !== 'fa-solid') name = c.slice(3); });
+    var src = name && document.querySelector('#jq-icons [data-faicon="' + name + '"] svg');
+    if (!src) return;
+    var svg = src.cloneNode(true);
+    svg.classList.add('jq-ico');
+    i.replaceWith(svg);
+  });
+}
+$(function() {
+  jqIcons(document.body);
+  new MutationObserver(function(muts) {
+    muts.forEach(function(m) { m.addedNodes.forEach(function(n) { if (n.nodeType === 1) jqIcons(n); }); });
+  }).observe(document.body, {childList: true, subtree: true});
 });

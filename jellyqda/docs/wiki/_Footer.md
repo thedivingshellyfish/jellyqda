@@ -1,0 +1,1 @@
+jellyqda: kostenlos, offline, MIT-Lizenz · [Repository](https://github.com/thedivingshellyfish/jellyqda) · [Fehler melden](https://github.com/thedivingshellyfish/jellyqda/issues) · Screenshots mit fiktiven Beispieldaten
