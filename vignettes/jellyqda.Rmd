@@ -1,0 +1,132 @@
+---
+title: "Getting started with jellyqda"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with jellyqda}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+jellyqda is a small tool for **qualitative data analysis** of interview
+transcripts and field notes -- deductive and inductive, e.g. qualitative
+content analysis after Mayring or Kuckartz. It runs **entirely offline** on
+your own computer: no account, no cloud, no upload. All project data lives in
+**one SQLite file per project** (`.jellyqda`).
+
+You can work in two ways that share the same project file:
+
+* the **app** (`qda_app()`), a local web interface in the browser or the
+  RStudio Viewer, available in English and German, and
+* the **R functions** shown below, which make every step scriptable and
+  reproducible.
+
+## A project in a few lines
+
+```{r}
+library(jellyqda)
+qda_language("en")                                 # report language (also: "de")
+
+project <- file.path(tempfile(), "example.jellyqda")
+qda_open(project)                                  # creates the project file
+
+files <- system.file("extdata", c("interview_01.txt", "interview_02.md"),
+                     package = "jellyqda")
+qda_import(files, segments = "speaker")            # text is frozen on import
+```
+
+Imported text is **frozen** into the database and never extracted again, so
+the character offsets of codings can never drift.
+
+## Codes and subcodes
+
+Codes form a tree. A subcode takes the colour of its code family; the app
+draws subcodes as outlined boxes hanging on a coloured line ("thread").
+
+```{r}
+qda_code_add("Career path", color = "#E69F00")
+qda_code_add("SME", parent = "Career path")
+qda_code_add("Motivation", color = "#56B4E9")
+qda_code_guide("SME",
+  definition = "Statements about working in a small or medium-sized enterprise",
+  rule = "Only explicit statements")
+qda_codes()[, c("label", "path", "color")]
+```
+
+## Coding
+
+A passage is addressed by its segment number (see `qda_view()`) or by
+character offsets.
+
+```{r}
+qda_code(source = 1, segment = 2, code = "SME", memo = "first job")
+qda_code(source = 1, start = 10, end = 60, code = "Motivation")
+qda_autocode("project", code = "Career path", scope = "segment")
+qda_codings()[, c("id", "source", "code", "start", "end")]
+```
+
+Every change is recorded in an audit trail and can be undone:
+
+```{r}
+qda_coding_recode(1, "Career path")
+qda_undo()
+qda_codings()$code[1]
+```
+
+## Memos and Mayring's summarising content analysis
+
+```{r}
+qda_memo_add("Ask about question 3 again", title = "Research diary")
+qda_coding_set_summary(1, paraphrase = "Started in a small company",
+                       generalization = "Career start in an SME")
+qda_codings()[1, c("code", "paraphrase", "generalization")]
+```
+
+## Analysis
+
+```{r}
+qda_stats()$overall[, c("n_sources", "n_codes", "n_codings", "pct_coded")]
+qda_matrix()
+qda_words(n = 5)
+qda_kwic("Projektleiterin", width = 25)[, c("source", "left", "match", "right")]
+qda_source_set_var(1, "role", "project lead")
+qda_case_matrix("role")
+```
+
+## Export, report and backup
+
+`qda_export()` writes CSV, Excel and Word files and a standalone HTML report
+into `exports/` next to the project. The report is made for printing on A4:
+colours only appear as lines and borders, and a margin column next to each
+interview shows which codings, comments and memos are at which place.
+
+```{r}
+out <- qda_export(c("codebook", "report"))
+basename(out$file)
+basename(qda_backup(quiet = TRUE))
+```
+
+## The app
+
+```{r, eval = FALSE}
+qda_app()               # language follows qda_language() / your system
+qda_app(lang = "de")    # German user interface
+```
+
+In the app you mark text with the mouse and click a code; codes with
+subcodes unfold them in the coding bar. The code tree supports "+ Code",
+"+ Subcode", renaming by double click, merging codes and a coding guideline
+per code. The analysis window offers word frequencies, keyword in context and
+a table for Mayring's paraphrase and generalisation.
+
+```{r, include = FALSE}
+qda_close()
+```
+
+## Offline guarantee
+
+jellyqda never opens a network connection; the app binds to `127.0.0.1`
+only. The test suite checks the package source for network calls.

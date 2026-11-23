@@ -1,0 +1,791 @@
+/* ==========================================================================
+   jellyqda.css -- stylesheet of the Shiny app qda_app()
+
+   Included in R/app.R via .jellyqda_assets() (source: inst/app/www/ in the
+   installed package).
+
+   Sections (top to bottom):
+     1. Basic layout: page, top bar, 3-column grid, panels
+     2. Document browser: text, segment badges, marks (<mark>)
+     3. Action bar (assign codes) and coding bar (clicked coding)
+     4. Lists: code tree, documents, segments, memos
+     5. Toolbar in the top bar
+     6. Tables: code matrix and summary grid
+     7. Dark mode (overrides colours of 1-6)
+     8. Code tree with subcodes, coding bar, save/export (since 0.5.0)
+        -- including its own dark mode rules at the end of the section
+     9. Analysis tools (since 0.6.0)
+
+   Notes:
+   - The order of the rules matters (cascade); please do not reorder rules
+     wildly when changing them.
+   - Colours: main colour #2c6fbb (blue), memo colour #b58900 (yellow),
+     double coding #d81b60 (pink).
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Grundlayout
+   -------------------------------------------------------------------------- */
+
+body { background:#f4f6f8; }
+
+/* Top bar: statistics line, buttons (undo, save, export ...) and toolbar */
+.topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
+          padding:.5rem .9rem; border-radius:.6rem; margin-bottom:.6rem;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
+.topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; font-size:.82rem; }
+.btnsection { display:flex; gap:.4rem; align-items:center; }
+/* Undo/redo without an entry: greyed out (stays clickable, the server then
+   reports "Nothing left to undo") */
+.btnsection .jq-disabled { opacity:.6; }
+.actionbar #memo_field { width:19rem; max-width:100%; margin-bottom:0; }
+
+/* Grid: left column | handle | middle | handle | right column.
+   The column widths are changed by JS and remembered in localStorage. */
+.appgrid { display:grid; gap:0; height:calc(100vh - 118px);
+           grid-template-columns:300px 6px minmax(0,1fr) 6px 300px; }
+
+/* drag handles to change the column width */
+.colhandle { cursor:col-resize; background:#e2e7ec; border-radius:3px; width:8px; }
+.colhandle:hover { background:#2c6fbb; }
+
+/* Pane = one column, contains one or more panels (movable by drag & drop) */
+.pane { display:flex; flex-direction:column; min-height:0; min-width:0; gap:.6rem;
+        padding:0 .3rem; overflow:hidden; }
+.pane.droptarget { outline:2px dashed #2c6fbb; outline-offset:-2px; border-radius:.6rem; }
+
+/* Panel = tile with a header (.panelhead) and content (.panelbody) */
+.panel { background:#fff; border-radius:.6rem; box-shadow:0 1px 3px rgba(0,0,0,.08);
+         display:flex; flex-direction:column; min-height:0; flex:1; }
+.panel.dragging { opacity:.45; }
+.panelhead { padding:.35rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
+             display:flex; gap:.45rem; align-items:center; color:#2c6fbb; flex:none;
+             cursor:grab; user-select:none; font-size:.82rem; }
+.panelhead .hlabel { margin-left:auto; }
+
+/* collapsed panels: only the header is visible */
+.panel.collapsed { flex:0 0 auto; }
+.panel.collapsed .panelbody { display:none; }
+.toggler { cursor:pointer; color:#8a94a0; }
+.panel.collapsed .toggler i { transform:rotate(-90deg); }
+.panelhead:active { cursor:grabbing; }
+.panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }
+
+
+/* --------------------------------------------------------------------------
+   2. Dokument-Browser
+   -------------------------------------------------------------------------- */
+
+.browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
+.docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
+
+/* #doc contains exactly the frozen text. white-space:pre-wrap matters so
+   that line breaks are kept and the character offsets in the browser match
+   the text in the database 1:1.
+   --jqzoom is set by the A-/A+ buttons. */
+#doc { font-family:Georgia,'Times New Roman',serif; font-size:calc(.95rem * var(--jqzoom, 1)); line-height:1.6;
+       white-space:pre-wrap; word-break:break-word; }
+
+/* One segment (= paragraph). Normal text cursor in the text area, to make
+   clear: text is marked here, not clicked. */
+.segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; cursor:text; }
+
+/* "Seg N" badge: a CSS pseudo-element (no real DOM text!), so that it does
+   not distort the character offsets. A click on it marks the whole
+   paragraph (see JS section "segment badge"). It sits in the left padding
+   (padding-left) of .segtext. */
+.segtext::before { content:'Seg ' attr(data-seg); position:absolute; left:0; top:.2em;
+                   font-family:monospace; font-size:.72rem; background:#eef1f4;
+                   border:1px solid #d4dae0; border-radius:.35rem; padding:.1em .4em; color:#5a6672;
+                   cursor:pointer; }
+.segtext:hover::before { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+
+/* Doppelt codierte Passage (gleicher Bereich mehrfach codiert): pinker Rahmen */
+#doc mark.dup, mark.dup { outline:2px dashed #d81b60; outline-offset:1px; }
+
+/* progress bar (share of coded text) in the document list: its own row
+   below name + format (otherwise 0 px wide in the flex layout) */
+.docrow { flex-wrap:wrap; }
+.docrow .pbar { flex-basis:100%; }
+/* icons from the icon registry (jellyqda.js, section 14) */
+/* fa() SVGs bring an inline "margin:auto" -- in the flex layout this would
+   swallow the free space (text moves to the right) -> override */
+.jq-ico { height:.85em; width:auto; vertical-align:-.1em; fill:currentColor;
+          margin-left:0 !important; margin-right:.25em !important; }
+.memoicon .jq-ico { height:.8em; }
+
+/* progress bar (share of coded text) in the document list */
+.pbar { display:block; height:4px; background:#e2e7ec; border-radius:2px; margin-top:.15rem; overflow:hidden; }
+.pbar > span { display:block; height:100%; background:#2c6fbb; }
+
+/* document variables as "chips" above the text */
+.docvars { font-size:.7rem; color:#6b7683; margin:.1rem 0 .3rem 0; }
+.docvars .chip { background:#eef1f4; border:1px solid #d4dae0; border-radius:.6rem;
+                 padding:.05rem .45rem; margin-right:.25rem; white-space:nowrap; }
+
+/* zoom buttons A- / A+ in the header of the document browser */
+.zoombtns { display:flex; gap:.2rem; margin-left:.3rem; }
+.zoombtns button { border:1px solid #d6dbe1; background:#fff; border-radius:.3rem;
+                   font-size:.68rem; padding:0 .35rem; cursor:pointer; line-height:1.5; }
+
+/* files are dragged over the documents panel */
+.dropfiles { outline:2px dashed #2c6fbb; outline-offset:-3px; }
+
+/* Codings in the text: background colour = code colour (set inline in R).
+   No padding: a coding may be split into several <mark>s at overlap
+   boundaries, gaps would then appear in the middle of a word. */
+#doc mark { padding:0; border-radius:.15em; cursor:pointer; }
+
+/* Overlap (2+ codings): light grey, at the bottom a 3px stripe in the colours
+   of the codes involved (linear-gradient inline from R), number at the start. */
+#doc mark.ovl { background-color:#dde1e6; background-size:100% 3px;
+                background-position:left bottom; background-repeat:no-repeat; }
+#doc mark.ovl:hover { background-color:#cfd5dc; }
+/* The number is a pseudo-element: visible, but no text in the DOM
+   -> does not change the character offsets. */
+#doc mark.ovl.ovl-start::before { content:attr(data-n); display:inline-block;
+  font:700 .62rem/1.25 system-ui, sans-serif; color:#fff; background:#5a6672;
+  border-radius:.7rem; padding:0 .32rem; margin-right:.18rem; vertical-align:.18em;
+  user-select:none; }
+#doc mark.ovl.ovl-start:hover::before { background:#2c6fbb; }
+
+/* popover with the codings of an overlap (hangs on <body>) */
+#jq-popover { display:none; position:fixed; z-index:2000; width:22rem; max-width:calc(100vw - 16px);
+              max-height:60vh; overflow:auto; background:#fff; border:1px solid #c9d1da;
+              border-radius:.55rem; box-shadow:0 6px 24px rgba(0,0,0,.18); font-size:.78rem; }
+#jq-popover .jqp-head { display:flex; align-items:center; padding:.35rem .6rem; font-weight:700;
+                        color:#2c6fbb; border-bottom:1px solid #e3e8ee; }
+#jq-popover .jqp-close { margin-left:auto; border:none; background:none; font-size:1.1rem;
+                         line-height:1; cursor:pointer; color:#6b7683; }
+#jq-popover .jqp-row { display:flex; gap:.45rem; align-items:flex-start; padding:.4rem .6rem;
+                       border-bottom:1px solid #f0f2f5; }
+#jq-popover .jqp-row:last-child { border-bottom:none; }
+#jq-popover .swatch { margin-top:.15rem; }
+#jq-popover .jqp-main { flex:1; min-width:0; }
+#jq-popover .jqp-pos { color:#6b7683; font-family:monospace; font-size:.7rem; }
+#jq-popover .jqp-text { color:#444; font-family:Georgia,serif; margin-top:.1rem; }
+#jq-popover .jqp-memo { color:#7a6414; font-style:italic; margin-top:.1rem; }
+#jq-popover .jqp-btns { display:flex; flex-direction:column; gap:.2rem; }
+#jq-popover .jqp-btns .mini { margin-left:0; }
+#jq-popover .jqp-show { color:#2c6fbb; }
+
+/* Memo-Markierungen: Unterstreichung statt Hintergrund */
+#doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
+                     border-radius:0; }
+#doc mark.memomark.sel { border-bottom:5px solid #d81b60; background:rgba(216,27,96,.14) !important; }
+
+
+/* --------------------------------------------------------------------------
+   3. Action bar and coding bar
+   -------------------------------------------------------------------------- */
+
+/* yellow bar above the text, appears as soon as text is marked:
+   "Marked: characters X-Y" + one button per code + memo */
+.actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
+             border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
+             margin-bottom:.5rem; flex-wrap:wrap; }
+.actionbar .selinfo { font-family:monospace; font-size:.76rem; color:#7a6414; margin-right:.4rem; }
+.codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.25rem .55rem;
+           font-size:.76rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+.codebtn:hover { filter:brightness(1.12); }
+#memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
+                 padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* "As segment" in the action bar */
+.segdefbtn { border:1px solid #5a6672; background:#fff; border-radius:.4rem;
+             padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* segment bar: appears after a click into the text (without a selection) */
+.segbar { flex:none; display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+          background:#f1f3f6; border:1px solid #d4dae0; border-radius:.5rem;
+          padding:.35rem .7rem; margin-bottom:.5rem; }
+.segbar .seginfo { font-family:monospace; font-size:.74rem; color:#5a6672; margin-right:.3rem; }
+.segbar .mini { color:#2c6fbb; font-size:.7rem; padding:.15rem .45rem; }
+.segbar .mini[disabled] { opacity:.4; cursor:default; }
+.segbar .segclose { margin-left:auto; color:#6b7683; }
+
+/* blue bar: details of the clicked coding + delete button */
+.clickedbar { flex:none; display:flex; gap:.6rem; align-items:center; background:#eef4fb;
+              border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.5rem; }
+
+
+/* --------------------------------------------------------------------------
+   4. Listen: Codes, Dokumente, Segmente, Memos
+   -------------------------------------------------------------------------- */
+
+/* common row style for all lists */
+.coderow, .docrow, .segrow, .memorow { display:flex; gap:.45rem; align-items:center;
+  background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
+.coderow, .docrow, .segrow { cursor:pointer; }
+.coderow:hover, .docrow:hover, .segrow:hover { background:#eef4fb; }
+.coderow.sel { border-color:#2c6fbb; background:#eef4fb; }
+
+/* colour swatch + label in the code tree */
+/* inline-block: a square in table cells too (matrix, summary grid), not
+   just a thin line */
+.swatch { display:inline-block; vertical-align:-.15em; width:1rem; height:1rem; border-radius:.3rem;
+          flex:none; border:1px solid rgba(0,0,0,.25); }
+.codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* small buttons (delete, edit ...) inside a row */
+.mini { margin-left:.25rem; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+        font-size:.62rem; line-height:1.2; padding:.1rem .3rem; white-space:nowrap;
+        cursor:pointer; color:#b03a2e; flex:none; }
+
+.docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.68rem; color:#56616d; flex:none; }
+.segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
+.segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
+
+/* Memos: mehrzeilig (ueberschreibt display:flex von oben) */
+.memorow { display:block; white-space:pre-wrap; }
+.memogroup { font-size:.68rem; font-weight:700; color:#7a6414; margin:.4rem 0 .2rem 0;
+             text-transform:uppercase; letter-spacing:.04em; }
+.memorow.memomark-row { cursor:pointer; border-left:3px solid #b58900; }
+.memorow.memomark-row:hover { background:#fff8e1; }
+.memorow.editing { border-color:#2c6fbb; }
+.memorow.editing textarea { border:1px solid #b9d2ec; border-radius:.35rem; padding:.2rem .4rem;
+                            font-size:.78rem; margin-bottom:.2rem; }
+.mini.ok { color:#1e7e34; }
+
+/* --- Memo panel ---------------------------------------------------------
+   One card per memo; left border colour = kind. Colours for dark mode in
+   section 7. */
+.memopanel { display:flex; flex-direction:column; gap:.4rem; }
+/* the memo panel gets twice the height in its column -- but not when it is
+   collapsed (an empty area would remain otherwise) */
+.panel.memos { flex:2; }
+/* the code system with its tree (codes + subcodes) needs more height than documents/matrix */
+.panel.codes { flex:1.7; }
+.panel.codes.collapsed { flex:0 0 auto; }
+.panel.memos.collapsed { flex:0 0 auto; }
+.memotoolbar { display:flex; flex-wrap:wrap; gap:.25rem; }
+.newmemo { border:1px solid #c9d1da; background:#fff; color:#2c6fbb; border-radius:.4rem;
+           font-size:.72rem; padding:.18rem .45rem; cursor:pointer; }
+.newmemo:hover:not([disabled]) { background:#eef4fb; }
+.newmemo[disabled] { color:#5f6b78; border-style:dashed; cursor:not-allowed; }
+.newmemo svg { height:.75em; margin-right:.15rem; }
+.memochips { display:flex; flex-wrap:wrap; gap:.2rem; }
+.memochip { border:1px solid #d6dbe1; background:#fff; color:#3f4a56; border-radius:1rem;
+            font-size:.68rem; padding:.05rem .5rem; cursor:pointer; }
+.memochip .n { color:#6b7683; font-weight:600; }
+.memochip.active { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+.memochip.active .n { color:#fff; }
+.memosearch { display:flex; flex-direction:column; gap:0; }
+.memosearch .form-group, .memosearch .shiny-input-container { margin-bottom:.1rem; width:100%; }
+.memosearch .checkbox { font-size:.74rem; margin:0; }
+.memocard { background:#fff; border:1px solid #e3e8ee; border-left:4px solid #8a94a0;
+            border-radius:.45rem; padding:.4rem .55rem; font-size:.78rem; }
+.memocard.kind-passage  { border-left-color:#b58900; }
+.memocard.kind-document { border-left-color:#2c6fbb; }
+.memocard.kind-code     { border-left-color:#7b4fb0; }
+.memocard.kind-project  { border-left-color:#1e7e34; }
+.memocard.kind-comment  { border-left-color:#8a94a0; }
+.memocard.focus { box-shadow:0 0 0 2px #2c6fbb; }
+.memocard.new { background:#fffdf3; }
+.memocard .mc-head { display:flex; align-items:center; gap:.3rem; font-size:.68rem;
+                     color:#5a6672; text-transform:uppercase; letter-spacing:.03em; font-weight:700; }
+.memocard .mc-date { margin-left:auto; font-weight:400; text-transform:none; letter-spacing:0; }
+.memocard .mc-title { font-weight:700; margin-top:.15rem; color:#222; }
+.memocard .mc-ref { color:#2c6fbb; font-size:.72rem; margin-top:.1rem; cursor:pointer;
+                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.memocard .mc-ref:hover { text-decoration:underline; }
+.memocard .mc-text { white-space:pre-wrap; margin-top:.2rem; color:#222; }
+.memocard .mc-btns { display:flex; gap:.25rem; justify-content:flex-end; margin-top:.3rem; }
+.memocard .mc-btns .mini { margin-left:0; color:#2c6fbb; }
+.memocard .mc-btns .mini.danger { color:#b03a2e; }
+.memocard .mc-btns .mini.ok { color:#1e7e34; }
+.memocard textarea, .memocard .mc-titlein { font-size:.78rem; margin-top:.3rem; }
+/* memo icon in the code tree / in the document list */
+.memoicon { color:#b58900; cursor:pointer; flex:none; font-size:.75rem; }
+.memoicon:hover { color:#7a6414; }
+
+/* grey hint text when a panel is empty */
+/* Hint texts in empty panels ("No memos yet." ...).
+   Deliberately NOT called "placeholder": Bootstrap 5 has a class
+   .placeholder for grey loading bars (background = text colour) -- with it
+   all hints were just grey areas without readable text. */
+.jq-hint { color:#5f6b78; font-style:italic; padding:1rem; text-align:center; }
+
+/* memo of the clicked coding (right column, top) */
+.memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
+             padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
+.memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }
+
+
+/* --------------------------------------------------------------------------
+   5. Toolbar (show/hide panels, dark mode, help, language, quit)
+   -------------------------------------------------------------------------- */
+
+.symbolbar { display:flex; gap:.3rem; align-items:center; padding-left:.4rem;
+             border-left:1px solid #e3e8ee; }
+.symbolbar .symgroup { display:flex; gap:.2rem; align-items:center; }
+.symbolbar .symsep { width:1px; height:1.1rem; background:#d6dbe1; }
+.symbolbar .symbtn { border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+                    padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
+.symbolbar .symbtn:hover { background:#eef4fb; }
+.symbolbar .symbtn.active { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+.symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
+
+
+/* --------------------------------------------------------------------------
+   6. Tables: code matrix (.mxcell) and summary grid (.sumcell)
+   -------------------------------------------------------------------------- */
+
+table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
+table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
+table.mx th { background:#f4f6f8; position:sticky; top:0; }
+table.mx td.rowlab { text-align:left; font-weight:600; cursor:pointer; white-space:nowrap; }
+table.mx td.rowlab:hover { background:#eef4fb; }
+/* Heatmap-Zellen (blauer Hintergrund inline): fast schwarze, fette Zahl */
+td.mxcell { cursor:pointer; min-width:2.2rem; color:#0b1622; font-weight:700; }
+td.mxcell:hover { outline:2px solid #2c6fbb; }
+td.sumcell { cursor:pointer; min-width:2.2rem; background:#fbfcfe; }
+td.sumcell:hover { outline:2px solid #b58900; }
+td.sumcell.has { background:#fff8e1; }   /* cell already has a summary */
+tr.sumrow td { font-weight:700; background:#f4f6f8; }
+.sumdetail-segs { max-height:10rem; overflow:auto; margin-bottom:.4rem; }
+
+
+/* small grey side information (instead of a fixed colour in the HTML, so
+   that dark mode can recolour it) */
+.jq-sub { font-size:.78rem; color:#5f6b78; margin:0 0 .4rem 0; }
+
+/* --------------------------------------------------------------------------
+   7. Dark mode
+   Activated by JS via the attribute data-bs-theme="dark" on <html>
+   (Bootstrap 5.3 colour mode).
+
+   Rule: EVERY component gets background AND text colour from the palette
+   below -- never only one of them (otherwise e.g. light text on the white
+   background of light mode). All combinations reach at least WCAG AA
+   (4.5:1 for text); checked with an automatic contrast test over all
+   visible texts of the app.
+   -------------------------------------------------------------------------- */
+
+[data-bs-theme="dark"] {
+  --jq-page:    #15181c;   /* Seitenhintergrund */
+  --jq-panel:   #1e2329;   /* Panels, Topbar */
+  --jq-raised:  #262c35;   /* Zeilen, Karten, Buttons */
+  --jq-hover:   #313946;   /* Hover / ausgewaehlt (neutral) */
+  --jq-selbg:   #22406a;   /* selected row (blue) */
+  --jq-border:  #3d4654;
+  --jq-text:    #e6e9ed;   /* main text  (~13:1 on --jq-panel) */
+  --jq-muted:   #b4bdc8;   /* Nebentext   (~8:1)  */
+  --jq-subtle:  #9ea8b5;   /* Hinweise    (~6:1)  */
+  --jq-blue:    #8dbdf2;   /* Links, Buttons (~7:1) */
+  --jq-red:     #ff9b91;
+  --jq-green:   #86d695;
+  --jq-gold:    #e8cd6f;
+  --jq-purple:  #b99be6;
+  --jq-amberbg: #2e2a17;   /* Aktionsleiste / Memo-Formular */
+  --jq-amberbd: #6b5a1e;
+}
+
+/* Grundflaechen */
+[data-bs-theme="dark"] body { background:var(--jq-page); color:var(--jq-text); }
+[data-bs-theme="dark"] .topbar,
+[data-bs-theme="dark"] .panel { background:var(--jq-panel); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .topbar .stats { color:var(--jq-blue); }
+[data-bs-theme="dark"] .topbar .savedline { color:var(--jq-muted); }
+[data-bs-theme="dark"] .panelhead { background:var(--jq-raised); color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .toggler { color:var(--jq-muted); }
+[data-bs-theme="dark"] .panelbody { color:var(--jq-text); }
+[data-bs-theme="dark"] .colhandle { background:var(--jq-border); }
+[data-bs-theme="dark"] hr { border-color:var(--jq-border); opacity:1; }
+[data-bs-theme="dark"] .jq-hint { color:var(--jq-subtle); }
+[data-bs-theme="dark"] .jq-sub { color:var(--jq-subtle); }
+[data-bs-theme="dark"] label, [data-bs-theme="dark"] .control-label,
+[data-bs-theme="dark"] .checkbox { color:var(--jq-text); }
+
+/* Formulare (Bootstrap + selectize) inkl. Platzhaltertext */
+[data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] textarea, [data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] .selectize-input, [data-bs-theme="dark"] .selectize-dropdown {
+  background-color:var(--jq-raised) !important; color:var(--jq-text) !important;
+  border-color:var(--jq-border) !important; }
+[data-bs-theme="dark"] .selectize-input input, [data-bs-theme="dark"] .selectize-input .item,
+[data-bs-theme="dark"] .selectize-dropdown .option { color:var(--jq-text) !important; }
+[data-bs-theme="dark"] .selectize-dropdown .active { background:var(--jq-hover) !important; }
+[data-bs-theme="dark"] ::placeholder { color:var(--jq-subtle) !important; opacity:1; }
+[data-bs-theme="dark"] .form-check-input { background-color:var(--jq-raised); border-color:var(--jq-subtle); }
+[data-bs-theme="dark"] .btn-outline-secondary { color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .btn-outline-secondary:hover { background:var(--jq-hover); color:var(--jq-text); }
+[data-bs-theme="dark"] .btn-outline-danger { color:var(--jq-red); border-color:var(--jq-red); }
+[data-bs-theme="dark"] .btn-outline-danger:hover { background:var(--jq-red); color:#1a1a1a; }
+[data-bs-theme="dark"] .btn-default { color:var(--jq-text); background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .btn-default:hover { background:var(--jq-hover); color:var(--jq-text); }
+[data-bs-theme="dark"] .btn-primary { color:#fff; }
+[data-bs-theme="dark"] .btn-file { color:var(--jq-text); }
+[data-bs-theme="dark"] .progress-bar { color:#fff; }
+
+/* Symbolleiste, kleine Buttons */
+[data-bs-theme="dark"] .symbolbar { border-color:var(--jq-border); }
+[data-bs-theme="dark"] .symbolbar .symbtn, [data-bs-theme="dark"] .zoombtns button {
+  background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] .symbolbar .symbtn:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .symbolbar .symbtn.active { background:#2c6fbb; color:#fff; }
+[data-bs-theme="dark"] .symbolbar .symsep { background:var(--jq-border); }
+[data-bs-theme="dark"] .symbolbar .closeapp { color:var(--jq-red); border-color:#7a3a33; }
+[data-bs-theme="dark"] .mini { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-red); }
+[data-bs-theme="dark"] .mini:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .mini.ok, [data-bs-theme="dark"] .memocard .mc-btns .mini.ok { color:var(--jq-green); }
+[data-bs-theme="dark"] .mini.danger, [data-bs-theme="dark"] .memocard .mc-btns .mini.danger { color:var(--jq-red); }
+[data-bs-theme="dark"] .memocard .mc-btns .mini, [data-bs-theme="dark"] .segbar .mini,
+[data-bs-theme="dark"] #jq-popover .jqp-show { color:var(--jq-blue); }
+[data-bs-theme="dark"] .btnsection .jq-disabled { opacity:.6; }
+
+/* Listen: Dokumente, Codes, Segmente, Treffer */
+[data-bs-theme="dark"] .docrow, [data-bs-theme="dark"] .coderow, [data-bs-theme="dark"] .segrow,
+[data-bs-theme="dark"] .memorow { background:var(--jq-raised); color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .docrow:hover, [data-bs-theme="dark"] .coderow:hover,
+[data-bs-theme="dark"] .segrow:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .docrow.sel, [data-bs-theme="dark"] .coderow.sel { background:var(--jq-selbg); border-color:#4a7fc0; }
+[data-bs-theme="dark"] .docrow .fmt, [data-bs-theme="dark"] .coderow .fmt { color:var(--jq-muted); }
+[data-bs-theme="dark"] .codelabel { color:var(--jq-text); }
+[data-bs-theme="dark"] .snippet, [data-bs-theme="dark"] .segrow b { color:var(--jq-text); }
+[data-bs-theme="dark"] .segrow .memo, [data-bs-theme="dark"] .memorow .memo,
+[data-bs-theme="dark"] .memogroup { color:var(--jq-gold); }
+[data-bs-theme="dark"] .pbar { background:var(--jq-border); }
+[data-bs-theme="dark"] .pbar > span { background:var(--jq-blue); }
+[data-bs-theme="dark"] .docvars { color:var(--jq-muted); }
+[data-bs-theme="dark"] .docvars .chip { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-muted); }
+[data-bs-theme="dark"] .swatch { border-color:rgba(255,255,255,.35); }
+[data-bs-theme="dark"] .memoicon { color:var(--jq-gold); }
+
+/* Dokument-Browser */
+[data-bs-theme="dark"] .docarea { background:var(--jq-page); }
+[data-bs-theme="dark"] #doc { color:var(--jq-text); }
+[data-bs-theme="dark"] .segtext::before { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-muted); }
+[data-bs-theme="dark"] .segtext:hover::before { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+/* Codings haben helle Code-Farben als Hintergrund -> dunkle Schrift */
+[data-bs-theme="dark"] #doc mark { color:#141414; }
+[data-bs-theme="dark"] #doc mark.ovl { background-color:#3d4654; color:var(--jq-text); }
+[data-bs-theme="dark"] #doc mark.ovl:hover { background-color:#4a5566; }
+[data-bs-theme="dark"] #doc mark.memomark { color:var(--jq-text); border-bottom-color:var(--jq-gold); }
+[data-bs-theme="dark"] #doc mark.ovl mark.memomark, [data-bs-theme="dark"] #doc mark[data-cid] mark.memomark { color:inherit; }
+
+/* action bar (marked text), segment bar, coding bar */
+[data-bs-theme="dark"] .actionbar { background:var(--jq-amberbg); border-color:var(--jq-amberbd); }
+[data-bs-theme="dark"] .actionbar .selinfo { color:var(--jq-gold); }
+[data-bs-theme="dark"] .actionbar .jq-sub { color:var(--jq-muted); }
+[data-bs-theme="dark"] #memo_only_btn { background:var(--jq-raised); color:var(--jq-gold); border-color:var(--jq-gold); }
+[data-bs-theme="dark"] #memo_only_btn:hover, [data-bs-theme="dark"] .segdefbtn:hover { background:var(--jq-hover); }
+[data-bs-theme="dark"] .segdefbtn { background:var(--jq-raised); border-color:var(--jq-subtle); color:var(--jq-text); }
+[data-bs-theme="dark"] .codebtn { color:#141414; }
+[data-bs-theme="dark"] .segbar { background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .segbar .seginfo, [data-bs-theme="dark"] .segbar .segclose { color:var(--jq-muted); }
+[data-bs-theme="dark"] .clickedbar { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+
+/* Ueberlappungs-Popover */
+[data-bs-theme="dark"] #jq-popover { background:var(--jq-panel); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] #jq-popover .jqp-head { border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] #jq-popover .jqp-close, [data-bs-theme="dark"] #jq-popover .jqp-pos { color:var(--jq-muted); }
+[data-bs-theme="dark"] #jq-popover .jqp-row { border-color:var(--jq-raised); }
+[data-bs-theme="dark"] #jq-popover .jqp-text { color:var(--jq-text); }
+[data-bs-theme="dark"] #jq-popover .jqp-memo { color:var(--jq-gold); }
+
+/* Memo-Panel */
+[data-bs-theme="dark"] .newmemo { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] .newmemo:hover:not([disabled]) { background:var(--jq-hover); }
+[data-bs-theme="dark"] .newmemo[disabled] { color:var(--jq-subtle); opacity:1; border-style:dashed; }
+[data-bs-theme="dark"] .memochip { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .memochip .n { color:var(--jq-muted); }
+[data-bs-theme="dark"] .memochip.active { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+[data-bs-theme="dark"] .memochip.active .n { color:#fff; }
+[data-bs-theme="dark"] .memocard { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .memocard.kind-passage  { border-left-color:var(--jq-gold); }
+[data-bs-theme="dark"] .memocard.kind-document { border-left-color:var(--jq-blue); }
+[data-bs-theme="dark"] .memocard.kind-code     { border-left-color:var(--jq-purple); }
+[data-bs-theme="dark"] .memocard.kind-project  { border-left-color:var(--jq-green); }
+[data-bs-theme="dark"] .memocard.kind-comment  { border-left-color:var(--jq-subtle); }
+[data-bs-theme="dark"] .memocard.new { background:var(--jq-amberbg); }
+[data-bs-theme="dark"] .memocard.focus { box-shadow:0 0 0 2px var(--jq-blue); }
+[data-bs-theme="dark"] .memocard .mc-head, [data-bs-theme="dark"] .memocard .mc-date { color:var(--jq-muted); }
+[data-bs-theme="dark"] .memocard .mc-title, [data-bs-theme="dark"] .memocard .mc-text { color:var(--jq-text); }
+[data-bs-theme="dark"] .memocard .mc-ref { color:var(--jq-blue); }
+[data-bs-theme="dark"] .memodetail { background:var(--jq-amberbg); border-color:var(--jq-amberbd); color:var(--jq-text); }
+[data-bs-theme="dark"] .memodetail .who { color:var(--jq-gold); }
+
+/* Tabellen: Code-Matrix + Summary Grid */
+[data-bs-theme="dark"] table.mx th, [data-bs-theme="dark"] tr.sumrow td { background:var(--jq-raised); color:var(--jq-text); }
+[data-bs-theme="dark"] table.mx th, [data-bs-theme="dark"] table.mx td { border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] table.mx td.rowlab:hover { background:var(--jq-hover); }
+/* Heatmap-Zellen: blauer Hintergrund (inline) -> weisse, fette Zahl */
+[data-bs-theme="dark"] td.mxcell { color:#fff; font-weight:700; }
+[data-bs-theme="dark"] td.sumcell { background:var(--jq-panel); }
+[data-bs-theme="dark"] td.sumcell.has { background:var(--jq-amberbg); }
+
+/* Benachrichtigungen + Dialoge (Shiny / Bootstrap) */
+[data-bs-theme="dark"] .shiny-notification { background:#1f3a5a; color:var(--jq-text); border-color:#3d6a9e; }
+[data-bs-theme="dark"] .shiny-notification-warning { background:#4a3c12; border-color:#8a7020; }
+[data-bs-theme="dark"] .shiny-notification-error { background:#4a1f1b; border-color:#8a3a33; }
+[data-bs-theme="dark"] .shiny-notification-close { color:var(--jq-text); }
+[data-bs-theme="dark"] .modal-content { background:var(--jq-panel); color:var(--jq-text); border-color:var(--jq-border); }
+
+
+/* --------------------------------------------------------------------------
+   8. Code tree with subcodes, coding bar, save / report / export
+   Colour of a code family: CSS variable --c (set inline from R).
+   Code (top level) = full colour; subcodes = only a border in --c,
+   connected by a line ("thread") in --c.
+   -------------------------------------------------------------------------- */
+
+/* Button-Icons (.jq_ico in app.R: SVG in einem <i>) */
+.jq-btnico svg { height:.9em; width:auto; vertical-align:-.12em; fill:currentColor;
+                 margin:0 .3em 0 0 !important; }
+.jq-iconbtn .jq-btnico svg { margin-right:0 !important; }
+.jq-iconbtn { padding-left:.45rem; padding-right:.45rem; }
+
+/* Topbar: Speicher-Status, Speichern, Bericht, Export-Menue */
+.savedline { display:inline-flex; align-items:center; gap:.35rem; font-size:.78rem; color:#56616d;
+             white-space:nowrap; font-variant-numeric:tabular-nums; }
+.savedot { width:.5rem; height:.5rem; border-radius:50%; background:#1f7a4d; flex:none; }
+.btnsection .symsep { width:1px; height:1.3rem; background:#d6dbe1; margin:0 .15rem; }
+#report_btn svg { height:.9em; width:auto; vertical-align:-.12em; fill:currentColor; margin:0 .2em !important; }
+details.jq-menu { position:relative; }
+details.jq-menu > summary { list-style:none; display:inline-flex; align-items:center; gap:.3rem; }
+details.jq-menu > summary::-webkit-details-marker { display:none; }
+details.jq-menu > summary svg { height:.85em; width:auto; fill:currentColor; margin:0 !important; }
+details.jq-menu[open] > summary { background:#eef4fb; color:#2c6fbb; border-color:#2c6fbb; }
+.jq-menu-list { position:absolute; right:0; top:calc(100% + .3rem); z-index:1500; min-width:18rem;
+                background:#fff; border:1px solid #d6dbe1; border-radius:.5rem; padding:.3rem;
+                box-shadow:0 8px 24px rgba(0,0,0,.16); display:flex; flex-direction:column; gap:.1rem; }
+.jq-menu-list hr { margin:.25rem .2rem; }
+.jq-menuitem { display:block; width:100%; text-align:left; border:0; background:none;
+               border-radius:.35rem; padding:.35rem .55rem; font-size:.78rem; color:#1d2630; }
+.jq-menuitem:hover, .jq-menuitem:focus { background:#eef4fb; color:#2c6fbb; }
+.shiny-notification-action a { font-weight:700; color:#2c6fbb; }
+
+/* Kopfzeile Code System: "+ Code" */
+.panelhead .addroot { margin-left:auto; border:1px solid #c9d6e4; background:#fff; color:#2c6fbb;
+                      border-radius:.35rem; font-size:.72rem; font-weight:600; padding:.05rem .5rem; cursor:pointer; }
+.panelhead .addroot:hover { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+.panelhead .addroot + .toggler { margin-left:.2rem; }
+.treetools { display:flex; gap:.3rem; margin-bottom:.4rem; }
+.treetools input { flex:1; min-width:0; height:auto; padding:.2rem .45rem; font-size:.76rem; }
+.treetools .btn { padding:.05rem .4rem; line-height:1.2; }
+.codelegend { display:grid; gap:.15rem; margin-top:.6rem; padding-top:.45rem; border-top:1px solid #e3e8ee;
+              font-size:.68rem; }
+
+/* the tree */
+.ctree, .cchildren { list-style:none; margin:0; padding:0; }
+.cnode { position:relative; padding-top:.3rem; }
+.cnode.nomatch { display:none; }
+.cnode.collapsed > .cchildren { display:none; }
+.ctree .cnode.collapsed.filteropen > .cchildren { display:block; }
+.cchildren { margin-left:.7rem; padding-left:1.05rem; }
+/* thread: vertical line per child (for the last one only down to the
+   middle of the row) + horizontal branch to the row */
+.cchildren > .cnode::before { content:""; position:absolute; left:-1.05rem; top:0; bottom:0;
+                               border-left:2px solid var(--c); }
+.cchildren > .cnode:last-child::before { bottom:auto; height:1.35rem; }
+.cchildren > .cnode::after { content:""; position:absolute; left:-1.05rem; top:1.35rem; width:.95rem;
+                              border-top:2px solid var(--c); }
+.cchildren > .cnode.cadd::after, .cchildren > .cnode.cadd::before { border-style:dashed; }
+.ctree .coderow { margin-bottom:0; min-height:2.1rem; padding:.2rem .45rem .2rem .2rem; gap:.35rem; }
+.ctree .lvl1 > .coderow { background:var(--c); border-color:var(--c); color:#161616; }
+.ctree .lvl1 > .coderow .codelabel, .ctree .lvl1 > .coderow .fmt { color:#161616; }
+.ctree .lvl2 > .coderow, .ctree .lvl3 > .coderow { border:2px solid var(--c); background:#fff;
+  background:color-mix(in srgb, var(--c) 7%, #fff); }
+.ctree .lvl3 > .coderow { border-style:dashed; }
+.ctree .lvl2 > .coderow .codelabel, .ctree .lvl3 > .coderow .codelabel { font-weight:500; }
+.ctree .coderow:hover { filter:brightness(.97); }
+.ctree .lvl1 > .coderow:hover { background:var(--c); filter:brightness(1.06); }
+.ctree .coderow.sel { box-shadow:0 0 0 2px #2c6fbb; }
+.ctree .codelabel { flex:1; min-width:0; }
+.cchev { border:0; background:none; width:1.1rem; height:1.1rem; padding:0; display:grid; place-items:center;
+         border-radius:.25rem; flex:none; color:inherit; cursor:pointer; }
+.cchev .jq-ico, .cchev svg { height:.7em; margin:0 !important; transition:transform .15s; }
+.cnode.collapsed > .coderow .cchev .jq-ico, .cnode.collapsed > .coderow .cchev svg { transform:rotate(-90deg); }
+.cchev.none { visibility:hidden; }
+.cchev:hover { background:rgba(0,0,0,.1); }
+.ctree .agg { font-size:.64rem; font-variant-numeric:tabular-nums; padding:.02rem .35rem; border-radius:.6rem;
+              background:rgba(0,0,0,.12); white-space:nowrap; flex:none; }
+.ctree .fmt { margin-left:0; font-variant-numeric:tabular-nums; }
+.cacts { display:none; gap:.15rem; flex:none; }
+.coderow:hover .cacts, .coderow:focus-within .cacts { display:flex; }
+.cacts .mini { margin-left:0; color:#1d2630; }
+.cacts .mini.del { color:#b03a2e; }
+.cacts .mini.del:hover { background:#b03a2e; color:#fff; border-color:#b03a2e; }
+.colordot { position:relative; width:.85rem; height:.85rem; border-radius:50%; flex:none; margin:0;
+            background:var(--c); box-shadow:0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.35); cursor:pointer; }
+.colordot input { position:absolute; inset:0; opacity:0; width:100%; height:100%; cursor:pointer; border:0; padding:0; }
+.crename { flex:1; min-width:0; font:inherit; font-weight:600; border:1px solid #2c6fbb; border-radius:.25rem;
+           padding:0 .3rem; background:#fff; color:#1d2630; }
+.cconfirm { margin:.3rem 0 0; padding:.45rem .55rem; border:1.5px solid #b03a2e; background:#fdecea;
+            border-radius:.45rem; font-size:.76rem; display:grid; gap:.35rem; color:#1d2630; }
+.cconfirm .btns { display:flex; gap:.3rem; justify-content:flex-end; }
+.cconfirm .btn { padding:.1rem .5rem; font-size:.74rem; }
+.cnode.cadd input { border:2px dashed var(--c, #2c6fbb); font-size:.78rem; padding:.25rem .45rem; }
+.ctree-topdrop { display:none; margin-top:.4rem; padding:.4rem; border:2px dashed #9aa6b2; border-radius:.45rem;
+                 font-size:.72rem; color:#56616d; text-align:center; }
+body.jq-dragcode .ctree-topdrop { display:block; }
+.ctree-topdrop.over { border-color:#2c6fbb; color:#2c6fbb; background:#eef4fb; }
+/* text marked -> a click on a code codes it: hint on hover */
+body:has(.actionbar) .ctree .coderow:hover { box-shadow:0 0 0 2px #b58900; cursor:copy; }
+
+/* coding bar (replaces the one-line action bar) */
+.actionbar { display:grid; gap:.4rem; align-items:start; }
+.actionbar .pk-top { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }
+.actionbar .pk-top input { flex:1; min-width:12rem; max-width:26rem; height:auto; padding:.2rem .5rem;
+                           font-size:.78rem; border-color:#e0c96a; }
+.actionbar .chips { display:flex; gap:.35rem; flex-wrap:wrap; align-items:center; }
+.actionbar .chips[hidden], .actionbar .subline[hidden], .actionbar [hidden] { display:none !important; }
+.actionbar .codebtn, .actionbar .rootchip, .recodebtn {
+  border:2px solid var(--c); background:var(--c); color:#161616; border-radius:.4rem;
+  padding:.15rem .5rem; font-size:.76rem; font-weight:600; cursor:pointer; box-shadow:none;
+  display:inline-flex; align-items:center; gap:.35rem; line-height:1.35; }
+.actionbar .codebtn:hover, .actionbar .rootchip:hover, .recodebtn:hover { filter:brightness(1.07); }
+.actionbar .codebtn.sub, .recodebtn.sub { background:#fff; color:#1d2630; font-weight:500; }
+.actionbar .codebtn.self { background:transparent; color:#1d2630; border-style:dashed; font-weight:500; }
+.actionbar .codebtn.small { font-size:.7rem; padding:.02rem .4rem; }
+.actionbar .rootchip.open { box-shadow:0 0 0 2px #fff8e1, 0 0 0 4px var(--c); }
+.actionbar .k { font-family:monospace; font-size:.62rem; opacity:.72; font-weight:400; }
+.actionbar .subline { display:flex; align-items:stretch; }
+.actionbar .subline .thread { width:1.4rem; flex:none; position:relative; }
+.actionbar .subline .thread::before { content:""; position:absolute; left:.55rem; top:-.45rem; bottom:50%;
+                                      border-left:2px solid var(--c); }
+.actionbar .subline .thread::after { content:""; position:absolute; left:.55rem; right:0; top:50%;
+                                     border-top:2px solid var(--c); }
+.actionbar .subline .chips { padding:.25rem .4rem; border-radius:.45rem; background:#fff;
+  background:color-mix(in srgb, var(--c) 12%, #fff); }
+.actionbar .pk-def { font-size:.74rem; color:#5a4a10; min-height:1.1rem; }
+.actionbar .pk-def b { font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; margin-right:.25rem; }
+.actionbar .pk-bottom { display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; }
+.actionbar .pk-spacer { flex:1; }
+.actionbar .pk-bottom .form-group { margin:0; }
+
+/* coding clicked: re-code within the code family */
+.clickedbar { flex-wrap:wrap; }
+.clickedbar .recode { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; flex-basis:100%; }
+.recodebtn.cur { outline:2px solid #2c6fbb; outline-offset:1px; cursor:default; }
+
+/* codings with a subcode in the text: light tint + underline in the colour
+   of the code family (inline) + label at the start (::before, no DOM text!) */
+#doc mark.sub { border-bottom:2.5px solid; border-radius:0; }
+#doc mark.sub.tagstart::before { content:attr(data-tag); display:inline-block; user-select:none;
+  font:600 .6rem/1.3 system-ui, sans-serif; color:#1d2630; background:#fff; border:1.5px solid var(--c);
+  border-radius:.25rem; padding:0 .25rem; margin-right:.2rem; vertical-align:.18em; }
+
+/* matrix + summary grid: rows as in the code tree */
+.swatch[style*="--c"] { background-color:var(--c); border-color:var(--c); }
+.swatch.sub { background-color:transparent !important; border:2px solid var(--c); }
+table.mx tr.mxtop td.rowlab { font-weight:600; }
+table.mx tr[hidden] { display:none; }
+table.mx td.rowlab .jq-sub { cursor:pointer; font-size:.7rem; }
+table.mx tr.mxcollapsed td.rowlab .jq-sub::after { content:" \25b8"; }
+
+/* dark mode for section 8 */
+[data-bs-theme="dark"] .savedline { color:var(--jq-muted); }
+[data-bs-theme="dark"] .savedot { background:var(--jq-green); }
+[data-bs-theme="dark"] .btnsection .symsep { background:var(--jq-border); }
+[data-bs-theme="dark"] .jq-menu-list { background:var(--jq-panel); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .jq-menuitem { color:var(--jq-text); }
+[data-bs-theme="dark"] .jq-menuitem:hover, [data-bs-theme="dark"] .jq-menuitem:focus { background:var(--jq-hover); color:var(--jq-blue); }
+[data-bs-theme="dark"] details.jq-menu[open] > summary { background:var(--jq-hover); color:var(--jq-blue); }
+[data-bs-theme="dark"] .shiny-notification-action a { color:var(--jq-blue); }
+[data-bs-theme="dark"] .panelhead .addroot { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-blue); }
+[data-bs-theme="dark"] .panelhead .addroot:hover { background:#2c6fbb; color:#fff; }
+[data-bs-theme="dark"] .codelegend { border-color:var(--jq-border); }
+[data-bs-theme="dark"] .ctree .lvl1 > .coderow { background:var(--c); border-color:var(--c); }
+[data-bs-theme="dark"] .ctree .lvl1 > .coderow .codelabel, [data-bs-theme="dark"] .ctree .lvl1 > .coderow .fmt { color:#141414; }
+[data-bs-theme="dark"] .ctree .lvl2 > .coderow, [data-bs-theme="dark"] .ctree .lvl3 > .coderow {
+  background:var(--jq-raised); background:color-mix(in srgb, var(--c) 12%, var(--jq-raised)); }
+[data-bs-theme="dark"] .ctree .agg { background:rgba(255,255,255,.14); }
+[data-bs-theme="dark"] .ctree .lvl1 > .coderow .agg { background:rgba(0,0,0,.15); }
+[data-bs-theme="dark"] .cacts .mini { background:var(--jq-raised); color:var(--jq-text); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .cacts .mini.del { color:var(--jq-red); }
+[data-bs-theme="dark"] .crename { background:var(--jq-raised); color:var(--jq-text); }
+[data-bs-theme="dark"] .cconfirm { background:#3a1f1d; border-color:var(--jq-red); color:var(--jq-text); }
+[data-bs-theme="dark"] .ctree-topdrop { border-color:var(--jq-border); color:var(--jq-muted); }
+[data-bs-theme="dark"] .actionbar .codebtn.sub, [data-bs-theme="dark"] .recodebtn.sub { background:var(--jq-raised); color:var(--jq-text); }
+[data-bs-theme="dark"] .actionbar .codebtn.self { color:var(--jq-text); }
+[data-bs-theme="dark"] .actionbar .rootchip { color:#141414; }
+[data-bs-theme="dark"] .actionbar .rootchip.open { box-shadow:0 0 0 2px var(--jq-amberbg), 0 0 0 4px var(--c); }
+[data-bs-theme="dark"] .actionbar .subline .chips { background:var(--jq-raised); background:color-mix(in srgb, var(--c) 14%, var(--jq-raised)); }
+[data-bs-theme="dark"] .actionbar .pk-def { color:var(--jq-gold); }
+[data-bs-theme="dark"] .actionbar .pk-top input { border-color:var(--jq-amberbd) !important; }
+[data-bs-theme="dark"] #doc mark.sub { color:var(--jq-text); }
+[data-bs-theme="dark"] #doc mark.sub.tagstart::before { background:var(--jq-panel); color:var(--jq-text); }
+[data-bs-theme="dark"] .recodebtn { color:#141414; }
+
+
+/* --------------------------------------------------------------------------
+   9. Analysis tools (since 0.6.0): coding fields, auto-coding, case
+      comparison, analysis window (word frequencies, keyword in context, Mayring)
+   -------------------------------------------------------------------------- */
+
+/* coding bar: comment + Mayring fields */
+.clickedbar .cbfields { flex-basis:100%; display:grid; grid-template-columns:auto minmax(0,1fr); gap:.3rem .5rem;
+                        align-items:center; font-size:.76rem; }
+.clickedbar .cbfields > label { margin:0; color:#56616d; font-weight:600; }
+.clickedbar .cbfields input { height:auto; padding:.2rem .45rem; font-size:.78rem; }
+.clickedbar .cbmayring { grid-column:1 / -1; }
+.clickedbar .cbmayring summary { cursor:pointer; color:#2c6fbb; font-weight:600; font-size:.74rem; }
+.clickedbar .cbmayring label { display:block; margin:.25rem 0 .1rem; color:#56616d; font-weight:600; }
+.clickedbar .cbmayring input { width:100%; }
+.clickedbar .cbbtns { flex-basis:100%; display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; }
+.clickedbar .cbbtns .btn { padding:.15rem .55rem; font-size:.76rem; }
+.clickedbar .cbbtns svg { height:.85em; width:auto; fill:currentColor; margin:0 .2em 0 0 !important; vertical-align:-.1em; }
+.invivobtn { border-style:dashed !important; }
+
+/* Suche: alle Treffer codieren */
+.autocode { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; font-size:.76rem;
+            background:#eef4fb; border:1px solid #b9d2ec; border-radius:.45rem; padding:.35rem .5rem; margin:.3rem 0 .5rem; }
+.autocode select { width:auto; max-width:14rem; padding-top:.1rem; padding-bottom:.1rem; font-size:.76rem; }
+.autocode .btn { padding:.1rem .55rem; font-size:.76rem; }
+
+/* Codebaum: Zusammenfuehren-Auswahl */
+.cmerge select { font-size:.76rem; }
+
+/* Code-Matrix: Spalten-Auswahl (Dokumente / Fallvergleich) */
+.mxby { display:flex; gap:.4rem; align-items:center; margin-bottom:.4rem; font-size:.74rem; flex-wrap:wrap; }
+.mxby label { margin:0; font-weight:600; color:#56616d; }
+.mxby select { width:auto; max-width:100%; font-size:.74rem; padding-top:.1rem; padding-bottom:.1rem; }
+td.mxcell.nolink { cursor:default; }
+.mxnote { margin-top:.3rem; }
+
+/* Analyse-Fenster */
+.anfilters { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin:.7rem 0 .3rem; }
+.anfilters .form-group { margin-bottom:0; min-width:12rem; }
+.anfilters .shiny-download-link { margin-bottom:.1rem; }
+.antable { width:100%; border-collapse:collapse; font-size:.8rem; }
+.antable th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#56616d;
+              border-bottom:1px solid #c9d1da; padding:.3rem .4rem; }
+.antable td { border-bottom:1px solid #e3e8ee; padding:.3rem .4rem; vertical-align:top; }
+.antable td.num { text-align:right; font-variant-numeric:tabular-nums; width:4.5rem; }
+.antable.words { max-width:44rem; }
+.antable .wbar { width:40%; }
+.antable .wbar span { display:block; height:.55rem; border-radius:.2rem; background:#2c6fbb; margin-top:.35rem; }
+.linkword { border:0; background:none; padding:0; color:#2c6fbb; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.antable.kwic td { font-family:Georgia, serif; }
+.antable.kwic td.kref { font-family:system-ui, sans-serif; font-size:.72rem; width:11rem; color:#56616d; }
+.antable.kwic td.kl { text-align:right; color:#444; width:40%; }
+.antable.kwic td.km { font-weight:700; white-space:nowrap; color:#1d2630; background:#fff3c4; }
+.antable.kwic td.kr { color:#444; width:40%; }
+.antable.kwic tr { cursor:pointer; }
+.antable.kwic tr:hover td { background:#eef4fb; }
+.antable.mayring td.mref { font-size:.72rem; width:10rem; }
+.antable.mayring td.mtext { font-family:Georgia, serif; font-size:.8rem; width:30%; }
+.antable.mayring td.mcode { font-size:.74rem; width:11rem; }
+.antable.mayring textarea { font-size:.78rem; min-width:12rem; transition:box-shadow .3s; }
+.antable.mayring textarea.saved { box-shadow:0 0 0 2px #1f7a4d; }
+
+[data-bs-theme="dark"] .clickedbar .cbfields > label, [data-bs-theme="dark"] .clickedbar .cbmayring label { color:var(--jq-muted); }
+[data-bs-theme="dark"] .clickedbar .cbmayring summary { color:var(--jq-blue); }
+[data-bs-theme="dark"] .autocode { background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .mxby label { color:var(--jq-muted); }
+[data-bs-theme="dark"] .antable th { color:var(--jq-muted); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .antable td { border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .antable .wbar span { background:var(--jq-blue); }
+[data-bs-theme="dark"] .linkword { color:var(--jq-blue); }
+[data-bs-theme="dark"] .antable.kwic td.kl, [data-bs-theme="dark"] .antable.kwic td.kr { color:var(--jq-text); }
+[data-bs-theme="dark"] .antable.kwic td.km { background:var(--jq-amberbg); color:var(--jq-gold); }
+[data-bs-theme="dark"] .antable.kwic tr:hover td { background:var(--jq-hover); }
+[data-bs-theme="dark"] .antable.kwic td.kref { color:var(--jq-muted); }
+
+/* Language switch (EN/DE) in the toolbar */
+.symbolbar .langbtn { font:700 .68rem/1 system-ui, sans-serif; text-decoration:none; color:#2c6fbb;
+                      display:inline-flex; align-items:center; justify-content:center; min-width:1.9rem; }
+[data-bs-theme="dark"] .symbolbar .langbtn { color:var(--jq-blue); }

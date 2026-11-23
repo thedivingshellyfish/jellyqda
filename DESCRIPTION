@@ -1,0 +1,50 @@
+Package: jellyqda
+Type: Package
+Title: RStudio-Native, Fully Offline Coding of Interview Transcripts
+Version: 0.7.0
+Authors@R: person("Shelly", email = "shelly@systemli.org", role = c("aut", "cre"))
+Description: Qualitative data analysis of interview transcripts and field
+    notes on your own computer, completely offline. Supports deductive and
+    inductive coding with codes and subcodes, coding guidelines (definition,
+    anchor example, coding rule), memos, segments by speaker turns, Mayring's
+    summarising content analysis, word frequencies, keyword in context and
+    case comparisons. Text is imported from '.txt', '.md', '.docx' and '.pdf'
+    files and frozen at import, so character offsets never drift. All project
+    data lives in a single 'SQLite' file; every action is recorded in an audit
+    trail and can be undone. A local 'shiny' app with an English and a German
+    user interface and a scriptable API that returns tibbles share the same
+    project file. Reports print on A4.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Language: en-US
+URL: https://github.com/thedivingshellyfish/jellyqda
+BugReports: https://github.com/thedivingshellyfish/jellyqda/issues
+Depends: R (>= 4.0.0)
+Imports:
+    DBI,
+    RSQLite,
+    digest,
+    htmltools,
+    jsonlite,
+    officer,
+    pdftools,
+    readr,
+    stats,
+    stringi,
+    tibble,
+    tools,
+    utils,
+    zip
+Suggests:
+    bslib,
+    fontawesome,
+    knitr,
+    rmarkdown,
+    rstudioapi,
+    shiny,
+    testthat (>= 3.0.0),
+    writexl
+Roxygen: list(markdown = TRUE)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+RoxygenNote: 7.3.1

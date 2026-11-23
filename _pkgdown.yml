@@ -1,0 +1,94 @@
+url: https://thedivingshellyfish.github.io/jellyqda/dev
+
+template:
+  bootswatch: flatly
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/thedivingshellyfish/jellyqda
+      aria-label: GitHub repository
+
+# hero: front page is a custom landing page; pkgdown lives under /dev/
+home:
+  title: jellyqda · RStudio-native, fully offline QDA
+  sidebar: FALSE
+
+reference:
+- title: Projekt und Dokumente
+  desc: >
+    Projektdatei anlegen/öffnen, Transkripte importieren, Dokumente und
+    Dokumentvariablen verwalten.
+  contents:
+    - qda_open
+    - qda_close
+    - qda_project
+    - qda_import
+    - qda_sources
+    - qda_source_set_var
+    - qda_source_del_var
+    - qda_source_vars
+    - qda_source_segments
+
+- title: Code System und Codings
+  desc: >
+    Codes anlegen, umbenennen, verschieben, löschen und Textstellen kodieren.
+  contents:
+    - qda_code_add
+    - qda_codes
+    - qda_code
+    - qda_code_rename
+    - qda_code_move
+    - qda_code_delete
+    - qda_codings
+    - qda_coding_delete
+    - qda_coding_set_memo
+
+- title: Segmente
+  desc: >
+    Segmentierung nach Absätzen, Zeilen oder Sprecherwechseln; Segmente
+    teilen, zusammenführen und aus Markierungen festlegen.
+  contents:
+    - qda_segments_set
+    - qda_segments
+    - qda_segment_split
+    - qda_segment_merge
+    - qda_segment_define
+    - qda_segments_reset
+
+- title: Memos
+  desc: >
+    Memos in vier Arten (Textstelle, Dokument, Code, Projekt) und Kommentare
+    an Codings.
+  contents:
+    - qda_memo_add
+    - qda_memos
+    - qda_memo_update
+    - qda_memo_delete
+
+- title: Auswertung und Export
+  desc: >
+    Code-Matrix, Summary Grid, Statistik, Volltextsuche, Viewer-Darstellung
+    und Exporte (CSV, Excel, Word, HTML-Bericht, Audit-Trail).
+  contents:
+    - qda_matrix
+    - qda_stats
+    - qda_summaries
+    - qda_summary_set
+    - qda_view
+    - qda_export
+    - qda_events
+
+- title: Rückgängig, Verlauf und Sicherung
+  desc: >
+    Undo/Redo für alles, Aktionsverlauf, Backups und die interaktive App.
+  contents:
+    - qda_undo
+    - qda_redo
+    - qda_history
+    - qda_backup
+    - qda_app

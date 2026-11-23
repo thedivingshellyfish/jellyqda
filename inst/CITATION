@@ -1,0 +1,9 @@
+bibentry(
+  bibtype = "Manual",
+  header = "To cite jellyqda in publications, please use:",
+  title = "jellyqda: RStudio-Native, Fully Offline Coding of Interview Transcripts",
+  author = person("Shelly"),
+  year = "2026",
+  note = paste("R package version", meta$Version),
+  url = "https://github.com/thedivingshellyfish/jellyqda"
+)

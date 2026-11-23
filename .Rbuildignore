@@ -1,0 +1,18 @@
+^\.git
+^data-raw
+^demo
+^\.github
+^\.gitignore
+^\.Rbuildignore
+^install_jellyqda\.R$
+^docs$
+# Website
+^website$
+^_pkgdown\.yml$
+^LICENSE\.md$
+^CONTRIBUTING\.md$
+^README\.de\.md$
+^design$
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$
