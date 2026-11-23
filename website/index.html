@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>jellyqda · Qualitative Interview-Codierung in R &amp; RStudio</title>
-<meta name="description" content="jellyqda: kostenlose, komplett offline laufende qualitative Inhaltsanalyse von Interviews in R und RStudio. Ein Projekt ist eine Datei, jede Aktion im Protokoll.">
+<title>jellyqda · Qualitative Interview Coding in R &amp; RStudio</title>
+<meta name="description" content="jellyqda: free, fully offline qualitative content analysis of interviews in R and RStudio. A project is one file, every action lands in the audit trail.">
 <style>
   :root {
     --blue: #2c6fbb;
@@ -63,18 +63,19 @@
     border-bottom: 1px solid var(--line);
   }
   .nav { display: flex; align-items: center; gap: 18px; padding: 12px 0; }
+
   .brand { font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: var(--ink); }
   .brand:hover { text-decoration: none; }
   .brand .jelly { font-size: 1.3rem; }
   .brand b { color: var(--blue); }
-  nav { margin-left: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+  nav { margin-left: auto; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
   nav a { color: var(--ink-soft); font-size: .95rem; }
   nav a:hover { color: var(--blue); text-decoration: none; }
   .theme-btn {
     border: 1px solid var(--line); background: var(--card); color: var(--ink);
     border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 1rem;
   }
-  .theme-btn:hover { border-color: var(--blue); }
+  .theme-btn:hover { border-color: var(--blue); text-decoration: none; }
 
   /* ---------- hero ---------- */
   .hero { padding: 64px 0 34px; text-align: left; position: relative; }
@@ -247,15 +248,16 @@
   <div class="wrap nav">
     <a class="brand" href="#top"><span class="jelly">🪼</span>jelly<b>qda</b></a>
     <nav>
-      <a href="#warum">Warum</a>
-      <a href="#features">Funktionen</a>
+      <a href="#warum">Why</a>
+      <a href="#features">Features</a>
       <a href="#screenshots">Screenshots</a>
       <a href="#installation">Installation</a>
       <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>
-      <a href="dev/reference/">R-Funktionen</a>
+      <a href="dev/reference/">R functions</a>
       <a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a>
     </nav>
-    <button class="theme-btn" id="themeToggle" title="Hell/Dunkel umschalten" aria-label="Farbschema umschalten">🌙</button>
+    <a class="theme-btn" href="de/" title="Auf Deutsch wechseln">DE</a>
+    <button class="theme-btn" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle colour scheme">🌙</button>
   </div>
 </header>
 
@@ -263,55 +265,55 @@
   <!-- hero -->
   <div class="wrap hero">
     <div class="glow"></div>
-    <span class="kicker">Kostenlos · Komplett offline · Open Source (MIT)</span>
-    <h1>Qualitative Inhaltsanalyse von Interviews, <em>direkt in R &amp; RStudio</em></h1>
-    <p class="sub">Transkripte importieren, Kategoriensystem aufbauen, kodieren, Memos schreiben, auswerten. Ein Projekt ist <strong>eine Datei</strong>, nichts verlässt deinen Rechner und jede Aktion landet im lückenlosen Protokoll für den Methodenteil.</p>
+    <span class="kicker">Free · Fully offline · Open Source (MIT)</span>
+    <h1>Qualitative content analysis of interviews, <em>right inside R &amp; RStudio</em></h1>
+    <p class="sub">Import transcripts, build a category system, code, write memos, analyse. A project is <strong>one file</strong>, nothing ever leaves your computer, and every action lands in a complete audit trail for your methods section.</p>
 
     <div class="installbox">
       <pre id="installline">source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre>
-      <button class="copybtn" id="copyBtn" title="Installationszeile kopieren">Kopieren</button>
+      <button class="copybtn" id="copyBtn" title="Copy the install line">Copy</button>
     </div>
-    <p class="installhint">Diese eine Zeile in die R-Konsole kopieren: sie installiert jellyqda und alle Abhängigkeiten, fragt nichts nach und sagt dir am Ende, wie es weitergeht.</p>
+    <p class="installhint">Paste this single line into the R console: it installs jellyqda and all dependencies, asks no questions, and tells you how to continue at the end.</p>
 
     <div class="cta">
-      <a class="btn primary" href="#installation">Los geht's in 3 Schritten</a>
-      <a class="btn ghost" href="#screenshots">Screenshots ansehen</a>
-      <a class="btn ghost" href="https://github.com/thedivingshellyfish/jellyqda/releases">🪼 v0.4.2 bei GitHub</a>
+      <a class="btn primary" href="#installation">Get started in 3 steps</a>
+      <a class="btn ghost" href="#screenshots">View screenshots</a>
+      <a class="btn ghost" href="https://github.com/thedivingshellyfish/jellyqda/releases">🪼 v0.7.0 on GitHub</a>
     </div>
 
     <div class="heroshot">
       <a href="img/01-uebersicht.png" target="_blank" rel="noopener">
-        <img src="img/01-uebersicht.png" alt="Die jellyqda-App mit Dokumenten, Code System, Dokument-Browser, Codings, Memos und Summary Grid" loading="eager">
+        <img src="img/01-uebersicht.png" alt="The jellyqda app with documents, code tree, document browser, codings, memos and summary grid" loading="eager">
       </a>
-      <p class="shotcap">Die App in der Übersicht: alle QDA-typischen Bereiche, flexibel per Drag &amp; Drop anordbar, hier im hellen Modus.</p>
+      <p class="shotcap">The app overview: all the typical QDA panels, arranged flexibly via drag &amp; drop, shown here in light mode.</p>
     </div>
   </div>
 
-  <!-- warum -->
+  <!-- why -->
   <section id="warum">
     <div class="wrap">
-      <h2>Warum jellyqda?</h2>
-      <p class="lead">Weil qualitative Forschung datenschutzfreundlich, nachvollziehbar und ohne Lizenzkosten sein soll, und weil R dafür einfach die beste Umgebung ist.</p>
+      <h2>Why jellyqda?</h2>
+      <p class="lead">Because qualitative research should be privacy-friendly, traceable and free of licence fees, and because R is simply the best environment for that.</p>
       <div class="grid cards">
         <div class="card blue">
           <span class="emoji">🔒</span>
-          <h3>100 % offline, DSGVO-freundlich</h3>
-          <p>Keine Cloud, keine Uploads, keine Telemetrie. Alle Daten bleiben in einer lokalen <code>*.jellyqda</code>-Datei (SQLite). Die App läuft nur auf deinem eigenen Rechner.</p>
+          <h3>100 % offline, GDPR-friendly</h3>
+          <p>No cloud, no uploads, no telemetry. All data stays in a local <code>*.jellyqda</code> file (SQLite). The app runs only on your own machine.</p>
         </div>
         <div class="card blue">
           <span class="emoji">🧪</span>
-          <h3>Datenintegrität ernst genommen</h3>
-          <p>Importierter Text wird „eingefroren“, Codings verrutschen nie. Automatische Tests prüfen, dass angezeigter und gespeicherter Text zeichenweise identisch sind.</p>
+          <h3>Data integrity taken seriously</h3>
+          <p>Imported text is frozen at import, so codings never drift. Automated tests check that displayed and stored text are identical character by character.</p>
         </div>
         <div class="card gold">
           <span class="emoji">🎓</span>
-          <h3>Wissenschaftstauglich</h3>
-          <p>Jede Aktion mit Zeitstempel im Protokoll, exportierbar für den Methodenteil. Und sowieso: <code>citation("jellyqda")</code> existiert.</p>
+          <h3>Built for research</h3>
+          <p>Every action with a timestamp in the audit trail, exportable for your methods section. And of course: <code>citation("jellyqda")</code> exists.</p>
         </div>
         <div class="card gold">
           <span class="emoji">🆓</span>
-          <h3>MIT-Lizenz, keine Kosten</h3>
-          <p>Keine Subscription, kein Lizenzdruck, kein Lock-in. Ein ordentliches R-Paket mit vollständiger API, das auch per Skript reproduzierbar auswertet.</p>
+          <h3>MIT licence, no costs</h3>
+          <p>No subscription, no licence pressure, no lock-in. A proper R package with a complete API that also runs analyses reproducibly from scripts.</p>
         </div>
       </div>
     </div>
@@ -320,18 +322,24 @@
   <!-- features -->
   <section id="features">
     <div class="wrap">
-      <h2>Was drin ist</h2>
-      <p class="lead">Alle Funktionen Schritt für Schritt mit Screenshots im <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>, jede R-Funktion in der <a href="dev/reference/">API-Dokumentation</a>.</p>
+      <h2>What's inside</h2>
+      <p class="lead">Every function step by step with screenshots in the <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">wiki</a>, every R function in the <a href="dev/reference/">API documentation</a>.</p>
+      <div class="note">🆕 <strong>New in v0.7.0:</strong> the complete interface, help and report in <strong>German and English</strong> (<strong>DE/EN</strong> switch), package ready for CRAN. <strong>v0.6.0:</strong> A4 report with margin column, coding guideline, in-vivo codes, merge codes, code search hits, case comparison, word frequencies, keyword in context, Mayring summary. <strong>v0.5.0:</strong> code tree with subcodes, two-step coding bar, re-coding. All changes in the <a href="dev/news/index.html">changelog</a>.</div>
       <div class="grid features">
-        <div class="card"><span class="emoji">📄</span><h3>Import</h3><p><code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code>, per Dialog oder Drag &amp; Drop. Der Text wird beim Import eingefroren.</p></div>
-        <div class="card"><span class="emoji">🏷️</span><h3>Kodieren mit der Maus</h3><p>Text markieren, Code anklicken, fertig. Oder per Tastenkürzel <code>Strg+1…9</code>. Aktionsleiste direkt über dem Text.</p></div>
-        <div class="card"><span class="emoji">🔀</span><h3>Überlappende Codings</h3><p>Stellen mit mehreren Codings sind grau mit Zahl und Farbstreifen. Maus darüber: Liste aller Codings, einzeln anzeigbar oder löschbar.</p></div>
-        <div class="card"><span class="emoji">✂️</span><h3>Segmente nach Sprecherwechsel</h3><p>Segmentierung nach Absätzen, Zeilen oder Sprecherwechseln (<code>[00:01:12] P: …</code>), auch nachträglich. Teilen, zusammenführen, aus Markierungen festlegen.</p></div>
-        <div class="card"><span class="emoji">📝</span><h3>Memos in vier Arten</h3><p>Zur Textstelle, zum Dokument (Postskript), zum Code (Definition, Kodierregel) und zum Projekt (Forschungstagebuch), dazu Kommentare an Codings.</p></div>
-        <div class="card"><span class="emoji">↩️</span><h3>Rückgängig &amp; Wiederholen</h3><p>Für alles, mit Tooltip, was passieren wird. Der Verlauf überlebt sogar einen App-Neustart.</p></div>
-        <div class="card"><span class="emoji">📊</span><h3>Auswerten</h3><p>Code-Matrix, Summary Grid, Codings je Code, Volltextsuche, Fortschritts-Statistik, Dokumentvariablen mit Filter.</p></div>
-        <div class="card"><span class="emoji">📤</span><h3>Export &amp; Backups</h3><p>CSV, Excel, Word und ein fertiger HTML-Bericht. Rotierende ZIP-Backups außerhalb des Projektordners, automatisch alle 25 Aktionen.</p></div>
-        <div class="card"><span class="emoji">🧮</span><h3>Skriptbar &amp; reproduzierbar</h3><p>Alles geht auch per R-Code: Jede Funktion gibt ein tibble zurück. Ideal für reproduzierbare Auswertungen in der Masterarbeit.</p></div>
+        <div class="card"><span class="emoji">📄</span><h3>Import</h3><p><code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code>, via dialog or drag &amp; drop. Text is frozen at import, so codings never drift.</p></div>
+        <div class="card"><span class="emoji">🌳</span><h3>Code tree with codes &amp; subcodes</h3><p>Every code family has its colour and hangs on a thread: collapse and expand, rename with a double click, code directly in the tree, merge codes including their subcodes.</p></div>
+        <div class="card"><span class="emoji">🏷️</span><h3>Coding with the mouse</h3><p>Mark text, click a code chip, done. Subcodes unfold in the coding bar (<code>Ctrl+1…9</code>), re-code with one click, in-vivo codes straight from the marked text.</p></div>
+        <div class="card"><span class="emoji">🔬</span><h3>Deductive &amp; inductive</h3><p>A coding guideline per code: definition, anchor example (attached with one click) and coding rule, shown while coding, in the report and in the Word codebook. Plus: code all search hits at once.</p></div>
+        <div class="card"><span class="emoji">🔀</span><h3>Overlapping codings</h3><p>Places with several codings are grey with a number and a coloured bar. Hover: a list of all codings with their comments, each shown or deleted individually.</p></div>
+        <div class="card"><span class="emoji">✂️</span><h3>Segments by speaker change</h3><p>Segmentation by paragraphs, lines or speaker turns (<code>[00:01:12] P: …</code>), retroactively too. Split, merge, or define from highlights.</p></div>
+        <div class="card"><span class="emoji">📝</span><h3>Memos in four kinds</h3><p>For a text passage, for the document (postscript), for a code (definition, coding rule) and for the project (research diary), plus a comment on every coding.</p></div>
+        <div class="card"><span class="emoji">🧪</span><h3>Mayring summarising analysis</h3><p>Paraphrase and generalisation per coding, editable as a table and exportable as CSV for Excel, with its own section in the report.</p></div>
+        <div class="card"><span class="emoji">📊</span><h3>Analysis &amp; case comparison</h3><p>Code matrix with case comparison across document variables, summary grid, word frequencies without stop words, keyword in context (KWIC), full-text search, progress statistics.</p></div>
+        <div class="card"><span class="emoji">🖨️</span><h3>Report on A4</h3><p>HTML report with frequencies in percent and a margin column next to each interview: codings, comments and memos exactly where they occur. Print-ready on A4.</p></div>
+        <div class="card"><span class="emoji">↩️</span><h3>Undo &amp; redo</h3><p>For everything, with a tooltip showing what will happen. The history survives even an app restart, and every action lands in the complete audit trail.</p></div>
+        <div class="card"><span class="emoji">🌐</span><h3>German &amp; English</h3><p>The whole interface, help, notifications and report in both languages, switchable with the <strong>DE/EN</strong> button or <code>qda_app(lang = ...)</code>.</p></div>
+        <div class="card"><span class="emoji">📤</span><h3>Export &amp; backups</h3><p>CSV, Excel, Word codebook and HTML report. Rotating ZIP backups outside the project folder, automatically every 25 actions.</p></div>
+        <div class="card"><span class="emoji">🧮</span><h3>Scriptable &amp; reproducible</h3><p>Everything works via R code as well: every function returns a tibble. Ideal for reproducible analyses in your thesis.</p></div>
       </div>
     </div>
   </section>
@@ -339,43 +347,73 @@
   <!-- screenshots -->
   <section id="screenshots">
     <div class="wrap">
-      <h2>So sieht die Arbeit aus</h2>
-      <p class="lead">Alle 20+ Screenshots gibts im <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>, hier eine Auswahl. Klick auf ein Bild öffnet es in voller Größe.</p>
+      <h2>This is what it looks like</h2>
+      <p class="lead">All 30+ screenshots are in the <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">wiki</a>, here is a selection. Click an image to open it in full size.</p>
       <div class="gallery">
+        <a href="img/05-codesystem.png" target="_blank" rel="noopener">
+          <figure>
+            <span class="gal-frame"><img src="img/05-codesystem.png" alt="Code tree with codes and subcodes in family colours" loading="lazy"></span>
+            <figcaption class="gal-cap">Code tree: codes and subcodes, each family in its colour, code directly in the tree.</figcaption>
+          </figure>
+        </a>
         <a href="img/06-markieren-aktionsleiste.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame"><img src="img/06-markieren-aktionsleiste.png" alt="Text markieren und die Aktionsleiste mit Code-Buttons" loading="lazy"></span>
-            <figcaption class="gal-cap">Markieren: die Aktionsleiste zeigt alle Codes direkt über dem Text.</figcaption>
+            <span class="gal-frame"><img src="img/06-markieren-aktionsleiste.png" alt="Marking text and the action bar with code buttons" loading="lazy"></span>
+            <figcaption class="gal-cap">Marking: the coding bar shows all codes right above the text.</figcaption>
           </figure>
         </a>
         <a href="img/07-ueberlappung-popover.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame"><img src="img/07-ueberlappung-popover.png" alt="Popover mit allen Codings einer überlappenden Stelle" loading="lazy"></span>
-            <figcaption class="gal-cap">Überlappungen: alle Codings der Stelle auf einen Blick, einzeln löschbar.</figcaption>
+            <span class="gal-frame"><img src="img/07-ueberlappung-popover.png" alt="Popover with all codings of an overlapping passage" loading="lazy"></span>
+            <figcaption class="gal-cap">Overlaps: all codings of a passage at a glance, each one deletable.</figcaption>
+          </figure>
+        </a>
+        <a href="img/26-kodierleitfaden.png" target="_blank" rel="noopener">
+          <figure>
+            <span class="gal-frame"><img src="img/26-kodierleitfaden.png" alt="Coding guideline with definition, anchor examples and coding rule" loading="lazy"></span>
+            <figcaption class="gal-cap">Coding guideline: definition, anchor examples and coding rule per code.</figcaption>
           </figure>
         </a>
         <a href="img/10-memos.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame"><img src="img/10-memos.png" alt="Memo-Panel mit Memos in vier Arten" loading="lazy"><span class="gal-tag">Ausschnitt</span></span>
-            <figcaption class="gal-cap">Memos: Textstelle, Dokument, Code und Projekt, mit Filter und Suche.</figcaption>
+            <span class="gal-frame"><img src="img/10-memos.png" alt="Memo panel with memos in four kinds" loading="lazy"><span class="gal-tag">Detail</span></span>
+            <figcaption class="gal-cap">Memos: passage, document, code and project, with filter and search.</figcaption>
           </figure>
         </a>
         <a href="img/16-summary-grid.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame"><img src="img/16-summary-grid.png" alt="Summary Grid mit Zusammenfassungen je Code und Dokument" loading="lazy"><span class="gal-tag">Ausschnitt</span></span>
-            <figcaption class="gal-cap">Summary Grid: Zusammenfassungen je Code und Dokument, direkt bearbeitbar.</figcaption>
+            <span class="gal-frame"><img src="img/16-summary-grid.png" alt="Summary grid with summaries per code and document" loading="lazy"><span class="gal-tag">Detail</span></span>
+            <figcaption class="gal-cap">Summary grid: summaries per code and document, directly editable.</figcaption>
+          </figure>
+        </a>
+        <a href="img/30-worthaeufigkeiten.png" target="_blank" rel="noopener">
+          <figure>
+            <span class="gal-frame"><img src="img/30-worthaeufigkeiten.png" alt="Word frequencies without stop and filler words" loading="lazy"></span>
+            <figcaption class="gal-cap">Analysis window: word frequencies without stop and filler words, optionally only within one code.</figcaption>
+          </figure>
+        </a>
+        <a href="img/32-mayring.png" target="_blank" rel="noopener">
+          <figure>
+            <span class="gal-frame"><img src="img/32-mayring.png" alt="Summarising content analysis after Mayring: paraphrase and generalisation per coding" loading="lazy"></span>
+            <figcaption class="gal-cap">Mayring summary: paraphrase and generalisation per coding, exportable as CSV.</figcaption>
+          </figure>
+        </a>
+        <a href="img/33-bericht-randspalte-a4.png" target="_blank" rel="noopener">
+          <figure>
+            <span class="gal-frame"><img src="img/33-bericht-randspalte-a4.png" alt="HTML report with a margin column next to the interview" loading="lazy"></span>
+            <figcaption class="gal-cap">Report with margin column: codings, comments and memos next to the interview, print-ready on A4.</figcaption>
           </figure>
         </a>
         <a href="img/02-uebersicht-dark.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame dark-shot"><img src="img/02-uebersicht-dark.png" alt="Die App im Dark Mode" loading="lazy"></span>
-            <figcaption class="gal-cap">Dark Mode mit geprüftem WCAG-AA-Kontrast. (Probiere hier auch den Mond oben rechts 😉)</figcaption>
+            <span class="gal-frame dark-shot"><img src="img/02-uebersicht-dark.png" alt="The app in dark mode" loading="lazy"></span>
+            <figcaption class="gal-cap">Dark mode with tested WCAG-AA contrast. (Try the moon in the top right right here 😉)</figcaption>
           </figure>
         </a>
         <a href="img/19-html-bericht.png" target="_blank" rel="noopener">
           <figure>
-            <span class="gal-frame"><img src="img/19-html-bericht.png" alt="Exportierter HTML-Bericht" loading="lazy"></span>
-            <figcaption class="gal-cap">HTML-Bericht: ein Klick, ein exportierbares Dokument der gesamten Analyse.</figcaption>
+            <span class="gal-frame"><img src="img/19-html-bericht.png" alt="Exported HTML report" loading="lazy"></span>
+            <figcaption class="gal-cap">HTML report: one click, one exportable document of the whole analysis.</figcaption>
           </figure>
         </a>
       </div>
@@ -385,14 +423,14 @@
   <!-- installation -->
   <section id="installation">
     <div class="wrap">
-      <h2>Los geht's in 3 Schritten</h2>
-      <p class="lead">Voraussetzung: R ab Version 4.0, am besten mit RStudio. Beides kostenlos. Für die Installation reicht eine Zeile.</p>
+      <h2>Get started in 3 steps</h2>
+      <p class="lead">You need R version 4.0 or later, ideally with RStudio. Both are free. One line is enough for the installation.</p>
 
       <div class="step">
         <div class="n">1</div>
         <div>
-          <h3>Installieren (einmalig, ca. 5 Minuten)</h3>
-          <p>Diese Zeile in die R-Konsole kopieren. Das Skript installiert alle benötigten Pakete, dann jellyqda, prüft die Installation und sagt dir am Ende, wie es weitergeht.</p>
+          <h3>Install (once, about 5 minutes)</h3>
+          <p>Paste this line into the R console. The script installs all required packages, then jellyqda, checks the installation and tells you how to continue at the end.</p>
           <pre>source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre>
         </div>
       </div>
@@ -400,23 +438,23 @@
       <div class="step">
         <div class="n">2</div>
         <div>
-          <h3>Projekt anlegen</h3>
+          <h3>Create a project</h3>
           <pre>library(jellyqda)
-qda_open("meine-arbeit.jellyqda")   # legt die Projektdatei an (oder öffnet sie später wieder)</pre>
+qda_open("my-analysis.jellyqda")   # creates the project file (and reopens it later)</pre>
         </div>
       </div>
 
       <div class="step">
         <div class="n">3</div>
         <div>
-          <h3>App starten und loskodieren</h3>
-          <pre>qda_app()   # öffnet die App im Browser</pre>
-          <p>Links Transkripte importieren (oder per Drag &amp; Drop hineinziehen), im Code System erste Codes anlegen, im Text markieren und auf einen Code klicken. Beenden mit <code>Esc</code> oder dem roten X, gespeichert wird ohnehin sofort bei jeder Aktion.</p>
+          <h3>Start the app and start coding</h3>
+          <pre>qda_app()   # opens the app in the browser</pre>
+          <p>Import transcripts on the left (or drag &amp; drop them in), create your first codes in the code tree, then mark text in a transcript and click a code. Quit with <code>Esc</code> or the red X; everything is saved immediately after every action anyway.</p>
         </div>
       </div>
 
-      <div class="note">💡 <strong>Ohne eigenes Material ausprobieren:</strong> <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code> oder die fiktiven Transkripte aus dem Ordner <code>demo/</code> im Repo.</div>
-      <div class="note">🔌 <strong>Offline-Rechner?</strong> Auf der <a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases-Seite</a> gibt es das Release-ZIP; das Installationsskript installiert daraus ohne Internet (Konfigurationszeilen dafür stehen ganz oben im Skript).</div>
+      <div class="note">💡 <strong>Try it without your own material:</strong> <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code> or the fictional transcripts in the <code>demo/</code> folder of the repo.</div>
+      <div class="note">🔌 <strong>Offline machine?</strong> The <a href="https://github.com/thedivingshellyfish/jellyqda/releases">releases page</a> has the release ZIP; the installation script installs from it without internet (the configuration lines for that are at the very top of the script).</div>
     </div>
   </section>
 </main>
@@ -425,47 +463,47 @@ qda_open("meine-arbeit.jellyqda")   # legt die Projektdatei an (oder öffnet sie
   <div class="wrap">
     <div class="footgrid">
       <div>
-        <h4>Projekt</h4>
+        <h4>Project</h4>
         <ul>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub-Repository</a></li>
+          <li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub repository</a></li>
           <li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki (Anleitung mit Screenshots)</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Mitmachen</a></li>
+          <li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki (guide with screenshots)</a></li>
+          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Contributing</a></li>
         </ul>
       </div>
       <div>
-        <h4>Dokumentation</h4>
+        <h4>Documentation</h4>
         <ul>
-          <li><a href="dev/reference/">R-Funktionen (API-Doku)</a></li>
-          <li><a href="dev/articles/index.html">Artikel &amp; Vignetten</a></li>
+          <li><a href="dev/reference/">R functions (API docs)</a></li>
+          <li><a href="dev/articles/index.html">Articles &amp; vignettes</a></li>
           <li><a href="dev/news/index.html">Changelog (NEWS.md)</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Fehler melden</a></li>
+          <li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Report an issue</a></li>
         </ul>
       </div>
       <div>
-        <h4>Zitieren</h4>
+        <h4>Cite</h4>
         <ul>
           <li><code>citation("jellyqda")</code> in R</li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT-Lizenz</a></li>
+          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT licence</a></li>
         </ul>
       </div>
     </div>
-    <p class="mit">🪼 jellyqda v0.4.2 · gebaut mit R, Shiny, SQLite und einem Quäntchen Qualle. Keine Cloud wurde bei der Erstellung dieser Website kontaktiert, dieser Text hingegen schon (beim Laden der Screenshots von GitHub).</p>
+    <p class="mit">🪼 jellyqda v0.7.0 · built with R, Shiny, SQLite and a smidgen of jellyfish. No cloud was contacted while creating this website; this text, however, was (while loading the screenshots from GitHub). <a href="de/" lang="de">Deutsche Version</a></p>
   </div>
 </footer>
 
 <!-- lightbox -->
-<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot in voller Größe">
-  <button type="button" class="lb-close" aria-label="Schließen">✕</button>
-  <button type="button" class="lb-prev" aria-label="Vorheriges Bild">‹</button>
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot in full size">
+  <button type="button" class="lb-close" aria-label="Close">✕</button>
+  <button type="button" class="lb-prev" aria-label="Previous image">‹</button>
   <img id="lb-img" src="" alt="">
-  <button type="button" class="lb-next" aria-label="Nächstes Bild">›</button>
+  <button type="button" class="lb-next" aria-label="Next image">›</button>
   <p id="lb-cap" class="lb-cap"></p>
 </div>
 
 <script>
 (function () {
-  /* Lightbox für die Screenshot-Galerie */
+  /* Lightbox for the screenshot gallery */
   var box = document.getElementById("lightbox");
   var img = document.getElementById("lb-img");
   var cap = document.getElementById("lb-cap");
@@ -544,10 +582,10 @@ qda_open("meine-arbeit.jellyqda")   # legt die Projektdatei an (oder öffnet sie
   copyBtn.addEventListener("click", function () {
     var text = document.getElementById("installline").textContent;
     function done() {
-      copyBtn.textContent = "Kopiert ✓";
+      copyBtn.textContent = "Copied ✓";
       copyBtn.classList.add("done");
       setTimeout(function () {
-        copyBtn.textContent = "Kopieren";
+        copyBtn.textContent = "Copy";
         copyBtn.classList.remove("done");
       }, 1800);
     }
