@@ -2,7 +2,7 @@ Package: jellyqda
 Type: Package
 Title: RStudio-Native, Fully Offline Coding of Interview Transcripts
 Version: 0.7.0
-Authors@R: person("Shelly", email = "shelly@systemli.org", role = c("aut", "cre"))
+Authors@R: person("Shelly", email = "jellyqda@systemli.org", role = c("aut", "cre"))
 Description: Qualitative data analysis of interview transcripts and field
     notes on your own computer, completely offline. Supports deductive and
     inductive coding with codes and subcodes, coding guidelines (definition,
@@ -17,7 +17,8 @@ Description: Qualitative data analysis of interview transcripts and field
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
-URL: https://github.com/thedivingshellyfish/jellyqda
+URL: https://github.com/thedivingshellyfish/jellyqda,
+    https://thedivingshellyfish.github.io/jellyqda/dev
 BugReports: https://github.com/thedivingshellyfish/jellyqda/issues
 Depends: R (>= 4.0.0)
 Imports:
