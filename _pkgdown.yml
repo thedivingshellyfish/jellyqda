@@ -1,6 +1,7 @@
 url: https://thedivingshellyfish.github.io/jellyqda/dev
 
 template:
+  bootstrap: 5
   bootswatch: flatly
 
 navbar:
@@ -36,7 +37,9 @@ reference:
 
 - title: Code System und Codings
   desc: >
-    Codes anlegen, umbenennen, verschieben, löschen und Textstellen kodieren.
+    Codes (mit Subcodes) anlegen, umbenennen, verschieben, einfärben,
+    zusammenführen und löschen; Kodierleitfaden je Code, Textstellen
+    kodieren, umkodieren und alle Suchtreffer auf einmal codieren.
   contents:
     - qda_code_add
     - qda_codes
@@ -44,9 +47,14 @@ reference:
     - qda_code_rename
     - qda_code_move
     - qda_code_delete
+    - qda_code_merge
+    - qda_code_set_color
+    - qda_code_guide
     - qda_codings
     - qda_coding_delete
+    - qda_coding_recode
     - qda_coding_set_memo
+    - qda_autocode
 
 - title: Segmente
   desc: >
@@ -72,23 +80,31 @@ reference:
 
 - title: Auswertung und Export
   desc: >
-    Code-Matrix, Summary Grid, Statistik, Volltextsuche, Viewer-Darstellung
-    und Exporte (CSV, Excel, Word, HTML-Bericht, Audit-Trail).
+    Code-Matrix mit Fallvergleich, Mayring-Zusammenfassungen (Paraphrase
+    und Generalisierung je Coding), Worthäufigkeiten, Stichwort im Kontext
+    (KWIC), Summary Grid, Statistik, Volltextsuche, Viewer-Darstellung und
+    Exporte (CSV, Excel, Word, HTML-Bericht, Audit-Trail).
   contents:
     - qda_matrix
+    - qda_case_matrix
+    - qda_words
+    - qda_kwic
     - qda_stats
     - qda_summaries
     - qda_summary_set
+    - qda_coding_set_summary
     - qda_view
     - qda_export
     - qda_events
 
 - title: Rückgängig, Verlauf und Sicherung
   desc: >
-    Undo/Redo für alles, Aktionsverlauf, Backups und die interaktive App.
+    Undo/Redo für alles, Aktionsverlauf, Backups, Sprachumschaltung
+    (Deutsch/Englisch) und die interaktive App.
   contents:
     - qda_undo
     - qda_redo
     - qda_history
     - qda_backup
     - qda_app
+    - qda_language
