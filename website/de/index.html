@@ -2,609 +2,384 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>jellyqda · Qualitative Interview-Codierung in R &amp; RStudio</title>
-<meta name="description" content="jellyqda: kostenlose, komplett offline laufende qualitative Inhaltsanalyse von Interviews in R und RStudio. Ein Projekt ist eine Datei, jede Aktion im Protokoll.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>jellyqda</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="jellyqda: kostenlose, komplett offline laufende qualitative Inhaltsanalyse von Interviews in R und RStudio. Ein Projekt ist eine Datei, jede Aktion landet im Audit-Trail.">
 <style>
+  /* Layout: one 1120px column. Hero = text left, app window right.
+     Below: fact strip, workflow tabs with screenshots, three feature lists,
+     script example, three install steps, footer.
+     Fonts: system fonts only, so the page loads nothing from third parties
+     (fits an offline, privacy-first tool; Google Fonts would contact Google). */
   :root {
-    --blue: #2c6fbb;
-    --blue-soft: #e8f0fb;
-    --gold: #b58900;
-    --gold-soft: #fff8e1;
-    --ink: #1b2430;
-    --ink-soft: #55627a;
-    --paper: #f5f7fb;
-    --card: #ffffff;
-    --line: #dfe6f0;
-    --shadow: 0 10px 30px rgba(28, 60, 120, .10);
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --surface-2: #eef2f8;
+    --ink: #17202c;
+    --ink-2: #4f5b6d;
+    --line: #dde4ee;
+    --blue: #2c6fbb;        /* jellyqda app accent */
+    --blue-ink: #ffffff;
+    --gold: #9a7400;        /* memo colour in the app */
+    --shadow: 0 18px 50px -24px rgba(23, 49, 92, .35);
+    /* code family colours = Okabe-Ito palette, the app's defaults */
+    --c1: #E69F00; --c2: #56B4E9; --c3: #009E73; --c5: #0072B2; --c7: #CC79A7;
+    --mark-alpha: 38%;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+    --r: 12px;
   }
-  [data-theme="dark"] {
-    --blue: #7fb0e8;
-    --blue-soft: #1d2940;
-    --gold: #d8c26a;
-    --gold-soft: #26221b;
-    --ink: #e6e9ef;
-    --ink-soft: #9aa7bd;
-    --paper: #12161e;
-    --card: #1b212c;
-    --line: #2c3544;
-    --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141c; --surface: #171e29; --surface-2: #1d2633; --ink: #e7ebf2; --ink-2: #9ba8bb;
+      --line: #2a3443; --blue: #7fb0e8; --blue-ink: #0d2240; --gold: #d8c26a;
+      --shadow: 0 18px 50px -20px rgba(0, 0, 0, .7); --mark-alpha: 45%;
+      color-scheme: dark;
+    }
   }
+  :root[data-theme="dark"] {
+    --bg: #0f141c; --surface: #171e29; --surface-2: #1d2633; --ink: #e7ebf2; --ink-2: #9ba8bb;
+    --line: #2a3443; --blue: #7fb0e8; --blue-ink: #0d2240; --gold: #d8c26a;
+    --shadow: 0 18px 50px -20px rgba(0, 0, 0, .7); --mark-alpha: 45%;
+    color-scheme: dark;
+  }
+
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: var(--ink);
-    background: var(--paper);
-    line-height: 1.65;
-  }
-  a { color: var(--blue); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  code, pre {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: .92em;
-  }
-  pre {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 16px;
-    overflow-x: auto;
-    box-shadow: var(--shadow);
-  }
-  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 22px; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  code, pre { font-family: var(--mono); font-size: .88em; }
+  img { max-width: 100%; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 
   /* ---------- header ---------- */
-  header {
-    position: sticky; top: 0; z-index: 50;
-    background: color-mix(in srgb, var(--card) 88%, transparent);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--line);
-  }
-  .nav { display: flex; align-items: center; gap: 18px; padding: 12px 0; }
-
-  .brand { font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: var(--ink); }
-  .brand:hover { text-decoration: none; }
-  .brand .jelly { font-size: 1.3rem; }
-  .brand b { color: var(--blue); }
-  nav { margin-left: auto; display: flex; gap: 16px; flex-wrap: wrap; }
-  nav a { color: var(--ink-soft); font-size: .95rem; }
-  nav a:hover { color: var(--blue); text-decoration: none; }
-  .theme-btn {
-    border: 1px solid var(--line); background: var(--card); color: var(--ink);
-    border-radius: 8px; padding: 5px 10px; cursor: pointer; font-size: 1rem;
-  }
-  .theme-btn:hover { border-color: var(--blue); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+  header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  header.scrolled { border-bottom-color: var(--line); }
+  .nav { display: flex; align-items: center; gap: 28px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 750; font-size: 1.08rem; color: var(--ink); text-decoration: none; letter-spacing: -.01em; }
+  .brand svg { width: 26px; height: 26px; }
+  .nav nav { display: flex; gap: 22px; }
+  .nav nav a { color: var(--ink-2); text-decoration: none; font-size: .93rem; }
+  .nav nav a:hover { color: var(--ink); }
+  .nav .tools { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .pillbtn { height: 34px; min-width: 34px; padding: 0 10px; display: inline-grid; place-items: center; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 .82rem var(--font); text-decoration: none; cursor: pointer; }
+  .pillbtn svg { width: 16px; height: 16px; }
+  .pillbtn:hover { border-color: var(--blue); }
 
   /* ---------- hero ---------- */
-  .hero { padding: 64px 0 34px; text-align: left; position: relative; }
-  .hero .glow {
-    position: absolute; inset: 0; z-index: -1;
-    background:
-      radial-gradient(560px 300px at 12% 0%, color-mix(in srgb, var(--blue) 16%, transparent), transparent 70%),
-      radial-gradient(500px 260px at 88% 10%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 70%);
-  }
-  .kicker {
-    display: inline-block; font-size: .8rem; font-weight: 700; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--gold);
-    background: var(--gold-soft); border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
-    padding: 3px 12px; border-radius: 999px; margin-bottom: 16px;
-  }
-  h1 { font-size: clamp(1.9rem, 4.6vw, 3rem); line-height: 1.18; margin: 0 0 14px; }
-  h1 em { font-style: normal; color: var(--blue); }
-  .sub { font-size: 1.13rem; color: var(--ink-soft); max-width: 640px; margin: 0 0 26px; }
-  .installbox {
-    display: flex; gap: 10px; align-items: stretch; max-width: 720px;
-  }
-  .installbox pre { flex: 1; margin: 0; white-space: pre-wrap; }
-  .copybtn {
-    border: none; background: var(--blue); color: #fff; border-radius: 10px;
-    padding: 0 18px; cursor: pointer; font-weight: 600; font-size: .9rem;
-  }
-  [data-theme="dark"] .copybtn { color: #10243f; }
-  .copybtn.do
-ne { background: #2eaf5d; color: #fff; }
-  .installhint { font-size: .88rem; color: var(--ink-soft); margin: 10px 0 0; }
-  .cta { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
-  .btn {
-    display: inline-block; padding: 10px 20px; border-radius: 10px; font-weight: 600;
-    border: 1px solid var(--blue); font-size: .98rem;
-  }
-  .btn.primary { background: var(--blue); }
-  [data-theme="dark"] .btn.primary { color: #10243f; }
-  .btn.ghost { background: transparent; color: var(--blue); }
-  .btn:hover { text-decoration: none; filter: brightness(1.06); }
-  .heroshot { margin: 42px 0 10px; }
-  .heroshot img {
-    width: 100%; border-radius: 14px; border: 1px solid var(--line);
-    box-shadow: var(--shadow); display: block;
-  }
-  .shotcap { font-size: .85rem; color: var(--ink-soft); margin-top: 8px; text-align: center; }
+  .hero { padding-block: 64px 40px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center; }
+  .eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 18px; }
+  h1 { font-size: clamp(1.9rem, 3.6vw, 2.55rem); hyphens: manual; line-height: 1.34; letter-spacing: -.028em; font-weight: 780; margin: 0 0 20px; text-wrap: balance; }
+  /* the headline is "coded" like a transcript in jellyqda */
+  .cm { position: relative; padding: 0 .08em; border-radius: 3px; background: color-mix(in srgb, var(--c) var(--mark-alpha), transparent); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .cm::after { content: attr(data-code); position: absolute; left: 0; top: -1.05em; font: 700 .6rem/1 var(--font); letter-spacing: .02em; color: var(--c); white-space: nowrap; text-transform: none; }
+  .lede { font-size: 1.1rem; color: var(--ink-2); max-width: 34em; margin: 0 0 28px; }
+  .install { display: flex; align-items: stretch; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); overflow: hidden; max-width: 100%; }
+  .install pre { margin: 0; padding: 12px 14px; overflow-x: auto; flex: 1; min-width: 0; white-space: pre; color: var(--ink); }
+  .install pre .p { color: var(--ink-2); user-select: none; }
+  .copy { border: 0; border-left: 1px solid var(--line); background: var(--surface-2); color: var(--ink); padding: 0 16px; font: 600 .85rem var(--font); cursor: pointer; display: flex; gap: 6px; align-items: center; }
+  .copy svg { width: 15px; height: 15px; }
+  .copy.ok { color: var(--c3); }
+  .small { font-size: .86rem; color: var(--ink-2); margin: 10px 0 0; }
+  .ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 650; font-size: .95rem; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
+  .btn.primary { background: var(--blue); color: var(--blue-ink); border-color: var(--blue); }
+  .btn:hover { filter: brightness(1.05); }
+  .btn svg { width: 17px; height: 17px; }
+
+  .window { border-radius: 12px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+  .window .bar { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .window .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+  .window .bar span { margin-left: 10px; font: .75rem var(--mono); color: var(--ink-2); }
+  .window img { display: block; width: 100%; height: auto; }
+  .window img.shot-dark { display: none; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .window img.shot-dark { display: block; } :root:not([data-theme="light"]) .window img.shot-light { display: none; } }
+  :root[data-theme="dark"] .window img.shot-dark { display: block; } :root[data-theme="dark"] .window img.shot-light { display: none; }
+
+  /* ---------- fact strip ---------- */
+  .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--line); margin-block: 24px 0; }
+  .fact { padding: 22px 22px 22px 0; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; }
+  .fact + .fact { padding-left: 22px; border-left: 1px solid var(--line); }
+  .fact svg { width: 22px; height: 22px; color: var(--blue); margin-top: 2px; }
+  .fact b { display: block; font-size: .98rem; }
+  .fact span { font-size: .88rem; color: var(--ink-2); }
 
   /* ---------- sections ---------- */
-  section { padding: 56px 0; }
-  h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); margin: 0 0 8px; }
-  .lead { color: var(--ink-soft); margin: 0 0 30px; max-width: 680px; }
-  .grid { display: grid; gap: 18px; }
-  .grid.cards { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-  .grid.features { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-    padding: 20px 22px; box-shadow: var(--shadow);
-  }
-  .card .emoji { font-size: 1.6rem; display: block; margin-bottom: 10px; }
-  .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
-  .card p { margin: 0; color: var(--ink-soft); font-size: .95rem; }
-  .gold { border-top: 3px solid var(--gold); }
-  .blue { border-top: 3px solid var(--blue); }
+  section { padding-block: 84px 0; }
+  .sechead { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: end; margin-bottom: 34px; }
+  h2 { font-size: clamp(1.6rem, 3vw, 2.15rem); line-height: 1.18; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  .sechead p { margin: 0; color: var(--ink-2); }
 
-  /* ---------- gallery ---------- */
-  /* ---------- screenshot gallery (uniform tiles + lightbox) ---------- */
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 22px;
-  }
-  .gallery figure { margin: 0; }
-  .gallery a { color: inherit; text-decoration: no
-ne; }
-  .gallery a:hover { text-decoration: none; }
-  .gal-frame {
-    position: relative; overflow: hidden;
-    aspect-ratio: 16 / 10;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
-    background: var(--card);
-    display: block;
-  }
-  .gal-frame img {
-    width: 100%; height: 100%; display: block;
-    object-fit: cover; object-position: center top;
-    transition: transform .35s ease;
-  }
-  .gal-frame.dark-shot { outline: 3px solid var(--line); outline-offset: 2px; }
-  .gal-frame::after {
-    content: "🔍";
-    position: absolute; right: 10px; bottom: 10px;
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 999px; padding: 2px 9px; font-size: .85rem;
-    opacity: 0; transition: opacity .25s ease;
-    pointer-events: none;
-  }
-  .gal-tag {
-    position: absolute; left: 10px; top: 10px;
-    background: var(--blue); color: #fff;
-    border-radius: 999px; padding: 2px 10px;
-    font-size: .78rem; font-weight: 600;
-    pointer-events: none;
-  }
-  [data-theme="dark"] .gal-tag { color: #10243f; }
-  .gallery a:hover .gal-frame img,
-  .gallery a:focus-visible .gal-frame img { transform: scale(1.04); }
-  .gallery a:hover .gal-frame::after { opacity: 1; }
-  .gal-cap { font-size: .88rem; color: var(--ink-soft); margin: 9px 2px 0; }
+  /* workflow tabs */
+  .flow { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 40px; align-items: start; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; counter-reset: s; }
+  .steps button { width: 100%; text-align: left; border: 1px solid transparent; background: none; color: var(--ink); border-radius: 10px; padding: 14px 16px; cursor: pointer; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; font: inherit; }
+  .steps button::before { counter-increment: s; content: counter(s); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 .8rem var(--font); border: 1px solid var(--line); color: var(--ink-2); }
+  .steps b { display: block; font-size: 1rem; grid-column: 2; }
+  .steps span { grid-column: 2; display: block; font-size: .9rem; color: var(--ink-2); margin-top: 2px; }
+  .steps button[aria-selected="true"] { background: var(--surface); border-color: var(--line); box-shadow: 0 6px 20px -14px rgba(0,0,0,.4); }
+  .steps button[aria-selected="true"]::before { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+  .stage { position: sticky; top: 84px; }
+  .stage .window img { max-height: 520px; object-fit: contain; background: var(--surface-2); }
+  .stage figcaption { font-size: .86rem; color: var(--ink-2); margin-top: 10px; }
 
-  /* lightbox */
-  .lightbox {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(10, 14, 22, .88);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-end;
-    padding: 24px;
-  }
-  .lightbox[hidden] { display: none; }
-  .lightbox img {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -58%);
-    max-width: min(1100px, calc(100vw - 48px));
-    max-height: 76vh;
-    object-fit: contain;
-    border-radius: 10px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
-  }
-  .lb-cap {
-    color: #e6e9ef; font-size: .95rem; margin: 0 0 16px;
-    text-align: center; max-width: 720px;
-  }
-  .lb-close, .lb-prev, .lb
--next {
-    position: absolute; z-index: 2;
-    background: rgba(255, 255, 255, .12); color: #fff;
-    border: none; border-radius: 999px;
-    width: 44px; height: 44px; font-size: 1.3rem; line-height: 1;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-  }
-  .lb-close:hover, .lb-prev:hover, .lb-next:hover { background: rgba(255, 255, 255, .28); }
-  .lb-close { top: 18px; right: 18px; }
-  .lb-prev { left: 18px; top: 50%; transform: translateY(-50%); }
-  .lb-next { right: 18px; top: 50%; transform: translateY(-50%); }
+  /* feature lists */
+  .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+  .cols h3 { font-size: 1rem; margin: 0 0 14px; display: flex; align-items: center; gap: 9px; }
+  .cols h3 i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .cols li b { display: block; font-size: .96rem; }
+  .cols li span { font-size: .9rem; color: var(--ink-2); }
 
-  /* ---------- steps ---------- */
-  .step { display: grid; grid-template-columns: 44px 1fr; gap: 16px; margin-bottom: 26px; }
-  .step .n {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--blue); color: #fff; font-weight: 800; font-size: 1.1rem;
-    display: flex; align-items: center; justify-content: center;
-  }
-  [data-theme="dark"] .step .n { color: #10243f; }
-  .step h3 { margin: 6px 0 6px; }
-  .step pre { margin: 8px 0 0; }
-  .note {
-    background: var(--gold-soft); border-left: 4px solid var(--gold);
-    padding: 12px 16px; border-radius: 8px; font-size: .93rem; margin-top: 8px;
-  }
-  .note code { background: color-mix(in srgb, var(--card) 70%, transparent); padding: 1px 6px; border-radius: 6px; }
+  /* script example */
+  .script { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center; }
+  .script p { color: var(--ink-2); margin: 14px 0 0; }
+  .code { border-radius: var(--r); background: #121925; color: #dfe6f1; padding: 20px 22px; overflow-x: auto; font-size: .86rem; line-height: 1.7; margin: 0; border: 1px solid var(--line); }
+  .code .c { color: #7d8aa2; } .code .f { color: #82b4ff; } .code .s { color: #a6dba0; } .code .n { color: #f5b971; }
 
-  /* ---------- footer ---------- */
-  footer { border-top: 1px solid var(--line); padding: 40px 0 60px; margin-top: 30px; }
-  .footgrid { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-  .footgrid ul { list-style: none; margin: 0; padding: 0; }
-  .footgrid li { margin: 6px 0; }
-  .footgrid h4 { margin: 0 0 8px; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); }
-  .mit { margin-top: 26px; font-size: .88rem; color: var(--ink-soft); }
+  /* install */
+  .install-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; counter-reset: i; }
+  .istep { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; min-width: 0; }
+  .istep h3 { margin: 0 0 6px; font-size: 1rem; display: flex; align-items: center; gap: 10px; }
+  .istep h3::before { counter-increment: i; content: counter(i); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--blue); color: var(--blue-ink); font-size: .8rem; }
+  .istep p { margin: 0 0 12px; font-size: .9rem; color: var(--ink-2); }
+  .istep pre { margin: 0; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font-size: .8rem; }
+  .hint { margin-top: 18px; font-size: .9rem; color: var(--ink-2); border-left: 3px solid var(--gold); padding: 2px 0 2px 14px; }
+
+  /* footer */
+  footer { margin-top: 96px; border-top: 1px solid var(--line); padding-block: 40px 56px; }
+  .foot { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 32px; }
+  .foot h4 { margin: 0 0 10px; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); }
+  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: .92rem; }
+  .foot a { color: var(--ink); text-decoration: none; }
+  .foot a:hover { color: var(--blue); }
+  .foot p { font-size: .88rem; color: var(--ink-2); margin: 10px 0 0; max-width: 30em; }
+
+  @media (max-width: 900px) {
+    .hero, .sechead, .flow, .script { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .hero { padding-top: 40px; }
+    .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .fact:nth-child(3) { border-left: 0; padding-left: 0; }
+    .fact:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .cols, .install-steps { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stage { position: static; }
+    .nav nav { display: none; }
+  }
+  @media (max-width: 520px) {
+    .facts { grid-template-columns: minmax(0, 1fr); }
+    .fact, .fact + .fact { padding-left: 0; border-left: 0; }
+    .fact + .fact { border-top: 1px solid var(--line); }
+    .copy span { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
 </head>
 <body>
-<header>
+
+<header id="hdr">
   <div class="wrap nav">
-    <a class="brand" href="#top"><span class="jelly">🪼</span>jelly<b>qda</b></a>
-    <nav>
-      <a href="#warum">Warum</a>
-      <a h
-ref="#features">Funktionen</a>
-      <a href="#screenshots">Screenshots</a>
-      <a href="#installation">Installation</a>
-      <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>
+    <a class="brand" href="#top" aria-label="jellyqda Startseite">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16a11 11 0 0 1 22 0c0 1.2-.8 2-2 2H7c-1.2 0-2-.8-2-2Z" fill="var(--blue)"/><path d="M9.5 20c0 4-2 5.5-2 8M14 20c0 4 1.4 5.5 0 9M18 20c0 4-1.4 5.5 0 9M22.5 20c0 4 2 5.5 2 8" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      jellyqda
+    </a>
+    <nav aria-label="Hauptnavigation">
+      <a href="#workflow">So funktioniert’s</a>
+      <a href="#features">Funktionen</a>
+      <a href="#install">Installation</a>
       <a href="../dev/reference/">R-Funktionen</a>
-      <a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a>
+      <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>
     </nav>
-    <a class="theme-btn" href="../index.html" title="Switch to English">EN</a>
-    <button class="theme-btn" id="themeToggle" title="Hell/Dunkel umschalten" aria-label="Farbschema umschalten">🌙</button>
+    <div class="tools">
+      <a class="pillbtn" href="../index.html" title="English version" lang="en">EN</a>
+      <button class="pillbtn" id="themeToggle" type="button" aria-label="Hell oder dunkel umschalten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+      <a class="pillbtn" href="https://github.com/thedivingshellyfish/jellyqda" aria-label="GitHub-Repository">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg>
+      </a>
+    </div>
   </div>
 </header>
 
 <main id="top">
-  <!-- hero -->
-  <div class="wrap hero">
-    <div class="glow"></div>
-    <span class="kicker">Kostenlos · Komplett offline · Open Source (MIT)</span>
-    <h1>Qualitative Inhaltsanalyse von Interviews, <em>direkt in R &amp; RStudio</em></h1>
-    <p class="sub">Transkripte importieren, Kategoriensystem aufbauen, kodieren, Memos schreiben, auswerten. Ein Projekt ist <strong>eine Datei</strong>, nichts verlässt deinen Rechner und jede Aktion landet im lückenlosen Protokoll für den Methodenteil.</p>
-
-    <div class="installbox">
-      <pre id="installline">source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre>
-      <button class="copybtn" id="copyBtn" title="Installationszeile kopieren">Kopieren</button>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">R-Paket · kostenlos · MIT-Lizenz · v0.7.0</p>
+        <h1><span class="cm" style="--c:var(--c5)" data-code="Interviews">Interviews</span> kodieren in R. <span class="cm" style="--c:var(--c3)" data-code="Datenschutz">Komplett offline</span>, jeder Schritt <span class="cm" style="--c:var(--c1)" data-code="Audit-Trail">nachvollziehbar</span>.</h1>
+        <p class="lede">jellyqda ist qualitative Inhaltsanalyse direkt in RStudio: Transkripte importieren, ein Kategoriensystem aufbauen, Text markieren und Memos schreiben. Ein Projekt ist eine Datei auf deinem Rechner, und jede Aktion lässt sich rückgängig machen.</p>
+        <div class="install">
+          <pre id="installline"><span class="p">&gt; </span>source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre>
+          <button class="copy" id="copyBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Kopieren</span></button>
+        </div>
+        <p class="small">Eine Zeile in der R-Konsole installiert jellyqda mit allen Abhängigkeiten und sagt dir am Ende, wie es weitergeht.</p>
+        <div class="ctas">
+          <a class="btn primary" href="#install">Jetzt starten</a>
+          <a class="btn" href="https://github.com/thedivingshellyfish/jellyqda/wiki">Zur Anleitung</a>
+        </div>
+      </div>
+      <div class="window" aria-label="Screenshot der jellyqda-App">
+        <div class="bar"><i></i><i></i><i></i><span>qda_app()  ·  127.0.0.1</span></div>
+        <img class="shot-light" src="../img/de/01-uebersicht.png" alt="Die jellyqda-App: links Dokumente und Codebaum, in der Mitte das kodierte Transkript, rechts die Memos" width="1600" height="1000">
+        <img class="shot-dark" src="../img/de/02-uebersicht-dark.png" alt="Die jellyqda-App im Dunkelmodus" width="1600" height="1000" loading="lazy">
+      </div>
     </div>
-    <p class="installhint">Diese eine Zeile in die R-Konsole kopieren: sie installiert jellyqda und alle Abhängigkeiten, fragt nichts nach und sagt dir am Ende, wie es weitergeht.</p>
 
-    <div class="cta">
-      <a class="btn primary" href="#installation">Los geht's in 3 Schritten</a>
-      <a class="btn ghost" href="#screenshots">Screenshots ansehen</a>
-      <a class="btn ghost" href="https://github.com/thedivingshellyfish/jellyqda/releases">🪼 v0.7.0 bei GitHub</a>
-    </div>
-
-    <div class="heroshot">
-      <a href="../img/de/01-uebersicht.png" target="_blank" rel="noopener">
-        <img src="../img/de/01-uebersicht.png" alt="Die jellyqda-App mit Dokumenten, Codesystem, Dokument-Browser, Codings, Memos und Summary Grid" loading="
-eager">
-      </a>
-      <p class="shotcap">Die App in der Übersicht: alle QDA-typischen Bereiche, flexibel per Drag &amp; Drop anordbar, hier im hellen Modus.</p>
+    <div class="facts">
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div><b>Nichts verlässt deinen Rechner</b><span>Keine Cloud, kein Konto, keine Telemetrie. Die App läuft nur auf 127.0.0.1.</span></div></div>
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><div><b>Ein Projekt, eine Datei</b><span>Alles steckt in einer <code>.jellyqda</code>-Datei (SQLite). Kopieren, sichern, fertig.</span></div></div>
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><div><b>Alles rückgängig machbar</b><span>Jede Aktion steht mit Zeitstempel im Audit-Trail, bereit für den Methodenteil.</span></div></div>
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/></svg><div><b>App und Skript</b><span>Per Mausklick in der App oder mit <code>qda_*()</code>-Funktionen, die tibbles liefern.</span></div></div>
     </div>
   </div>
 
-  <!-- warum -->
-  <section id="warum">
+  <section id="workflow">
     <div class="wrap">
-      <h2>Warum jellyqda?</h2>
-      <p class="lead">Weil qualitative Forschung datenschutzfreundlich, nachvollziehbar und ohne Lizenzkosten sein soll, und weil R dafür einfach die beste Umgebung ist.</p>
-      <div class="grid cards">
-        <div class="card blue">
-          <span class="emoji">🔒</span>
-          <h3>100 % offline, DSGVO-freundlich</h3>
-          <p>Keine Cloud, keine Uploads, keine Telemetrie. Alle Daten bleiben in einer lokalen <code>*.jellyqda</code>-Datei (SQLite). Die App läuft nur auf deinem eigenen Rechner.</p>
-        </div>
-        <div class="card blue">
-          <span class="emoji">🧪</span>
-          <h3>Datenintegrität ernst genommen</h3>
-          <p>Importierter Text wird „eingefroren“, Codings verrutschen nie. Automatische Tests prüfen, dass angezeigter und gespeicherter Text zeichenweise identisch sind.</p>
-        </div>
-        <div class="card gold">
-          <span class="emoji">🎓</span>
-          <h3>Wissenschaftstauglich</h3>
-          <p>Jede Aktion mit Zeitstempel im Protokoll, exportierbar für den Methodenteil. Und sowieso: <code>citation("jellyqda")</code> existiert.</p>
-        </div>
-        <div class="card gold">
-          <span class="emoji">🆓</span>
-          <h3>MIT-Lizenz, keine Kosten</h3>
-          <p>Keine Subscription, kein Lizenzdruck, kein Lock-in. Ein ordentliches R-Paket mit vollständiger API, das auch per Skript reproduzierbar auswertet.</p>
-        </div>
+      <div class="sechead">
+        <h2>Vom Transkript zum Bericht in fünf Schritten</h2>
+        <p>Die App zeigt Dokumente, Codesystem, Transkript und Memos nebeneinander. Wähle einen Schritt, um den passenden Teil der Oberfläche zu sehen.</p>
+      </div>
+      <div class="flow">
+        <ol class="steps" role="tablist" aria-label="Arbeitsschritte">
+          <li><button role="tab" aria-selected="true" data-img="../img/de/03-dokumente-import.png" data-cap="Dokumente: Import per Dialog oder Drag &amp; Drop. Der Text wird beim Import eingefroren, damit Codings nie verrutschen."><b>Transkripte importieren</b><span><code>.txt</code>, <code>.md</code>, <code>.docx</code> und <code>.pdf</code>, per Dialog oder Drag &amp; Drop.</span></button></li>
+          <li><button role="tab" aria-selected="false" data-img="../img/de/05-codesystem.png" data-cap="Codebaum: jede Code-Familie behält ihre Farbe; umbenennen per Doppelklick."><b>Codesystem aufbauen</b><span>Codes und Subcodes, jede Familie in ihrer eigenen, farbenblind-freundlichen Farbe.</span></button></li>
+          <li><button role="tab" aria-selected="false" data-img="../img/de/06-markieren-aktionsleiste.png" data-cap="Text markieren, schon erscheint darüber die Kodier-Leiste. Strg+1 bis 9 wählt einen Code."><b>Markieren und kodieren</b><span>Stelle markieren, Code anklicken. Segmente nach Absatz oder Sprecherwechsel.</span></button></li>
+          <li><button role="tab" aria-selected="false" data-img="../img/de/29-fallvergleich.png" data-cap="Fallvergleich: Codings je Code über die Ausprägungen einer Dokumentvariablen."><b>Auswerten</b><span>Code-Matrix, Fallvergleich, Worthäufigkeiten, Stichwort im Kontext, Mayring.</span></button></li>
+          <li><button role="tab" aria-selected="false" data-img="../img/de/33-bericht-randspalte-a4.png" data-cap="HTML-Bericht auf A4: jedes Interview mit Codings, Kommentaren und Memos in der Randspalte."><b>Bericht und Export</b><span>A4-Bericht mit Randspalte, Codebuch als Word, Daten als CSV oder Excel.</span></button></li>
+        </ol>
+        <figure class="stage" style="margin:0">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img id="stageImg" src="../img/de/03-dokumente-import.png" alt="Dokumente-Panel mit importierten Transkripten"></div>
+          <figcaption id="stageCap">Dokumente: Import per Dialog oder Drag &amp; Drop. Der Text wird beim Import eingefroren, damit Codings nie verrutschen.</figcaption>
+        </figure>
       </div>
     </div>
   </section>
 
-  <!-- features -->
   <section id="features">
     <div class="wrap">
-      <h2>Was drin ist</h2>
-      <p class="lead">Alle Funktionen Schritt für Schritt mit Screenshots im <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>, jede R-Funktion in der <a href="../dev/reference/">API-Dokumentation</a>.</p>
-      <div class="note">🆕 <strong>Neu in v0.7.0:</strong> Oberfläche, Hilfe und Bericht komplett auf <strong>Deutsch und Englisch</strong> (Umschalter <strong>DE/EN</strong>), Paket bereit für CRAN. <strong>v0.6.0:</strong> Bericht mit Randspalte auf A4, Kodierleitfaden, In-vivo-Codes, Codes zusammenführen, Suchtreffer codieren, Fallvergleich, Worthäufigkeiten, Stichwort im Kontext, Zusammenfassung nach Mayring. <strong>v0.5.0:</strong> Codebaum mit Subcodes, zweistufige Kodier-Leiste, Umkodieren. Alle Änderungen im <a href="../dev/news/index.html">Changelog</a>.</div>
-      <div class="grid features">
-        <div class="card"><span class="emoji">📄</span><h3>Import</h3><p><code>.txt</code>, <code>.md</code>, <code>.docx</code>, <code>.pdf</code>, per Dialog oder Drag &amp; Drop. Der Text wird beim Import eingefroren, Codings verrutschen nie.</p></div>
-        <div class="card"><span class="emoji">🌳</span><h3>Codebaum mit Codes &amp; Subcodes</h3><p>Jede Code-Familie hat ihre Farbe und hängt am „Faden“: ein- und ausklappbar, Umbenennen per Doppelklick, direkt im Baum kodieren, Codes samt Subcodes zusammenführen.</p></div>
-        <div class="card"><span class="emoji">🏷️</span><h3>Kodieren mit der Maus</h3><p>Text markieren, Code-Chip anklicken, fertig. Subcodes klappen in der Kodier-Leiste aus (<code>Strg+1…9</code>), Umkodieren mit einem Klick, In-vivo-Codes aus markiertem Text.</p></div>
-        <div class="card"><span class="emoji">🔬</span><h3>Deduktiv &amp; induktiv</h3><p>Kodierleitfaden je Code: Definition, Ankerbeispiel (per Klick anhängen) und Kodierregel, beim Kodieren eingeblendet, im Bericht und im Word-Codebook. Und: alle Suchtreffer auf einmal codieren.</p></div>
-        <div class="card"><span class="emoji">🔀</span><h3>Überlappende Codings</h3><p>Stellen mit mehreren Codings sind grau mit Zahl und Farbstreifen. Maus darüber: Liste aller Codings mit Kommentar, einzeln anzeigbar oder löschbar.</p></div>
-        <div class="card"><span class="emoji">✂️</span><h3>Segmente nach Sprecherwechsel</h3><p>Segmentierung nach Absätzen, Zeilen oder Sprecherwechseln (<code>[00:01:12] P: …</code>), auch nachträglich. Teilen, zusammenführen, aus Markierungen festlegen.</p></div>
-        <div class="card"><span class="emoji">📝</span><h3>Memos in vier Arten</h3><p>Zur Textstelle, zum Dokument (Postskript), zum Code (Definition, Kodierregel) und zum Projekt (Forschungstagebuch), dazu Kommentare an jedem Coding.</p></div>
-        <div class="card"><span class="emoji">🧪</span><h3>Zusammenfassung nach Mayring</h3><p>Paraphrase und Generalisierung je Coding, als Tabelle bearbeitbar und als CSV für Excel exportierbar, mit eigenem Abschnitt im Bericht.</p></div>
-        <div class="card"><span class="emoji">📊</span><h3>Auswerten &amp; Fallvergleich</h3><p>Code-Matrix mit Fallvergleich nach Dokumentvariablen, Summary Grid, Worthäufigkeiten ohne Stoppwörter, Stichwort im Kontext (KWIC), Volltextsuche, Fortschritts-Statistik.</p></div>
-        <div class="card"><span class="emoji">🖨️</span><h3>Bericht auf A4</h3><p>HTML-Bericht mit Häufigkeiten in Prozent und Randspalte neben jedem Interview: Codings, Kommentare und Memos genau an der Stelle, an der sie vorkommen. Druckfertig auf A4.</p></div>
-        <div class="card"><span class="emoji">↩️</span><h3>Rückgängig &amp; Wiederholen</h3><p>Für alles, mit Tooltip, was passieren wird. Der Verlauf überlebt sogar einen App-Neustart, und jede Aktion landet im lückenlosen Protokoll.</p></div>
-        <div class="card"><span class="emoji">🌐</span><h3>Deutsch &amp; Englisch</h3><p>Komplette Oberfläche, Hilfe, Benachrichtigungen und Bericht in beiden Sprachen, umschaltbar per <strong>DE/EN</strong>-Knopf oder <code>qda_app(lang = ...)</code>.</p></div>
-        <div class="card"><span class="emoji">📤</span><h3>Export &amp; Backups</h3><p>CSV, Excel, Word-Codebuch und HTML-Bericht. Rotierende ZIP-Backups außerhalb des Projektordners, automatisch alle 25 Aktionen.</p></div>
-        <div class="card"><span class="emoji">🧮</span><h3>Skriptbar &amp; reproduzierbar</h3><p>Alles geht auch per R-Code: Jede Funktion gibt ein tibble zurück. Ideal für reproduzierbare Auswertungen in der Masterarbeit.</p></div>
+      <div class="sechead">
+        <h2>Gemacht für qualitative Forschung</h2>
+        <p>Jede Funktion ist mit Screenshots im <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a> erklärt, jede R-Funktion in der <a href="../dev/reference/">Referenz</a>.</p>
+      </div>
+      <div class="cols">
+        <div>
+          <h3><i style="--c:var(--c5)"></i>Kodieren</h3>
+          <ul>
+            <li><b>Deduktiv und induktiv</b><span>Kodierleitfaden je Code: Definition, Ankerbeispiel, Kodierregel. In-vivo-Codes, Codes zusammenführen.</span></li>
+            <li><b>Überlappungen auf einen Blick</b><span>Mehrfach kodierte Stellen zeigen eine Zahl; beim Überfahren erscheinen alle Codings.</span></li>
+            <li><b>Automatisch kodieren</b><span>Alle Treffer eines Suchbegriffs in einem Schritt kodieren, mit einem Strg+Z wieder weg.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3><i style="--c:var(--c1)"></i>Auswertung</h3>
+          <ul>
+            <li><b>Zusammenfassende Inhaltsanalyse nach Mayring</b><span>Paraphrase und Generalisierung je Coding, als CSV exportierbar.</span></li>
+            <li><b>Fallvergleich und Summary Grid</b><span>Codes nach Dokumentvariablen; eine Zusammenfassung je Code und Dokument.</span></li>
+            <li><b>Vier Arten von Memos</b><span>Zu einer Textstelle, einem Dokument, einem Code und zum ganzen Projekt.</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3><i style="--c:var(--c3)"></i>Datensicherheit</h3>
+          <ul>
+            <li><b>Eingefrorener Text</b><span>Der Text wird beim Import einmal ausgelesen; Tests prüfen, dass Anzeige und Speicher Zeichen für Zeichen übereinstimmen.</span></li>
+            <li><b>Automatische Backups</b><span>Rotierende ZIP-Sicherungen außerhalb des Projektordners, alle 25 Aktionen.</span></li>
+            <li><b>Deutsch und Englisch</b><span>Oberfläche, Hilfe und Bericht in beiden Sprachen.</span></li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- screenshots -->
-  <section id="screenshots">
-    <div class="wrap">
-      <h2>So sieht die Arbeit aus</h2>
-      <p class="lead">Alle 30+ Screenshots gibts im <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>, hier eine Auswahl. Klick auf ein Bild öffnet es in voller Größe.</p>
-      <div class="gallery">
-        <a href="../img/de/05-codesystem.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/05-codesystem.png" alt="Codebaum mit Codes und Subcodes in Familienfarben" loading="lazy"></span>
-            <figcaption class="gal-cap">Codebaum: Codes und Subcodes, jede Familie in ihrer Farbe, direkt im Baum kodieren.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/06-markieren-aktionsleiste.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/06-markieren-aktionsleiste.png" alt="Text markieren und die Aktionsleiste mit Code-Buttons" loading="lazy"></span>
-            <figcaption class="gal-cap">Markieren: die Kodier-Leiste zeigt alle Codes direkt über dem Text.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/07-ueberlappung-popover.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/07-ueberlappung-popover.png" alt="Popover mit allen Codings einer überlappenden Stelle" loading="lazy"></span>
-            <figcaption class="gal-cap">Überlappungen: alle Codings der Stelle auf einen Blick, einzeln löschbar.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/26-kodierleitfaden.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/26-kodierleitfaden.png" alt="Kodierleitfaden mit Definition, Ankerbeispielen und Kodierregel" loading="lazy"></span>
-            <figcaption class="gal-cap">Kodierleitfaden: Definition, Ankerbeispiele und Kodierregel je Code.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/10-memos.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/10-memos.png" alt="Memo-Panel mit Memos in vier Arten" loading="lazy"><span class="gal-tag">Ausschnitt</span></span>
-            <figcaption class="gal-cap">Memos: Textstelle, Dokument, Code und Projekt, mit Filter und Suche.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/16-summary-grid.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/16-summary-grid.png" alt="Summary Grid mit Zusammenfassungen je Code und Dokument" loading="lazy"><span class="gal-tag">Ausschnitt</span></span>
-            <figcaption class="gal-cap">Summary Grid: Zusammenfassungen je Code und Dokument, direkt bearbeitbar.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/30-worthaeufigkeiten.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/30-worthaeufigkeiten.png" alt="Worthäufigkeiten ohne Stopp- und Füllwörter" loading="lazy"></span>
-            <figcaption class="gal-cap">Analysefenster: Worthäufigkeiten ohne Stopp- und Füllwörter, optional nur innerhalb eines Codes.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/32-mayring.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/32-mayring.png" alt="Zusammenfassende Inhaltsanalyse nach Mayring: Paraphrase und Generalisierung je Coding" loading="lazy"></span>
-            <figcaption class="gal-cap">Zusammenfassung nach Mayring: Paraphrase und Generalisierung je Coding, exportierbar als CSV.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/33-bericht-randspalte-a4.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/33-bericht-randspalte-a4.png" alt="HTML-Bericht mit Randspalte neben dem Interview" loading="lazy"></span>
-            <figcaption class="gal-cap">Bericht mit Randspalte: Codings, Kommentare und Memos neben dem Interview, druckfertig auf A4.</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/02-uebersicht-dark.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame dark-shot"><img src="../img/de/02-uebersicht-dark.png" alt="Die App im Dark Mode" loading="lazy"></span>
-            <figcaption class="gal-cap">Dark Mode mit geprüftem WCAG-AA-Kontrast. (Probiere hier auch den Mond oben rechts 😉)</figcaption>
-          </figure>
-        </a>
-        <a href="../img/de/19-html-bericht.png" target="_blank" rel="noopener">
-          <figure>
-            <span class="gal-frame"><img src="../img/de/19-html-bericht.png" alt="Exportierter HTML-Bericht" loading="lazy"></span>
-            <figcaption class="gal-cap">HTML-Bericht: ein Klick, ein exportierbares Dokument der gesamten Analyse.</figcaption>
-          </figure>
-        </a>
+  <section id="script">
+    <div class="wrap script">
+      <div>
+        <h2>Dasselbe Projekt per Skript</h2>
+        <p>App und R-Funktionen schreiben in dieselbe Datei. Kodiere in der App und lass deine Auswertung aus R Markdown oder Quarto neu laufen, sobald sich etwas ändert.</p>
+        <p><a href="../dev/reference/">Alle Funktionen in der Referenz →</a></p>
       </div>
+      <pre class="code"><span class="f">library</span>(jellyqda)
+<span class="f">qda_open</span>(<span class="s">"masterarbeit.jellyqda"</span>)
+<span class="f">qda_import</span>(<span class="s">"interview_01.docx"</span>)
+<span class="f">qda_code_add</span>(<span class="s">"Beruflicher Werdegang"</span>)
+<span class="f">qda_code</span>(<span class="n">1</span>, <span class="s">"Beruflicher Werdegang"</span>, segment = <span class="n">3</span>)
+
+<span class="f">qda_stats</span>()$overall       <span class="c"># Anteil kodiertes Material</span>
+<span class="f">qda_case_matrix</span>(by = <span class="s">"Gruppe"</span>)
+<span class="f">qda_export</span>(<span class="s">"report"</span>)       <span class="c"># HTML-Bericht auf A4</span></pre>
     </div>
   </section>
 
-  <!-- installation -->
-  <section id="installation">
+  <section id="install">
     <div class="wrap">
-      <h2>Los geht's in 3 Schritten</h2>
-      <p class="lead">Voraussetzung: R ab Version 4.0, am besten mit RStudio. Beides kostenlos. Für die Installation reicht eine Zeile.</p>
-
-      <div class="step">
-        <div class="n">1</div>
-        <div>
-          <h3>Installieren (einmalig, ca. 5 Minuten)</h3>
-          <p>Diese Zeile in die R-Konsole kopieren. Das Skript installiert alle benötigten Pakete, dann jellyqda, prüft die Installation und sagt dir am Ende, wie es weitergeht.</p>
-          <pre>source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre>
-        </div>
+      <div class="sechead">
+        <h2>In drei Schritten loslegen</h2>
+        <p>Du brauchst R ab Version 4.0, am besten mit RStudio. Beides ist kostenlos.</p>
       </div>
-
-      <div class="step">
-        <div class="n">2</div>
-        <div>
-          <h3>Projekt anlegen</h3>
-          <pre>library(jellyqda)
-qda_open("meine-arbeit.jellyqda")   # legt die Projektdatei an (oder öffnet sie später wieder)</pre>
-        </div>
+      <div class="install-steps">
+        <div class="istep"><h3>Einmal installieren</h3><p>Etwa fünf Minuten. Das Skript prüft am Ende, ob alles geklappt hat.</p><pre>source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")</pre></div>
+        <div class="istep"><h3>Projekt anlegen</h3><p>Legt die Projektdatei an oder öffnet sie beim nächsten Mal wieder.</p><pre>library(jellyqda)
+qda_open("meine-analyse.jellyqda")</pre></div>
+        <div class="istep"><h3>App starten</h3><p>Öffnet sich im Browser. Beenden mit Esc; alles ist sofort gespeichert.</p><pre>qda_app()</pre></div>
       </div>
-
-
-      <div class="step">
-        <div class="n">3</div>
-        <div>
-          <h3>App starten und loskodieren</h3>
-          <pre>qda_app()   # öffnet die App im Browser</pre>
-          <p>Links Transkripte importieren (oder per Drag &amp; Drop hineinziehen), im Code System erste Codes anlegen, im Text markieren und auf einen Code klicken. Beenden mit <code>Esc</code> oder dem roten X, gespeichert wird ohnehin sofort bei jeder Aktion.</p>
-        </div>
-      </div>
-
-      <div class="note">💡 <strong>Ohne eigenes Material ausprobieren:</strong> <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code> oder die fiktiven Transkripte aus dem Ordner <code>demo/</code> im Repo.</div>
-      <div class="note">🔌 <strong>Offline-Rechner?</strong> Auf der <a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases-Seite</a> gibt es das Release-ZIP; das Installationsskript installiert daraus ohne Internet (Konfigurationszeilen dafür stehen ganz oben im Skript).</div>
+      <p class="hint">Noch kein eigenes Material? Probier <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code>. Rechner ohne Internet? Das <a href="https://github.com/thedivingshellyfish/jellyqda/releases">Release-ZIP</a> installiert auch offline.</p>
     </div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap">
-    <div class="footgrid">
-      <div>
-        <h4>Projekt</h4>
-        <ul>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub-Repository</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki (Anleitung mit Screenshots)</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Mitmachen</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Dokumentation</h4>
-        <ul>
-          <li><a href="../dev/reference/">R-Funktionen (API-Doku)</a></li>
-          <li><a href="../dev/articles/index.html">Artikel &amp; Vignetten</a></li>
-          <li><a href="../dev/news/index.html">Changelog (NEWS.md)</a></li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Fehler melden</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Zitieren</h4>
-        <ul>
-          <li><code>citation("jellyqda")</code> in R</li>
-          <li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT-Lizenz</a></li>
-        </ul>
-      </div>
+  <div class="wrap foot">
+    <div>
+      <a class="brand" href="#top">jellyqda</a>
+      <p>Kostenlose, offline laufende qualitative Datenanalyse für R. Zitieren mit <code>citation("jellyqda")</code>.</p>
     </div>
-    <p class="mit">🪼 jellyqda v0.7.0 · gebaut mit R, Shiny, SQLite und einem Quäntchen Qualle. Keine Cloud wurde bei der Erstellung dieser Website kontaktiert, dieser Text hingegen schon (beim Laden der Screenshots von GitHub). <a href="../index.html" lang="en" hreflang="en">English version</a></p>
+    <div><h4>Projekt</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Mitmachen</a></li></ul></div>
+    <div><h4>Doku</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a></li><li><a href="../dev/reference/">R-Funktionen</a></li><li><a href="../dev/news/index.html">Änderungen</a></li></ul></div>
+    <div><h4>Hilfe</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Problem melden</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT-Lizenz</a></li></ul></div>
   </div>
 </footer>
 
-<!-- lightbox -->
-<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot in voller Größe">
-  <button type="button" class="lb-close" aria-label="Schließen">✕</button>
-  <button type="button" class="lb-prev" aria-label="Vorheriges Bild">‹</button>
-  <img id="lb-img" src="" alt="">
-  <button type="button" class="lb-next" aria-label="Nächstes Bild">›</button>
-  <p id="lb-cap" class="lb-cap"></p>
-</div>
-
 <script>
 (function () {
-  /* Lightbox für die Screenshot-Galerie */
-  var box = document.getElementById("lightbox");
-  var img = document.getElementById("lb-img");
-  var cap = document.getElementById("lb-cap");
-  var links = [].slice.call(document.querySelectorAll(".gallery a"));
-  var items = links.map(function (a) {
-    return {
-      src: a.getAttribute("href"),
-      alt: a.querySelector("img").getAttribute("alt"),
-      text: a.querySelector("figcaption").textContent
-    };
+  var root = document.documentElement, KEY = "jellyqda_landing_theme";
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  var s = stored(); if (s) root.setAttribute("data-theme", s);
+  document.getElementById("themeToggle").addEventListener("click", function () {
+    var cur = root.getAttribute("data-theme") ||
+      (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    var next = cur === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(KEY, next); } catch (e) {}
   });
-  var current = 0;
 
-  function show(i) {
-    current = (i + items.length) % items.length;
-    img.src = items[current].src;
-    img.alt = items[current].alt;
-    cap.textContent = items[current].text;
-  }
-  function open(i) {
-    show(i);
-    box.hidden = false;
-    document.body.style.overflow = "hidden";
-  }
-  function close() {
-    box.hidden = true;
-    img.src = "";
-    img.alt = "";
-    cap.textContent = "";
-    document.body.style.overflow = "";
-  }
+  var hdr = document.getElementById("hdr");
+  addEventListener("scroll", function () { hdr.classList.toggle("scrolled", scrollY > 8); }, { passive: true });
 
-  links.forEach(function (a, i) {
-    a.addEventListener("c
-lick", function (ev) {
-      ev.preventDefault();
-      open(i);
-    });
-  });
-  box.addEventListener("click", function (ev) {
-    if (ev.target === box || ev.target === cap) close();
-  });
-  document.querySelector(".lb-close").addEventListener("click", close);
-  document.querySelector(".lb-prev").addEventListener("click", function () { show(current - 1); });
-  document.querySelector(".lb-next").addEventListener("click", function () { show(current + 1); });
-  document.addEventListener("keydown", function (ev) {
-    if (box.hidden) return;
-    if (ev.key === "Escape") close();
-    else if (ev.key === "ArrowLeft") show(current - 1);
-    else if (ev.key === "ArrowRight") show(current + 1);
-  });
-})();
-</script>
-
-<script>
-(function () {
-  var KEY = "jellyqda_landing_theme";
-  var btn = document.getElementById("themeToggle");
-  var root = document.documentElement;
-
-  function apply(theme) {
-    root.setAttribute("data-theme", theme);
-    btn.textContent = theme === "dark" ? "☀️" : "🌙";
-    try { localStorage.setItem(KEY, theme); } catch (e) {}
-  }
-  var saved = null;
-  try { saved = localStorage.getItem(KEY); } catch (e) {}
-  if (!saved) {
-    saved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
-  }
-  apply(saved);
+  var btn = document.getElementById("copyBtn"), label = btn.querySelector("span");
   btn.addEventListener("click", function () {
-    apply(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    var text = document.getElementById("installline").textContent.replace(/^>\s*/, "");
+    function ok() { btn.classList.add("ok"); label.textContent = "Kopiert"; setTimeout(function () { btn.classList.remove("ok"); label.textContent = "Kopieren"; }, 1800); }
+    function fallback() { var r = document.createRange(); r.selectNodeContents(document.getElementById("installline")); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback); else fallback();
   });
 
-  var copyBtn = document.getElementById("copyBtn");
-  copyBtn.addEventListener("click", function () {
-    var text = document.getElementById("installline").textContent;
-    function done() {
-      copyBtn.textContent = "Kopiert ✓";
-      copyBtn.classList.add("done");
-      setTimeout(function () {
-        copyBtn.textContent = "Kopieren";
-        copyBtn.classList.remove("done");
-      }, 1800);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done);
-    } else {
-      var ta = document.createElement("textarea");
-
-      ta.value = text; document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); done(); } catch (e) {}
-      document.body.removeChild(ta);
-    }
+  var tabs = [].slice.call(document.querySelectorAll(".steps button"));
+  var img = document.getElementById("stageImg"), cap = document.getElementById("stageCap");
+  function select(t) {
+    tabs.forEach(function (x) { x.setAttribute("aria-selected", x === t ? "true" : "false"); x.tabIndex = x === t ? 0 : -1; });
+    img.src = t.getAttribute("data-img"); img.alt = t.querySelector("b").textContent;
+    cap.textContent = t.getAttribute("data-cap");
+  }
+  tabs.forEach(function (t, i) {
+    t.tabIndex = i === 0 ? 0 : -1;
+    t.addEventListener("click", function () { select(t); });
+    t.addEventListener("keydown", function (e) {
+      var d = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+      if (d) { e.preventDefault(); var n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); select(n); }
+    });
   });
 })();
 </script>
