@@ -4,6 +4,8 @@
 
 > Contact: jellyqda {@} systemli.org or in github | Later, maybe: a community space on Matrix or Discord
 
+**DEMO:** [https://thedivingshellyfish.shinyapps.io/jellyqda-demo/](https://thedivingshellyfish.shinyapps.io/jellyqda-demo/)
+
 # jellyqda
 
 **Qualitative content analysis of interviews in R & RStudio: free, completely offline, no cloud.**
