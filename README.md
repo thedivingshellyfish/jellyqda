@@ -1,6 +1,8 @@
 > 🌐 **English** · [Deutsch](README.de.md)
 
-[![R-CMD-check](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/thedivingshellyfish/jellyqda/actions/workflows/R-CMD-check.yaml) 
+
+> Contact: jellyqda {@} systemli.org or in github | Later, maybe: a community space on Matrix or Discord
 
 # jellyqda
 
