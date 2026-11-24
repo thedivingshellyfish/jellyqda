@@ -85,6 +85,7 @@
   .copy.ok { color: var(--c3); }
   .small { font-size: .86rem; color: var(--ink-2); margin: 10px 0 0; }
   .ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+  .demo-note { font-size: .82rem; color: var(--ink-2); margin: 12px 0 0; }
   .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 650; font-size: .95rem; text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
   .btn.primary { background: var(--blue); color: var(--blue-ink); border-color: var(--blue); }
   .btn:hover { filter: brightness(1.05); }
@@ -149,6 +150,31 @@
   .istep pre { margin: 0; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font-size: .8rem; }
   .hint { margin-top: 18px; font-size: .9rem; color: var(--ink-2); border-left: 3px solid var(--gold); padding: 2px 0 2px 14px; }
 
+  /* assistant teaser */
+  .assist { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 56px; align-items: center; }
+  .assist p { color: var(--ink-2); margin: 14px 0 0; }
+  .assist ul.pts { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px; }
+  .assist .pts li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: .95rem; }
+  .assist .pts li svg { width: 20px; height: 20px; color: var(--c3); margin-top: 2px; }
+  .assist .ctas { margin-top: 22px; }
+  .assist .privacy { font-size: .86rem; display: flex; gap: 8px; align-items: flex-start; margin-top: 16px; }
+  .assist .privacy svg { width: 16px; height: 16px; flex: none; margin-top: 3px; color: var(--ink-2); }
+  .roadmap { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); }
+  .roadmap .rh { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .roadmap .pct { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .95rem;
+    background: conic-gradient(var(--c3) 0 88%, var(--line) 88% 100%); position: relative; flex: none; }
+  .roadmap .pct::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--surface); }
+  .roadmap .pct span { position: relative; }
+  .roadmap .rh b { display: block; }
+  .roadmap .rh small { color: var(--ink-2); font-size: .82rem; }
+  .thread { list-style: none; margin: 0; padding: 0; }
+  .thread li { position: relative; padding: 0 0 16px 28px; }
+  .thread li:last-child { padding-bottom: 0; }
+  .thread li::before { content: ""; position: absolute; left: 3px; top: 5px; width: 13px; height: 13px; border-radius: 50%; background: var(--blue); }
+  .thread li::after { content: ""; position: absolute; left: 8px; top: 21px; bottom: -2px; width: 3px; border-radius: 2px; background: var(--lc, var(--c3)); }
+  .thread li:last-child::after { display: none; }
+  .thread small { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); font-weight: 700; }
+  .thread b { font-size: .95rem; }
   /* footer */
   footer { margin-top: 96px; border-top: 1px solid var(--line); padding-block: 40px 56px; }
   .foot { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 32px; }
@@ -159,7 +185,7 @@
   .foot p { font-size: .88rem; color: var(--ink-2); margin: 10px 0 0; max-width: 30em; }
 
   @media (max-width: 900px) {
-    .hero, .sechead, .flow, .script { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .hero, .sechead, .flow, .script, .assist { grid-template-columns: minmax(0, 1fr); gap: 28px; }
     .hero { padding-top: 40px; }
     .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fact:nth-child(3) { border-left: 0; padding-left: 0; }
@@ -190,6 +216,8 @@
       <a href="#workflow">How it works</a>
       <a href="#features">Features</a>
       <a href="#install">Install</a>
+      <a href="assistant/">Assistant</a>
+      <a href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/">Demo</a>
       <a href="dev/reference/">R functions</a>
       <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>
     </nav>
@@ -219,8 +247,10 @@
         <p class="small">One line in the R console installs jellyqda with all dependencies and tells you what to do next.</p>
         <div class="ctas">
           <a class="btn primary" href="#install">Get started</a>
+          <a class="btn" href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>Try the live demo</a>
           <a class="btn" href="https://github.com/thedivingshellyfish/jellyqda/wiki">Read the guide</a>
         </div>
+        <p class="small demo-note">The live demo runs online (shinyapps.io) with fictitious sample interviews – please don’t upload real interview data there. jellyqda itself works fully offline.</p>
       </div>
       <div class="window" aria-label="Screenshot of the jellyqda app">
         <div class="bar"><i></i><i></i><i></i><span>qda_app()  ·  127.0.0.1</span></div>
@@ -313,6 +343,23 @@
     </div>
   </section>
 
+  <section id="assistant">
+    <div class="wrap assist">
+      <div>
+        <p class="eyebrow">New · jellyqda Assistant</p>
+        <h2>New to qualitative analysis? Start with the assistant.</h2>
+        <p>A small guide to qualitative research plus a step-by-step tour of jellyqda. Choose your interview type, openness and analysis logic, and get a roadmap that fits – with what it means in the app.</p>
+        <ul class="pts"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Research compass:</b> from problem-centred to theory-generating expert interviews, open to structured, inductive or deductive – with a fit check.</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Roadmap as A4 PDF:</b> method steps, your path in jellyqda with R code and a building block for the methods section.</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Basics with diagrams:</b> Mayring, Kuckartz, Meuser &amp; Nagel, quality criteria, data protection – plus checklists and a glossary.</span></li></ul>
+        <div class="ctas"><a class="btn primary" href="assistant/">Open the assistant</a></div>
+        <p class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>No cookies, no tracking. Your progress is stored only locally in your browser.</span></p>
+      </div>
+      <div class="roadmap" aria-hidden="true">
+        <div class="rh"><div class="pct"><span>88%</span></div><div><b>Your roadmap</b><small>coherent – justify the yellow link</small></div></div>
+        <ul class="thread"><li style="--lc:var(--c3)"><small>Interview type</small><b>Theory-generating expert interview</b></li><li style="--lc:var(--c3)"><small>Openness</small><b>Semi-open (guide-based)</b></li><li style="--lc:var(--c1)"><small>Analysis logic</small><b>Deductive-inductive</b></li><li style="--lc:var(--c3)"><small>Method</small><b>Meuser &amp; Nagel</b></li></ul>
+      </div>
+    </div>
+  </section>
+
   <section id="install">
     <div class="wrap">
       <div class="sechead">
@@ -325,7 +372,7 @@
 qda_open("my-analysis.jellyqda")</pre></div>
         <div class="istep"><h3>Start the app</h3><p>Opens in your browser. Quit with Esc; everything is saved immediately.</p><pre>qda_app()</pre></div>
       </div>
-      <p class="hint">No material yet? Try <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code>. Offline machine? The <a href="https://github.com/thedivingshellyfish/jellyqda/releases">release ZIP</a> installs without internet.</p>
+      <p class="hint">Want to look around first? Try the <a href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/">live demo</a> in your browser, no installation needed. No material yet? Try <code>qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))</code>. Offline machine? The <a href="https://github.com/thedivingshellyfish/jellyqda/releases">release ZIP</a> installs without internet.</p>
     </div>
   </section>
 </main>
@@ -336,8 +383,8 @@ qda_open("my-analysis.jellyqda")</pre></div>
       <a class="brand" href="#top">jellyqda</a>
       <p>Free, offline qualitative data analysis for R. Cite it with <code>citation("jellyqda")</code>.</p>
     </div>
-    <div><h4>Project</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Contributing</a></li></ul></div>
-    <div><h4>Docs</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a></li><li><a href="dev/reference/">R functions</a></li><li><a href="dev/news/index.html">Changelog</a></li></ul></div>
+    <div><h4>Project</h4><ul><li><a href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/">Live demo</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Contributing</a></li></ul></div>
+    <div><h4>Docs</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a></li><li><a href="dev/reference/">R functions</a></li><li><a href="assistant/">Assistant</a></li><li><a href="dev/news/index.html">Changelog</a></li></ul></div>
     <div><h4>Help</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Report an issue</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT licence</a></li></ul></div>
   </div>
 </footer>

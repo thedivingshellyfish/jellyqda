@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="jellyqda-Assistenz: von der Interviewform über die Auswertungslogik bis zur fertigen Analyse in jellyqda – Schritt für Schritt.">
+<title>jellyqda Assistenz</title>
+<style>
+/* jellyqda Assistenz – Styles. Farben als Tokens; Dark/Light per data-theme (Standard: Systemeinstellung). */
+:root {
+  --bg: #0b1020; --bg2: #0f1629; --card: #141c33; --card2: #1a2440;
+  --line: #26324f; --line2: #33426a;
+  --text: #eef2ff; --text2: #b8c2dc; --muted: #8590b0;
+  --accent: #8b7cf6; --accent2: #38bdf8; --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  --de: #38bdf8; --in: #a78bfa; --mix: #f0abfc; --ab: #fbbf24;
+  --code-bg: #0a0f1d; --code-text: #dbe3ff; --tk-fn: #82aaff; --tk-str: #a5e3a0; --tk-com: #6b7899;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --gloss: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%);
+  --radius: 18px; --safe-b: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f5f6fb; --bg2: #eceffa; --card: #ffffff; --card2: #f4f5fb;
+  --line: #e1e5f2; --line2: #cdd3e6;
+  --text: #141a2e; --text2: #3d4766; --muted: #626c88;
+  --accent: #6d5ce8; --accent2: #0284c7; --good: #047857; --warn: #a16207; --bad: #dc2626;
+  --de: #0284c7; --in: #7c3aed; --mix: #c026d3; --ab: #b45309;
+  --code-bg: #f7f8fc; --code-text: #1f2640; --tk-fn: #1d5fd6; --tk-str: #2f7d32; --tk-com: #8a93ad;
+  --shadow: 0 8px 24px rgba(20,26,46,.08);
+  --gloss: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 60%);
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  padding-bottom: calc(80px + var(--safe-b));
+}
+button { font: inherit; color: inherit; }
+a { color: var(--accent2); }
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+code, pre, .mono { font-family: ui-monospace, "SF Mono", "Roboto Mono", "Cascadia Mono", Menlo, Consolas, monospace; }
+#app { max-width: 780px; margin: 0 auto; padding: 14px 16px 24px; }
+.view { animation: fadein .22s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Kopf */
+.top { display: flex; align-items: center; gap: 12px; margin: 4px 0 18px; }
+.top .logo { width: 46px; height: 46px; flex: none; filter: drop-shadow(0 6px 14px rgba(139,124,246,.45)); }
+.top h1 { margin: 0; font-size: 22px; letter-spacing: -.02em; font-weight: 800; }
+.top p { margin: 0; color: var(--muted); font-size: 13px; }
+.top .grow { flex: 1; min-width: 0; }
+.iconbtn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); display: inline-grid; place-items: center; cursor: pointer; flex: none; color: var(--text2); }
+.iconbtn svg { width: 20px; height: 20px; }
+.pagehead { display: flex; align-items: center; gap: 10px; margin: 2px 0 16px; }
+.pagehead h2 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+.pagehead .sub { color: var(--muted); font-size: 13px; }
+
+/* Karten */
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.panel h3 { margin: 0 0 8px; font-size: 16px; }
+.panel > p:first-child { margin-top: 0; }
+.hero {
+  position: relative; overflow: hidden; border-radius: 22px; padding: 18px; margin-bottom: 16px;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(139,124,246,.38), transparent 55%),
+              radial-gradient(120% 140% at 100% 100%, rgba(56,189,248,.30), transparent 50%), var(--card);
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+}
+.hero::after { content: ""; position: absolute; inset: 0; background: var(--gloss); pointer-events: none; border-radius: inherit; }
+.hero::before { content: ""; position: absolute; top: -60%; left: -30%; width: 40%; height: 220%; transform: rotate(20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent); animation: sheen 7s ease-in-out infinite; pointer-events: none; }
+@keyframes sheen { 0%, 70% { left: -40%; } 100% { left: 130%; } }
+.hero .row { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+.hero h3 { margin: 0 0 4px; font-size: 17px; }
+.hero p { margin: 0; color: var(--text2); font-size: 13.5px; }
+.hero .btnrow { position: relative; z-index: 1; }
+.ring { width: 80px; height: 80px; flex: none; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .v { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: 17px; text-align: center; line-height: 1.1; }
+.ring .v small { display: block; font-size: 10px; color: var(--muted); font-weight: 600; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; position: relative; z-index: 1; }
+.kpi { background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; }
+:root[data-theme="light"] .kpi { background: rgba(255,255,255,.65); }
+.kpi b { display: block; font-size: 18px; }
+.kpi span { font-size: 11.5px; color: var(--muted); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; padding: 11px 16px; min-height: 46px;
+  border: 1px solid var(--line2); background: var(--card2); font-weight: 700; cursor: pointer; text-decoration: none; color: var(--text); position: relative; overflow: hidden; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn.primary { background: linear-gradient(135deg, var(--accent), #6d8cf6); border: none; color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+.btn.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 55%); pointer-events: none; }
+.btn.small { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius: 11px; }
+.btn.ghost { background: none; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn:active { transform: scale(.98); }
+.btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.btnrow > .btn { flex: 1 1 auto; }
+
+.sectiontitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 22px 2px 10px; }
+.sectiontitle h3 { margin: 0; font-size: 15px; }
+.sectiontitle span { color: var(--muted); font-size: 12.5px; }
+
+/* Kacheln */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.tile { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; cursor: pointer;
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; color: var(--text); }
+.tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--dc, var(--accent)); }
+.tile::after { content: ""; position: absolute; inset: 0; background: var(--gloss); opacity: .5; pointer-events: none; }
+.tile .h { display: flex; align-items: center; gap: 10px; }
+.tile .ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: color-mix(in srgb, var(--dc, var(--accent)) 20%, transparent); flex: none; }
+.tile b { font-size: 15px; display: block; line-height: 1.25; }
+.tile small { color: var(--muted); font-size: 12px; }
+.tile p { margin: 0; color: var(--text2); font-size: 12.8px; line-height: 1.45; }
+.tile .done { position: absolute; top: 12px; right: 12px; color: var(--good); width: 20px; height: 20px; }
+.tile .done svg { width: 20px; height: 20px; }
+
+/* Listen */
+.list { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.li { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 0; border-bottom: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%; background: none; color: var(--text); }
+.li:last-child { border-bottom: 0; }
+.li .t { flex: 1; min-width: 0; }
+.li .t b { display: block; font-size: 14px; font-weight: 650; line-height: 1.35; }
+.li .t small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.li .chev, .li > svg { color: var(--muted); width: 18px; height: 18px; flex: none; }
+.num { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; background: var(--card2); border: 1px solid var(--line); flex: none; }
+.num.ok { background: var(--good); color: #04261a; border-color: var(--good); }
+
+/* Chips & Badges */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; color: var(--text); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip svg { width: 15px; height: 15px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 750; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent; }
+.tag.de { color: var(--de); background: color-mix(in srgb, var(--de) 15%, transparent); }
+.tag.in { color: var(--in); background: color-mix(in srgb, var(--in) 15%, transparent); }
+.tag.mix { color: var(--mix); background: color-mix(in srgb, var(--mix) 15%, transparent); }
+.tag.ab { color: var(--ab); background: color-mix(in srgb, var(--ab) 15%, transparent); }
+.tag.n { color: var(--text2); background: var(--card2); border-color: var(--line); }
+.fit { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.fit::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.fit.g { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
+.fit.o { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.fit.b { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+.fit.r { color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* Kompass */
+.stepper { display: flex; gap: 4px; margin: 0 0 14px; }
+.stepper button { flex: 1; border: 0; background: none; padding: 0; cursor: pointer; text-align: left; color: var(--muted); font-size: 10.5px; font-weight: 700; min-width: 0; }
+.stepper button i { display: block; height: 6px; border-radius: 999px; background: var(--line); margin-bottom: 5px; transition: background .3s; }
+.stepper button.done i { background: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.stepper button.on i { background: linear-gradient(90deg, var(--accent), var(--accent2)); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+.stepper button.on { color: var(--text); }
+.stepper button span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q { font-size: clamp(19px, 5vw, 23px); font-weight: 800; line-height: 1.3; letter-spacing: -.01em; margin: 0 0 4px; }
+.qsub { color: var(--text2); margin: 0 0 14px; font-size: 14px; }
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.choice { text-align: left; border: 1.5px solid var(--line2); background: var(--card); border-radius: 16px; padding: 13px 14px; cursor: pointer; color: var(--text);
+  display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; transition: border-color .2s, box-shadow .2s, transform .1s; }
+.choice::after { content: ""; position: absolute; inset: 0; background: var(--gloss); opacity: .45; pointer-events: none; }
+.choice .ct { display: flex; align-items: flex-start; gap: 8px; }
+.choice .ct b { flex: 1; font-size: 14.5px; line-height: 1.3; }
+.choice .em { font-size: 20px; line-height: 1; }
+.choice small { color: var(--text2); font-size: 12.5px; line-height: 1.4; }
+.choice .fits { display: flex; gap: 6px; flex-wrap: wrap; }
+.choice.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent), 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--card)); }
+.choice.dim { opacity: .62; }
+.choice:active { transform: scale(.99); }
+.detail { margin-top: 14px; animation: fadein .25s ease; }
+.detail h4 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.detail h4:first-child { margin-top: 0; }
+.wnav { display: flex; gap: 10px; margin-top: 16px; position: sticky; bottom: calc(76px + var(--safe-b)); z-index: 5; padding: 10px 0 0;
+  background: linear-gradient(180deg, transparent, var(--bg) 35%); }
+.wnav .btn { flex: 1; }
+
+/* Faden (wie der Codebaum in jellyqda) */
+.faden { list-style: none; margin: 0; padding: 0; }
+.faden li { position: relative; padding: 0 0 14px 30px; }
+.faden li:last-child { padding-bottom: 0; }
+.faden li::before { content: ""; position: absolute; left: 8px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--nc, var(--accent)); box-shadow: 0 0 10px color-mix(in srgb, var(--nc, var(--accent)) 70%, transparent); }
+.faden li::after { content: ""; position: absolute; left: 13.5px; top: 19px; bottom: -3px; width: 3px; border-radius: 2px; background: var(--lc, var(--line)); }
+.faden li:last-child::after { display: none; }
+.faden li.empty::before { background: var(--card2); border: 2px dashed var(--line2); box-shadow: none; }
+.faden .fl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.faden .fv { font-weight: 700; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.faden .fw { font-size: 12.5px; color: var(--text2); margin-top: 2px; }
+.gauge { display: flex; align-items: center; gap: 14px; }
+.gauge .meter { flex: 1; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--bad), var(--warn), var(--good)); position: relative; }
+.gauge .meter i { position: absolute; top: 50%; width: 20px; height: 20px; border-radius: 50%; background: var(--card); border: 3px solid var(--text); transform: translate(-50%, -50%); box-shadow: var(--shadow); transition: left .5s; }
+
+/* Inhalte */
+.md { font-size: 15px; }
+.md p { margin: 0 0 10px; }
+.md p:last-child { margin-bottom: 0; }
+.md ul, .md ol { margin: 4px 0 10px; padding-left: 22px; }
+.md li { margin: 4px 0; }
+.md code { background: var(--card2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 6px; font-size: .88em; color: var(--tk-fn); word-break: break-word; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tblwrap { overflow-x: auto; margin: 6px 0 4px; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+.tbl th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.box { border-radius: 14px; padding: 12px 14px; margin: 12px 0; font-size: 14px; border: 1px solid; display: flex; gap: 10px; }
+.box > span:first-child { font-size: 18px; line-height: 1.2; flex: none; }
+.box b { display: block; margin-bottom: 2px; }
+.box.tip { background: color-mix(in srgb, var(--good) 10%, var(--card)); border-color: color-mix(in srgb, var(--good) 35%, var(--line)); }
+.box.warn { background: color-mix(in srgb, var(--warn) 10%, var(--card)); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.box.jq { background: color-mix(in srgb, var(--accent) 10%, var(--card)); border-color: color-mix(in srgb, var(--accent) 38%, var(--line)); }
+.steps { counter-reset: st; list-style: none; padding: 0; margin: 6px 0; }
+.steps li { counter-increment: st; position: relative; padding: 0 0 12px 38px; }
+.steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center;
+  font-size: 12px; font-weight: 800; background: color-mix(in srgb, var(--accent) 20%, var(--card2)); color: var(--accent); }
+.steps li::after { content: ""; position: absolute; left: 12px; top: 28px; bottom: 2px; width: 2px; background: var(--line); }
+.steps li:last-child::after { display: none; }
+.steps li b { display: block; }
+.steps li small { color: var(--text2); font-size: 13px; display: block; }
+.timeline { display: flex; gap: 0; overflow-x: auto; padding: 4px 0 8px; }
+.timeline div { flex: 1 0 120px; position: relative; padding: 18px 8px 0 0; font-size: 12.5px; color: var(--text2); }
+.timeline div::before { content: ""; position: absolute; top: 5px; left: 0; right: 0; height: 3px; background: var(--line2); }
+.timeline div::after { content: ""; position: absolute; top: 0; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); }
+.timeline div b { display: block; color: var(--text); font-size: 13px; }
+
+/* Code */
+.codebox { margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--code-bg); }
+.codebar { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
+.codebar .lang { font-weight: 800; letter-spacing: .05em; text-transform: uppercase; flex: 1; }
+.codebar button { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 3px 8px; font-size: 11.5px; cursor: pointer; color: var(--text2); display: inline-flex; gap: 4px; align-items: center; }
+.codebar button svg { width: 13px; height: 13px; }
+.codebox pre { margin: 0; padding: 10px 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; color: var(--code-text); white-space: pre; }
+.codebox pre.prose { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.6; }
+.c-com { color: var(--tk-com); font-style: italic; }
+.c-str { color: var(--tk-str); }
+.c-fn { color: var(--tk-fn); }
+
+/* Screenshots */
+.shot { margin: 12px 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--card2); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 12px; color: var(--muted); padding: 7px 12px; border-top: 1px solid var(--line); }
+.shot.noimg img { display: none; }
+.shot.noimg::before { content: "🖼️  " attr(data-missing); display: block; padding: 26px 12px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Visualisierungen */
+.vis { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin: 12px 0; }
+.vis svg { display: block; width: 100%; max-width: 480px; margin: 0 auto; height: auto; }
+.vis .cap { font-size: 12.5px; color: var(--text2); margin-top: 8px; }
+.seg { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; flex-wrap: wrap; gap: 2px; }
+.seg button { border: 0; background: none; padding: 6px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--muted); }
+.seg button.on { background: var(--accent); color: #fff; }
+.svgt { fill: var(--text); font: 700 12px system-ui, sans-serif; }
+.svgs { fill: var(--muted); font: 600 10px system-ui, sans-serif; }
+.svgbox { fill: var(--card); stroke: var(--line2); stroke-width: 1.5; }
+.sprow { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 10px; align-items: center; padding: 7px 4px; border: 0; background: none; width: 100%; text-align: left; cursor: pointer; color: var(--text); border-radius: 10px; }
+.sprow:hover, .sprow.on { background: var(--card); }
+.sprow b { font-size: 13px; font-weight: 650; line-height: 1.25; }
+.sprow .track { height: 10px; border-radius: 999px; position: relative; background: linear-gradient(90deg, color-mix(in srgb, var(--in) 55%, transparent), color-mix(in srgb, var(--de) 55%, transparent)); }
+.sprow .track i { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; background: var(--card); border: 3px solid var(--text); transform: translate(-50%, -50%); }
+.sprow .track s { position: absolute; top: 50%; height: 16px; transform: translateY(-50%); border-radius: 999px; border: 2px dashed color-mix(in srgb, var(--text) 45%, transparent); }
+.spaxis { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 10px; font-size: 11px; color: var(--muted); font-weight: 700; padding: 0 4px 4px; }
+.spaxis div { display: flex; justify-content: space-between; }
+.tree { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+.tree > li { margin-bottom: 8px; }
+.tree .cf { display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 9px; background: var(--fc); color: #10131f; font-weight: 700; }
+.tree ul { list-style: none; margin: 4px 0 0 14px; padding: 0 0 0 14px; border-left: 3px solid var(--fc); }
+.tree ul li { position: relative; margin: 5px 0; }
+.tree ul li::before { content: ""; position: absolute; left: -14px; top: 50%; width: 11px; height: 3px; background: var(--fc); }
+.tree ul li span { display: inline-block; padding: 3px 9px; border-radius: 8px; border: 2px solid var(--fc); font-weight: 600; }
+.tree .n { font-size: 11px; color: var(--muted); margin-left: 6px; font-weight: 700; }
+.mtable td.new { animation: pop .4s ease; }
+@keyframes pop { from { background: color-mix(in srgb, var(--accent) 30%, transparent); } to { background: transparent; } }
+.mcat { display: inline-block; padding: 3px 9px; border-radius: 8px; font-weight: 700; font-size: 12px; color: #10131f; }
+.transcript { font: 13px/1.7 ui-monospace, Menlo, Consolas, monospace; background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; overflow-x: auto; }
+.transcript div { white-space: pre-wrap; }
+.transcript .ts { color: var(--accent2); font-weight: 700; }
+.transcript .sp { color: var(--accent); font-weight: 800; }
+.transcript .ps { background: color-mix(in srgb, var(--warn) 25%, transparent); border-radius: 4px; padding: 0 2px; }
+.transcript .pa { color: var(--muted); }
+
+/* Quiz */
+.opts { display: grid; gap: 8px; margin-top: 10px; }
+.opt { text-align: left; border: 1.5px solid var(--line2); background: var(--card2); border-radius: 13px; padding: 11px 13px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4; color: var(--text); }
+.opt .k { width: 24px; height: 24px; border-radius: 8px; background: var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 800; flex: none; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--card2)); }
+.opt.right .k { background: var(--good); color: #04261a; }
+.opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card2)); }
+.opt.wrong .k { background: var(--bad); color: #fff; }
+.opt:disabled { cursor: default; }
+.verdict { margin-top: 10px; font-size: 14px; }
+.verdict b.ok { color: var(--good); } .verdict b.no { color: var(--bad); }
+
+/* Checklisten, Suche, Einstellungen */
+.ck { display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.ck:last-child { border-bottom: 0; }
+.ck input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; margin: 1px 0 0; }
+.ck span { font-size: 14px; }
+.ck.on span { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.bar { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; }
+.searchbox { position: relative; margin-bottom: 14px; }
+.searchbox input { width: 100%; border-radius: 14px; border: 1px solid var(--line2); background: var(--card); color: var(--text); padding: 13px 14px 13px 42px; font: inherit; outline: none; }
+.searchbox input:focus { border-color: var(--accent); }
+.searchbox svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 19px; height: 19px; color: var(--muted); }
+mark { background: color-mix(in srgb, var(--warn) 35%, transparent); color: inherit; border-radius: 3px; }
+.gl { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.gl:last-child { border-bottom: 0; }
+.gl b { display: block; font-size: 14.5px; margin-bottom: 2px; }
+.gl div { font-size: 13.8px; color: var(--text2); }
+.lit { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13.8px; }
+.lit:last-child { border-bottom: 0; }
+.lit .chips { margin-top: 6px; gap: 5px; }
+.setrow { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+.setrow:last-child { border-bottom: 0; }
+.setrow .t { flex: 1; min-width: 0; }
+.setrow .t b { display: block; font-size: 14px; }
+.setrow .t small { color: var(--muted); font-size: 12px; }
+
+/* Tabbar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line); padding: 6px 6px calc(6px + var(--safe-b)); }
+.tabbar .in { display: flex; width: 100%; max-width: 580px; }
+.tab { flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 650; border-radius: 12px; text-decoration: none; }
+.tab svg { width: 23px; height: 23px; }
+.tab.on { color: var(--accent); }
+.tab.on svg { filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent) 60%, transparent)); }
+.toast { position: fixed; left: 50%; bottom: calc(92px + var(--safe-b)); transform: translateX(-50%) translateY(20px); opacity: 0; background: var(--text); color: var(--bg);
+  padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 13.5px; transition: all .25s; pointer-events: none; z-index: 50; max-width: 90vw; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.muted { color: var(--muted); } .small { font-size: 12.5px; } .mt { margin-top: 12px; }
+.hint { font-size: 12px; color: var(--muted); text-align: center; margin-top: 14px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 26px; }
+.foot a { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* Hinweis lokale Speicherung */
+.notice { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: color-mix(in srgb, var(--accent2) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent2) 35%, var(--line));
+  border-radius: 16px; padding: 12px 14px; margin: 0 0 16px; font-size: 13.5px; }
+.notice .t { flex: 1 1 220px; }
+.notice .t b { display: block; }
+.notice .btn { min-height: 34px; }
+.langbtn { font-weight: 800; font-size: 13px; text-decoration: none; }
+.printhead, .printfoot { display: none; }
+
+/* Druck / PDF: A4, immer helle Farben, nur der Inhalt */
+@page { size: A4; margin: 15mm 14mm 16mm; }
+@media print {
+  :root, :root[data-theme] {
+    --bg: #fff; --bg2: #fff; --card: #fff; --card2: #f6f7fb; --line: #d9deea; --line2: #c5cbdc;
+    --text: #111827; --text2: #374151; --muted: #6b7280; --accent: #5b4bd6; --accent2: #0369a1;
+    --good: #047857; --warn: #a16207; --bad: #b91c1c; --de: #0369a1; --in: #6d28d9; --mix: #a21caf; --ab: #a16207;
+    --code-bg: #f6f7fb; --code-text: #111827; --tk-fn: #1d4ed8; --tk-str: #166534; --tk-com: #6b7280; --shadow: none; --gloss: none;
+    color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; animation: none !important; transition: none !important; }
+  html, body { background: #fff !important; color: var(--text); font-size: 10.5pt; line-height: 1.45; }
+  body { padding: 0 !important; }
+  #app { max-width: none; padding: 0; }
+  .tabbar, .wnav, .noprint, .toast, .iconbtn, .stepper, .notice, .pagehead, .foot { display: none !important; }
+  .printhead { display: flex !important; align-items: center; gap: 10px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 12px; }
+  .printhead .logo { width: 30px; height: 30px; }
+  .printhead b { font-size: 15pt; display: block; }
+  .printhead span { font-size: 9pt; color: var(--muted); }
+  .printfoot { display: block !important; margin-top: 10px; font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; }
+  .hero { background: #fff !important; border: 1.5px solid var(--line2); padding: 12px 14px; margin-bottom: 10px; }
+  .hero::before, .hero::after, .tile::after, .choice::after { display: none !important; }
+  .ring { width: 64px; height: 64px; }
+  .panel { padding: 10px 12px; margin-bottom: 8px; border-radius: 10px; }
+  .panel h3 { font-size: 12pt; }
+  .panel { break-inside: auto; }
+  .panel h3 { break-after: avoid; }
+  .hero, .steps li, .faden li, .box { break-inside: avoid; }
+  .steps li { padding-bottom: 8px; }
+  .codebox { break-inside: avoid; border-radius: 8px; }
+  .codebar button { display: none; }
+  .codebox pre { white-space: pre-wrap; word-break: break-word; overflow: visible; font-size: 8.5pt; padding: 6px 10px; }
+  .codebox pre.prose { font-size: 10pt; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="tabbar" class="tabbar"></nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+/* ============================================================
+   jellyqda Assistenz – Inhalte (oben, je Sprache) und App-Logik (unten, gemeinsam).
+   Erzeugt aus src/ mit build.py. Kein Framework, keine externen Dateien
+   außer Screenshots. Fortschritt nur im Browser (localStorage), keine Cookies.
+   ============================================================ */
+(function () {
+"use strict";
+/* ---------- 1. Inhalte: Interviewformen ---------- */
+// st = Passung zum Strukturierungsgrad (2 passt gut, 1 möglich, 0 eher nicht)
+// lg = Passung zur Auswertungslogik; good/ok = typische Auswertungsverfahren
+const IV = {
+  pzi: {
+    em: "🎯", name: "Problemzentriertes Interview", by: "Witzel",
+    short: "Subjektive Sicht auf ein gesellschaftlich relevantes Problem – Erzählen und gezieltes Nachfragen im Wechsel.",
+    wissen: "Erfahrungen, Sichtweisen und Handlungsbegründungen der Befragten zu einem klar umrissenen Problem.",
+    pos: [.42, .52],
+    st: { offen: 1, halboffen: 2, strukturiert: 0 },
+    stNote: { offen: "Geht, wenn du den Leitfaden nur als Gedächtnisstütze im Kopf hast – das PZI braucht aber dein Vorwissen als Rahmen.", halboffen: "Genau dafür gemacht: Leitfaden als Gerüst, Erzählungen bekommen Raum.", strukturiert: "Feste Fragen verhindern die Nachfragen (Sondierungen), von denen das PZI lebt." },
+    lg: { de: 1, in: 1, mix: 2, ab: 1 },
+    lgNote: "Witzel beschreibt das PZI ausdrücklich als Wechselspiel von Induktion und Deduktion – deduktiv-induktiv ist der Normalfall.",
+    ablauf: [["Kurzfragebogen", "Sozialdaten vorab, damit sie das Gespräch nicht stören"], ["Erzählaufforderung", "offener Einstieg ins Problemfeld"], ["Allgemeine Sondierung", "Erzählungen vertiefen: „Wie war das genau?“"], ["Spezifische Sondierung", "Zurückspiegeln, Verständnisfragen, ggf. Konfrontation"], ["Ad-hoc-Fragen", "Leitfadenthemen, die noch fehlen"], ["Postskript", "direkt danach: Eindrücke, Atmosphäre, Auffälligkeiten"]],
+    achten: ["Dein Vorwissen ist erlaubt und gewollt – aber als <b>sensibilisierendes Konzept</b>, nicht als Hypothesen, die du abfragst.", "Der Leitfaden ist eine Gedächtnisstütze, kein Fragebogen: Reihenfolge flexibel halten.", "Verständnisfragen und Zurückspiegeln nicht suggestiv formulieren („Sie meinen also, dass …?“ sparsam einsetzen).", "Postskript gleich nach dem Gespräch schreiben – es wird später ein Dokument-Memo in jellyqda."],
+    auswertung: "Hauptkategorien kannst du aus den Leitfadenthemen ableiten, Subkategorien entstehen am Material. Typisch: inhaltlich strukturierende QIA nach Kuckartz oder eine Kombination aus Mayrings strukturierender und zusammenfassender Analyse.",
+    good: ["kuckartz_s", "mayring_s", "mayring_z", "thema"], ok: ["gt", "kuckartz_t", "kuckartz_e", "flick"]
+  },
+  exp_theo: {
+    em: "🧠", name: "Theoriegenerierendes Experteninterview", alt: "auch „theoretisierendes“ Experteninterview", by: "Bogner, Littig & Menz; Meuser & Nagel",
+    short: "Expert:innen als Träger:innen von Deutungswissen – Ziel ist eine Theorie über ihre Sichtweisen und Handlungslogiken.",
+    wissen: "Deutungswissen: subjektive Relevanzen, Regeln, Sichtweisen und Interpretationen der Expert:innen – oft implizit, nicht einfach abfragbar.",
+    pos: [.4, .55],
+    st: { offen: 1, halboffen: 2, strukturiert: 0 },
+    stNote: { offen: "Möglich, wenn du sehr explorativ arbeitest – aber ohne Leitfaden wird der Vergleich zwischen Expert:innen schwer.", halboffen: "Passt: Der Leitfaden sichert Vergleichbarkeit und kompetentes Auftreten, lässt aber Raum für Deutungen.", strukturiert: "Deutungswissen zeigt sich in Begründungen und Beispielen – feste Fragen schneiden genau das ab." },
+    lg: { de: 0, in: 2, mix: 2, ab: 1 },
+    lgNote: "Theorie soll aus dem Material entstehen. Induktiv oder deduktiv-induktiv (Hauptthemen aus dem Leitfaden, Konzepte am Material) passen; rein deduktiv widerspricht dem Ziel.",
+    ablauf: [["Feldzugang & Rolle", "Wer ist warum Expert:in? Sampling begründen"], ["Einstieg", "Funktion, Aufgaben, Werdegang"], ["Leitfadenblöcke", "offene Fragen zu Problemsichten und Entscheidungen"], ["Nachfragen", "Begründungen, Beispiele, Gegenbeispiele"], ["Abschluss", "„Was haben wir nicht angesprochen?“"], ["Postskript", "Interaktion & Rollenzuschreibung notieren"]],
+    achten: ["Frag nicht nur nach Fakten („Wie läuft X ab?“), sondern nach <b>Begründungen und Bewertungen</b> („Warum halten Sie das für sinnvoll?“) – dort steckt das Deutungswissen.", "Reflektiere, als was dich die Expert:innen wahrnehmen (Co-Expert:in, Laie, Kritiker:in …) – das prägt die Antworten. Ins Postskript damit.", "Kleine Felder = hohe Wiedererkennbarkeit: Funktion, Organisation und Anekdoten konsequent pseudonymisieren.", "Den Expert:innen-Status im Methodenteil begründen (Wissen kraft Position, Erfahrung, Zuständigkeit)."],
+    auswertung: "Ziel ist Konzept- und Theoriebildung: textnah kodieren (auch in vivo), dann thematisch über alle Interviews vergleichen und schrittweise abstrahieren. Klassisch ist die Auswertung nach Meuser & Nagel; auch Grounded Theory oder Kuckartz mit starkem induktiven Anteil passen.",
+    good: ["meuser", "gt", "kuckartz_s"], ok: ["mayring_z", "thema", "kuckartz_t"]
+  },
+  exp_sys: {
+    em: "🗂️", name: "Systematisierendes Experteninterview", by: "Bogner, Littig & Menz; Gläser & Laudel",
+    short: "Expert:innen als Quelle für exklusives Fakten- und Prozesswissen – möglichst vollständig und vergleichbar.",
+    wissen: "Technisches Wissen und Prozesswissen: Abläufe, Zuständigkeiten, Ereignisse, die nur sie kennen.",
+    pos: [.6, .78],
+    st: { offen: 0, halboffen: 2, strukturiert: 1 },
+    stNote: { offen: "Ohne Leitfaden fehlen dir am Ende Informationen, die du systematisch brauchst.", halboffen: "Passt: Leitfaden aus der Theorie, Raum für Nachfragen zu Details.", strukturiert: "Möglich, wenn das Feld schon gut bekannt ist – du verlierst aber unerwartete Informationen." },
+    lg: { de: 2, in: 0, mix: 2, ab: 0 },
+    lgNote: "Du suchst Informationen zu theoretisch bestimmten Dimensionen – deduktiv mit offenem Kategoriensystem (neue Ausprägungen dürfen dazukommen).",
+    ablauf: [["Theorie & Variablen", "Was genau musst du wissen?"], ["Leitfaden", "Themenblöcke je Dimension"], ["Interview", "gezielt, aber mit Detailnachfragen"], ["Prüfen", "Widersprüche zwischen Quellen notieren"]],
+    achten: ["Leitfaden theoriebasiert und vollständig – jede Frage sollte einer Untersuchungsdimension zugeordnet sein.", "Angaben verschiedener Expert:innen vergleichen (Triangulation), Widersprüche in Memos festhalten.", "Nicht zu früh nach Bewertungen fragen, sonst färbt das die Faktenschilderung."],
+    auswertung: "Informationen werden entlang vorab definierter Kategorien aus dem Text gezogen (Extraktion nach Gläser & Laudel) – das Kategoriensystem bleibt offen für neue Ausprägungen. Alternativ Mayrings strukturierende Inhaltsanalyse.",
+    good: ["glaeser", "mayring_s", "kuckartz_s"], ok: ["kuckartz_e", "meuser"]
+  },
+  exp_expl: {
+    em: "🧭", name: "Exploratives Experteninterview", by: "Bogner, Littig & Menz",
+    short: "Erste Orientierung in einem neuen Feld – oft als Vorstudie für Leitfaden oder Hypothesen.",
+    wissen: "Kontextwissen über ein noch unbekanntes Feld: Wer ist wichtig? Welche Themen gibt es?",
+    pos: [.2, .5],
+    st: { offen: 2, halboffen: 2, strukturiert: 0 },
+    stNote: { offen: "Passt: Du weißt noch wenig – lass dir das Feld erklären.", halboffen: "Passt: Ein grober Themenleitfaden hilft, nichts Wichtiges zu vergessen.", strukturiert: "Zu früh: Für feste Fragen kennst du das Feld noch nicht gut genug." },
+    lg: { de: 0, in: 2, mix: 1, ab: 1 },
+    lgNote: "Explorativ heißt: Themen aus dem Material gewinnen – induktiv.",
+    ablauf: [["Feld skizzieren", "Akteure, Themen, Begriffe"], ["Offenes Gespräch", "grobe Themenliste"], ["Notizen / Protokoll", "Transkript nicht immer nötig"], ["Ergebnis", "Leitfaden oder Fragestellung schärfen"]],
+    achten: ["Als Vorstudie kennzeichnen – die Ergebnisse tragen meist nicht als eigenständiger Befund.", "Breit fragen, Begriffe des Feldes sammeln (sie werden später deine In-vivo-Codes).", "Ein ausführliches Gesprächsprotokoll kann reichen – in jellyqda importierst du es wie ein Transkript."],
+    auswertung: "Themen und Begriffe induktiv sammeln und ordnen, z. B. zusammenfassend nach Mayring oder mit einer thematischen Analyse. Ergebnis ist oft ein besserer Leitfaden.",
+    good: ["mayring_z", "thema", "kuckartz_s"], ok: ["gt"]
+  },
+  narrativ: {
+    em: "📖", name: "Narratives Interview", by: "Schütze",
+    short: "Eine große Stegreiferzählung, z. B. die eigene Lebensgeschichte – die Befragten bestimmen Struktur und Relevanzen.",
+    wissen: "Erfahrungsaufschichtung und Prozessstrukturen des Lebenslaufs, wie sie sich in der Erzählung zeigen.",
+    pos: [.02, .14],
+    st: { offen: 2, halboffen: 0, strukturiert: 0 },
+    stNote: { offen: "Nur so: Die Erzählung darf nicht durch Fragen gesteuert werden.", halboffen: "Ein Leitfaden im Hauptteil zerstört die Stegreiferzählung. Nachfragen gibt es erst danach.", strukturiert: "Widerspricht dem Verfahren grundsätzlich." },
+    lg: { de: 0, in: 1, mix: 0, ab: 2 },
+    lgNote: "Narrative Interviews werden meist rekonstruktiv (sequenziell, abduktiv) ausgewertet. Reine Kategorienzuordnung zerschneidet die Erzählung.",
+    ablauf: [["Erzählaufforderung", "eine einzige, gut vorbereitete Eingangsfrage"], ["Haupterzählung", "nicht unterbrechen, nur aktiv zuhören"], ["Immanente Nachfragen", "an Lücken der Erzählung anknüpfen"], ["Exmanente Nachfragen", "eigene Themen, Warum-Fragen"], ["Bilanzierung", "Eigentheorien der Erzählenden"]],
+    achten: ["Erzählaufforderung im Pretest prüfen – sie entscheidet über das ganze Interview.", "Pausen aushalten, nicht unterbrechen, keine Bewertungen.", "Viel Zeit einplanen; genau transkribieren (Pausen, Abbrüche, Betonungen), weil die Analyse an der Form ansetzt.", "Interpretation möglichst in einer Gruppe (Interpretationswerkstatt)."],
+    auswertung: "Narrationsanalyse: Textsorten unterscheiden (Erzählung, Beschreibung, Argumentation), Sequenz für Sequenz interpretieren, dann kontrastiv vergleichen. jellyqda hilft beim Markieren der Sequenzen und mit Memos – die eigentliche Interpretation passiert im Kopf und in der Gruppe.",
+    good: ["narration", "gt", "doku"], ok: ["thema"]
+  },
+  episodisch: {
+    em: "🧩", name: "Episodisches Interview", by: "Flick",
+    short: "Verbindet Erzählungen konkreter Situationen mit Fragen nach Begriffen und Definitionen.",
+    wissen: "Episodisches Wissen (Erlebtes in Situationen) und semantisches Wissen (Begriffe, Zusammenhänge).",
+    pos: [.3, .5],
+    st: { offen: 1, halboffen: 2, strukturiert: 0 },
+    stNote: { offen: "Geht, aber der gezielte Wechsel zwischen Erzählung und Begriffsfrage braucht einen Leitfaden.", halboffen: "Passt: Leitfaden mit Erzählaufforderungen und Definitionsfragen.", strukturiert: "Situationserzählungen brauchen Raum – feste Fragen sind zu eng." },
+    lg: { de: 1, in: 1, mix: 2, ab: 1 },
+    lgNote: "Flicks thematisches Kodieren arbeitet fallbezogen und dann vergleichend mit einer am Material entwickelten thematischen Struktur – meist deduktiv-induktiv.",
+    ablauf: [["Interviewprinzip erklären", "„Ich bitte Sie immer wieder, Situationen zu erzählen“"], ["Erzählaufforderungen", "„Erzählen Sie eine Situation, in der …“"], ["Begriffsfragen", "„Was verbinden Sie mit …?“"], ["Alltag & Wandel", "Routinen, Veränderungen"], ["Abschluss", "Feedback, Postskript"]],
+    achten: ["Das Prinzip zu Beginn erklären, sonst erzählen Befragte nur abstrakt.", "Bewusst zwischen Situation und Definition wechseln.", "Nach konkreten Beispielen fragen, wenn Antworten allgemein bleiben."],
+    auswertung: "Thematisches Kodieren (Flick): erst jeden Fall kurz beschreiben und einzeln kodieren, dann eine gemeinsame thematische Struktur bilden und Fälle vergleichen – Summary Grid und Fallvergleich in jellyqda passen dazu.",
+    good: ["flick", "kuckartz_s", "thema"], ok: ["mayring_z", "gt"]
+  },
+  fokussiert: {
+    em: "🎬", name: "Fokussiertes Interview", by: "Merton & Kendall",
+    short: "Alle Befragten erleben denselben Stimulus (Film, Text, Situation) – das Interview fragt nach den Reaktionen darauf.",
+    wissen: "Subjektive Reaktionen und Deutungen zu einem gemeinsamen, vorher analysierten Stimulus.",
+    pos: [.5, .72],
+    st: { offen: 0, halboffen: 2, strukturiert: 1 },
+    stNote: { offen: "Ohne Leitfaden verlierst du den Bezug zum Stimulus.", halboffen: "Passt: Leitfaden aus der Stimulus-Analyse, offen für unerwartete Reaktionen.", strukturiert: "Möglich, aber Merton & Kendall betonen ausdrücklich Nicht-Beeinflussung und Breite." },
+    lg: { de: 2, in: 1, mix: 2, ab: 0 },
+    lgNote: "Aus der Analyse des Stimulus entstehen Annahmen und Kategorien – oft deduktiv oder deduktiv-induktiv.",
+    ablauf: [["Stimulus analysieren", "Annahmen über Wirkungen"], ["Leitfaden", "aus der Analyse"], ["Stimulus zeigen", "gemeinsame Situation"], ["Interview", "unstrukturiert → zunehmend strukturiert"]],
+    achten: ["Gütekriterien nach Merton & Kendall: Nicht-Beeinflussung, Spezifität, Erfassung eines breiten Spektrums, Tiefgründigkeit.", "Spezifische Reaktionen erfragen („Welche Szene …?“), nicht allgemeine Meinungen."],
+    auswertung: "Kategorien aus der Stimulus-Analyse vorab festlegen (strukturierend), unerwartete Reaktionen induktiv ergänzen.",
+    good: ["mayring_s", "kuckartz_s"], ok: ["thema", "kuckartz_e"]
+  },
+  leitfaden: {
+    em: "📋", name: "Leitfadeninterview (allgemein)", alt: "halbstandardisiertes / teilstrukturiertes Interview", by: "Helfferich u. a.",
+    short: "Der Allrounder in Abschlussarbeiten: Themenblöcke, offene Fragen, flexible Nachfragen.",
+    wissen: "Erfahrungen, Einschätzungen und Begründungen zu vorab festgelegten Themen.",
+    pos: [.45, .8],
+    st: { offen: 0, halboffen: 2, strukturiert: 1 },
+    stNote: { offen: "Dann ist es eher ein narratives Interview – überlege, ob das zu deiner Frage passt.", halboffen: "Passt: so offen wie möglich, so strukturierend wie nötig.", strukturiert: "Möglich, wenn Vergleichbarkeit wichtiger ist als Tiefe." },
+    lg: { de: 1, in: 1, mix: 2, ab: 0 },
+    lgNote: "Leitfadenthemen liefern Hauptkategorien, Antworten liefern Subkategorien – deduktiv-induktiv ist naheliegend.",
+    ablauf: [["Leitfaden nach SPSS", "Sammeln, Prüfen, Sortieren, Subsumieren"], ["Pretest", "mind. ein Probeinterview"], ["Interview", "Erzählaufforderung je Block, dann Nachfragen"], ["Postskript", "direkt danach"]],
+    achten: ["Leitfaden mit dem SPSS-Prinzip (Helfferich) entwickeln: Fragen <b>s</b>ammeln, <b>p</b>rüfen, <b>s</b>ortieren, <b>s</b>ubsumieren.", "Offene Erzählaufforderungen statt Ja/Nein-Fragen.", "Leitfaden im Pretest testen und anpassen – Änderungen dokumentieren."],
+    auswertung: "Inhaltlich strukturierende QIA (Kuckartz) oder strukturierende QIA (Mayring) mit induktiven Ergänzungen.",
+    good: ["kuckartz_s", "mayring_s", "mayring_z", "thema"], ok: ["kuckartz_t", "kuckartz_e", "gt", "glaeser"]
+  },
+  gruppe: {
+    em: "👥", name: "Gruppendiskussion / Fokusgruppe", by: "Bohnsack; Lamnek",
+    short: "Mehrere Personen diskutieren zu einem Grundreiz – sichtbar werden kollektive Orientierungen oder ein Meinungsspektrum.",
+    wissen: "Kollektive Orientierungen (Gruppendiskussion) oder Meinungsvielfalt (Fokusgruppe).",
+    pos: [.12, .5],
+    st: { offen: 2, halboffen: 2, strukturiert: 0 },
+    stNote: { offen: "Passt für Gruppendiskussionen: die Selbstläufigkeit ist das Ziel.", halboffen: "Passt für Fokusgruppen mit Moderationsleitfaden.", strukturiert: "Reihum feste Fragen = mehrere Einzelinterviews, die Gruppe geht verloren." },
+    lg: { de: 1, in: 2, mix: 2, ab: 2 },
+    lgNote: "Kollektive Orientierungen werden rekonstruktiv ausgewertet (dokumentarische Methode); Fokusgruppen meist inhaltsanalytisch.",
+    ablauf: [["Grundreiz", "offene Eingangsfrage oder Stimulus"], ["Selbstläufige Diskussion", "Moderation hält sich zurück"], ["Immanente Nachfragen", ""], ["Exmanente Nachfragen", "fehlende Themen"]],
+    achten: ["Klar entscheiden: Ist die Gruppe oder die einzelne Person die Analyseeinheit?", "Transkript mit eindeutigen Sprecherkürzeln (Am, Bf …) – in jellyqda werden daraus Segmente.", "Zurückhaltend moderieren, Vielredende freundlich bremsen."],
+    auswertung: "Rekonstruktiv mit der dokumentarischen Methode (formulierende und reflektierende Interpretation) oder inhaltsanalytisch nach Kuckartz bei Fokusgruppen.",
+    good: ["doku", "kuckartz_s", "thema"], ok: ["mayring_z", "mayring_s"]
+  }
+};
+
+/* ---------- Offenheit ---------- */
+const ST = {
+  offen: {
+    em: "🌊", name: "Offen (narrativ)", short: "Eine Erzählaufforderung, kaum Vorgaben. Die Befragten strukturieren selbst.",
+    frage: "„Erzählen Sie doch bitte, wie es dazu kam, dass Sie … – alles, was Ihnen wichtig ist.“",
+    folgen: ["Material ist sehr unterschiedlich lang und aufgebaut; Themen tauchen an unvorhersehbaren Stellen auf.", "Induktive oder rekonstruktive Auswertung liegt nahe.", "Ein vorab festes Kategoriensystem passt selten."],
+    seg: "Segmente nach <b>Absätzen</b> (oder später von Hand nach Sinnabschnitten) – Sprecherwechsel sind selten, die Redebeiträge riesig.",
+    segmode: "blankline", lg: { de: 0, in: 2, mix: 1, ab: 2 }
+  },
+  halboffen: {
+    em: "🧵", name: "Halboffen (leitfadengestützt)", short: "Leitfaden mit Themenblöcken und offenen Fragen, Reihenfolge flexibel, Nachfragen erlaubt.",
+    frage: "„Wie erleben Sie die Zusammenarbeit im Team?“ – danach: „Können Sie ein Beispiel erzählen?“",
+    folgen: ["Leitfadenthemen liefern ein Gerüst für Hauptkategorien, die Antworten liefern Subkategorien.", "Achtung: Antworten zu einem Thema stehen nicht nur bei „ihrer“ Frage – das ganze Interview kodieren, nicht nur Frage-Antwort-Paare.", "Deduktiv-induktiv ist der Normalfall."],
+    seg: "Segmente nach <b>Sprecherwechsel</b> (<code>[00:01:12] B: …</code>) – jede Antwort ein Segment.",
+    segmode: "speaker", lg: { de: 1, in: 2, mix: 2, ab: 1 }
+  },
+  strukturiert: {
+    em: "🧱", name: "Strukturiert (fester Leitfaden)", short: "Feste Fragen in fester Reihenfolge, ggf. mit Antwortvorgaben.",
+    frage: "„Frage 4: Wie zufrieden sind Sie mit … – bitte begründen Sie kurz.“",
+    folgen: ["Hohe Vergleichbarkeit, wenig Tiefe und Überraschung.", "Deduktive Kategorien liegen nahe; Häufigkeiten werden verführerisch – sie bleiben aber qualitativ zu deuten.", "Nahe an der standardisierten Befragung: prüfen, ob ein Fragebogen nicht besser passt."],
+    seg: "Segmente nach <b>Sprecherwechsel</b>; jede Antwort ist einer Frage zugeordnet.",
+    segmode: "speaker", lg: { de: 2, in: 1, mix: 1, ab: 0 }
+  }
+};
+
+/* ---------- Auswertungslogik ---------- */
+const LG = {
+  de: { em: "⬇️", name: "Deduktiv", cls: "de", short: "Kategorien vorab aus Theorie, Forschungsstand oder Leitfaden – dann am Material anwenden.",
+    wann: "Wenn es eine tragfähige Theorie gibt und du sie anwenden, prüfen oder ausdifferenzieren willst.",
+    risiko: "Du findest nur, was du suchst. Neues fällt durchs Raster – plane deshalb eine Kategorie „Sonstiges“ und Memos für Überraschungen ein.",
+    tools: "Kodierleitfaden, Codesystem vorab, Suchtreffer codieren, Code-Matrix" },
+  in: { em: "⬆️", name: "Induktiv", cls: "in", short: "Kategorien entstehen schrittweise aus dem Material.",
+    wann: "Wenn ein Feld wenig erforscht ist oder die Sicht der Befragten im Mittelpunkt steht.",
+    risiko: "Ganz ohne Vorwissen geht es nie. Leg dein Vorwissen offen und achte darauf, nicht in hunderten Mini-Codes zu versinken – regelmäßig verdichten.",
+    tools: "In-vivo-Codes, Memos, Codes zusammenführen, Mayring-Tabelle, Worthäufigkeiten, Stichwort im Kontext" },
+  mix: { em: "🔁", name: "Deduktiv-induktiv", cls: "mix", short: "Hauptkategorien vorab (z. B. aus dem Leitfaden), Subkategorien am Material.",
+    wann: "Der häufigste Weg bei Leitfadeninterviews und in Abschlussarbeiten.",
+    risiko: "Im Methodenteil klar trennen: Welche Kategorien waren vorab da, welche sind am Material entstanden? Das jellyqda-Protokoll hilft dabei.",
+    tools: "Codes + Subcodes, Kodierleitfaden, In vivo, Summary Grid, Fallvergleich" },
+  ab: { em: "🌀", name: "Abduktiv / rekonstruktiv", cls: "ab", short: "Sequenzielle Interpretation: vom überraschenden Befund zur erklärenden Hypothese – und zurück ans Material.",
+    wann: "Bei narrativen Interviews und Gruppendiskussionen, wenn implizite Sinnstrukturen rekonstruiert werden sollen.",
+    risiko: "Kodieren ist hier nur Hilfsmittel. Die Interpretation braucht Zeit, Sequenzanalyse und möglichst eine Interpretationsgruppe.",
+    tools: "Codes als Lesezeichen für Sequenzen, Textstellen-Memos, Bericht mit Randspalte für die Interpretationsgruppe" }
+};
+
+/* ---------- Auswertungsverfahren ---------- */
+// x: 0 deduktiv … 1 induktiv; y: 0 beschreibend/inhaltsanalytisch … 1 rekonstruktiv; sup: jellyqda-Unterstützung 2/1/0
+const PR = {
+  mayring_z: { name: "Zusammenfassende Inhaltsanalyse", by: "Mayring", short: "Mayring Z", x: .84, y: .06, la: "l", sup: 2, lg: { de: 0, in: 2, mix: 2, ab: 0 },
+    what: "Material wird schrittweise reduziert, bis ein überschaubares, induktiv gebildetes Kategoriensystem bleibt.",
+    steps: ["Analyseeinheiten festlegen (Kodier-, Kontext-, Auswertungseinheit)", "Paraphrasieren: Inhalt knapp in eigenen Worten", "Generalisieren auf das gewählte Abstraktionsniveau", "Erste Reduktion: Bedeutungsgleiches streichen", "Zweite Reduktion: Bündeln zu Kategorien", "Kategoriensystem am Ausgangsmaterial rücküberprüfen"],
+    jq: "Mayring-Tabelle (Analyse → Zusammenfassung) mit Paraphrase und Generalisierung je Coding; Reduktion = Codes bilden und zusammenführen.",
+    lit: ["mayring"] },
+  mayring_s: { name: "Strukturierende Inhaltsanalyse", by: "Mayring", short: "Mayring S", x: .12, y: .32, la: "r", sup: 2, lg: { de: 2, in: 0, mix: 1, ab: 0 },
+    what: "Theoriegeleitete Kategorien werden mit einem Kodierleitfaden an das Material angelegt (inhaltlich, typisierend oder skalierend).",
+    steps: ["Strukturierungsdimensionen theoriegeleitet festlegen", "Kategoriensystem und Ausprägungen bestimmen", "Kodierleitfaden: Definition, Ankerbeispiel, Kodierregel", "Probedurchlauf: Fundstellen bezeichnen", "Kategorien und Leitfaden überarbeiten", "Hauptdurchlauf und Ergebnisaufbereitung"],
+    jq: "Kodierleitfaden direkt am Code (Buch-Symbol), Ankerbeispiele per Klick aus dem Text, Code-Matrix für die Aufbereitung.",
+    lit: ["mayring"] },
+  kuckartz_s: { name: "Inhaltlich strukturierende QIA", by: "Kuckartz & Rädiker", short: "Kuckartz IS", x: .4, y: .2, la: "r", sup: 2, lg: { de: 1, in: 1, mix: 2, ab: 0 },
+    what: "Hauptkategorien deduktiv, Subkategorien induktiv, mehrere Kodierdurchläufe, dann fallbezogene und kategorienbasierte Auswertung.",
+    steps: ["Initiierende Textarbeit: lesen, markieren, Memos, Fallzusammenfassungen", "Hauptkategorien entwickeln (meist aus Leitfaden/Theorie)", "Erster Kodierprozess mit den Hauptkategorien", "Subkategorien induktiv am Material bilden", "Zweiter Kodierprozess mit dem ausdifferenzierten System", "Einfache und komplexe Analysen (Tabellen, Fallvergleiche)", "Ergebnisse verschriftlichen und Vorgehen dokumentieren"],
+    jq: "Memos, Codes + Subcodes, Summary Grid für thematische Fallzusammenfassungen, Code-Matrix und Fallvergleich.",
+    lit: ["kuckartz"] },
+  kuckartz_t: { name: "Typenbildende QIA", by: "Kuckartz & Rädiker", short: "Kuckartz T", x: .38, y: .62, la: "l", sup: 1, lg: { de: 1, in: 1, mix: 2, ab: 1 },
+    what: "Fälle werden über Merkmalsräume gruppiert, sodass Typen entstehen, die sich intern ähneln und untereinander unterscheiden.",
+    steps: ["Merkmalsraum bestimmen (relevante Kategorien/Variablen)", "Fälle kodieren und zusammenfassen", "Fälle gruppieren, Typen bilden", "Typen beschreiben, prototypische Fälle wählen", "Zusammenhänge zwischen Typen und Variablen prüfen"],
+    jq: "Kodieren, Dokument-Variablen und Fallvergleich ja; die eigentliche Typenbildung machst du in einer Tabelle (Export nach Excel).",
+    lit: ["kuckartz"] },
+  kuckartz_e: { name: "Evaluative QIA", by: "Kuckartz & Rädiker", short: "Kuckartz E", x: .22, y: .46, la: "r", sup: 2, lg: { de: 2, in: 0, mix: 2, ab: 0 },
+    what: "Textstellen werden eingeschätzt und auf Ausprägungen (z. B. hoch/mittel/niedrig) kodiert.",
+    steps: ["Evaluative Kategorien und Ausprägungen festlegen", "Textstellen zur Kategorie kodieren", "Ausprägungen je Fall vergeben, Regeln für Grenzfälle", "Fälle und Gruppen vergleichen"],
+    jq: "Ausprägungen als Subcodes (z. B. „Belastung › hoch“), Kodierregel im Kodierleitfaden, Fallvergleich nach Variablen.",
+    lit: ["kuckartz"] },
+  glaeser: { name: "Qualitative Inhaltsanalyse durch Extraktion", by: "Gläser & Laudel", short: "Gläser/Laudel", x: .08, y: .08, la: "r", sup: 2, lg: { de: 2, in: 0, mix: 2, ab: 0 },
+    what: "Informationen werden aus dem Text entnommen und theoretisch abgeleiteten Kategorien zugeordnet – das Kategoriensystem bleibt offen.",
+    steps: ["Kategorien aus Theorie und Fragestellung ableiten", "Text lesen, relevante Informationen extrahieren", "Informationen den Kategorien zuordnen (neue Ausprägungen zulassen)", "Extrahierte Informationen aufbereiten und auswerten"],
+    jq: "Codes vorab anlegen, Paraphrase-Feld als „Extraktion“ nutzen, Export der Codings als Tabelle.",
+    lit: ["glaeser"] },
+  meuser: { name: "Auswertung nach Meuser & Nagel", by: "Meuser & Nagel", short: "Meuser/Nagel", x: .76, y: .54, la: "l", sup: 2, lg: { de: 0, in: 2, mix: 1, ab: 1 },
+    what: "Für Experteninterviews entwickelt: textnah paraphrasieren und kodieren, thematisch vergleichen, dann soziologisch konzeptualisieren.",
+    steps: ["Transkription (thematisch relevante Passagen)", "Paraphrase der Passagen", "Kodieren mit textnahen Überschriften (Terminologie der Interviewten)", "Thematischer Vergleich über alle Interviews", "Soziologische Konzeptualisierung", "Theoretische Generalisierung"],
+    jq: "Paraphrase-Feld, In-vivo-Codes für textnahe Überschriften, Codes zusammenführen beim thematischen Vergleich, Code-Matrix.",
+    lit: ["meuser", "bogner"] },
+  gt: { name: "Grounded Theory", by: "Glaser & Strauss; Strauss & Corbin; Charmaz", short: "Grounded Theory", x: .9, y: .64, la: "l", sup: 1, lg: { de: 0, in: 2, mix: 0, ab: 2 },
+    what: "Theorie entsteht im ständigen Vergleich aus den Daten; Erhebung und Auswertung wechseln sich ab (theoretisches Sampling).",
+    steps: ["Offenes Kodieren: Konzepte aufbrechen", "Axiales Kodieren: Beziehungen um Schlüsselkategorien", "Selektives Kodieren: Kernkategorie", "Memos von Anfang an", "Ständiges Vergleichen", "Theoretisches Sampling bis zur Sättigung"],
+    jq: "Kodieren, In vivo, Code- und Projekt-Memos, Codes umhängen und zusammenführen. Theoretisches Sampling planst du außerhalb – neue Interviews kannst du jederzeit importieren.",
+    lit: ["strauss"] },
+  thema: { name: "Reflexive Thematische Analyse", by: "Braun & Clarke", short: "Them. Analyse", x: .64, y: .27, la: "r", sup: 2, lg: { de: 1, in: 2, mix: 2, ab: 1 },
+    what: "Themen werden aktiv von der forschenden Person entwickelt – induktiv oder theoriegeleitet, in sechs Phasen.",
+    steps: ["Mit den Daten vertraut werden", "Codes generieren", "Erste Themen entwickeln", "Themen prüfen und überarbeiten", "Themen definieren und benennen", "Bericht schreiben"],
+    jq: "Codes, Code-Memos als Themendefinitionen, Codes zusammenführen, Bericht.",
+    lit: ["braun"] },
+  flick: { name: "Thematisches Kodieren", by: "Flick", short: "Flick", x: .58, y: .4, la: "r", sup: 2, lg: { de: 1, in: 1, mix: 2, ab: 0 },
+    what: "Für vergleichende Studien: erst Einzelfallanalyse mit Kurzbeschreibung, dann eine gemeinsame thematische Struktur für den Fallvergleich.",
+    steps: ["Kurzbeschreibung jedes Falls", "Fallbezogene Kodierung", "Thematische Struktur aus den ersten Fällen", "Weitere Fälle damit analysieren und Struktur anpassen", "Fallvergleich"],
+    jq: "Dokument-Memo als Fallbeschreibung, Summary Grid, Fallvergleich nach Variablen.",
+    lit: ["flick"] },
+  narration: { name: "Narrationsanalyse", by: "Schütze", short: "Narrationsanalyse", x: .82, y: .84, la: "l", sup: 0, lg: { de: 0, in: 1, mix: 0, ab: 2 },
+    what: "Rekonstruiert Prozessstrukturen des Lebensablaufs aus der formalen und inhaltlichen Struktur der Erzählung.",
+    steps: ["Formale Textanalyse: erzählende von anderen Passagen trennen", "Strukturelle inhaltliche Beschreibung", "Analytische Abstraktion", "Wissensanalyse (Eigentheorien)", "Kontrastiver Vergleich", "Theoretisches Modell"],
+    jq: "Nur unterstützend: Sequenzen als Codes markieren, Interpretationen als Textstellen-Memos, Bericht mit Randspalte für Interpretationsgruppen.",
+    lit: ["schuetze"] },
+  doku: { name: "Dokumentarische Methode", by: "Bohnsack", short: "Dok. Methode", x: .6, y: .94, la: "l", sup: 0, lg: { de: 0, in: 1, mix: 0, ab: 2 },
+    what: "Unterscheidet, was gesagt wird (immanenter Sinn) von dem, wie es gesagt wird (dokumentarischer Sinn), um Orientierungsrahmen zu rekonstruieren.",
+    steps: ["Thematischer Verlauf", "Formulierende Interpretation", "Reflektierende Interpretation (Diskursorganisation)", "Fallbeschreibung", "Komparative Analyse und Typenbildung"],
+    jq: "Nur unterstützend: Passagen markieren, Interpretationen in Memos, Segmente nach Sprecherwechsel für die Diskursorganisation.",
+    lit: ["bohnsack"] }
+};
+
+/* ---------- Forschungsziele (Schritt 1) ---------- */
+const ZI = {
+  pruefen: { em: "🔬", name: "Theorie anwenden oder prüfen", short: "Es gibt ein Modell oder Konzept, das du am Material prüfen oder ausdifferenzieren willst.", iv: ["leitfaden", "exp_sys", "fokussiert", "pzi"], lg: "de" },
+  verstehen: { em: "💬", name: "Erfahrungen und Sichtweisen verstehen", short: "Wie erleben Menschen ein Problem, wie begründen sie ihr Handeln?", iv: ["pzi", "leitfaden", "episodisch"], lg: "mix" },
+  experten: { em: "🧠", name: "Wissen von Expert:innen nutzen", short: "Du sprichst mit Menschen wegen ihrer Funktion oder Erfahrung in einem Feld.", iv: ["exp_theo", "exp_sys", "exp_expl"], lg: "mix" },
+  theorie: { em: "🌱", name: "Neue Theorie / Konzepte entwickeln", short: "Du willst erklären, wie etwas funktioniert – und hast noch kein fertiges Modell.", iv: ["exp_theo", "narrativ", "pzi"], lg: "in" },
+  erkunden: { em: "🧭", name: "Ein neues Feld erkunden", short: "Du weißt noch wenig und willst dich orientieren (z. B. Vorstudie).", iv: ["exp_expl", "leitfaden"], lg: "in" },
+  biografie: { em: "📖", name: "Biografien oder Prozesse rekonstruieren", short: "Wie hat sich etwas im Leben von Menschen entwickelt?", iv: ["narrativ", "episodisch"], lg: "ab" },
+  gruppe: { em: "👥", name: "Kollektive Orientierungen / Meinungsbild", short: "Was teilt eine Gruppe? Welche Meinungen gibt es?", iv: ["gruppe"], lg: "mix" }
+};
+
+/* ---------- 2. Grundlagen-Module ---------- */
+const MOD = [
+  { id: "qda", icon: "🔎", color: "#38bdf8", title: "Was ist qualitative Datenanalyse?", blurb: "Verstehen statt messen: Prinzipien, Ziele und was sie von Statistik unterscheidet.",
+    body: () => `
+<div class="md"><p>Qualitative Datenanalyse (QDA) erschließt <b>Bedeutungen</b>: Wie deuten Menschen ihre Welt, wie begründen sie ihr Handeln, welche Muster zeigen sich über mehrere Fälle? Grundlage sind meist Texte – Interviewtranskripte, Feldnotizen, Dokumente.</p></div>
+${vis("quali")}
+<div class="md"><p><b>Vier Prinzipien</b>, die in fast jedem Lehrbuch auftauchen:</p><ul>
+<li><b>Offenheit</b> – für Unerwartetes, für die Relevanzen der Befragten.</li>
+<li><b>Kommunikation</b> – Daten entstehen im Gespräch; du bist Teil der Situation.</li>
+<li><b>Prozesshaftigkeit</b> – Fragestellung, Kategorien und Sampling dürfen sich entwickeln.</li>
+<li><b>Reflexivität</b> – deine Rolle, dein Vorwissen und deine Entscheidungen werden offengelegt.</li></ul></div>
+${box("tip", "💡", "Erst die Frage, dann das Verfahren", "Die Methode folgt aus der Forschungsfrage, nicht umgekehrt. Der Kompass hilft dir, Frage, Interviewform und Auswertung stimmig zu verbinden.")}
+${box("warn", "⚠️", "Häufigkeiten mit Vorsicht", "jellyqda zeigt Zahlen (Codings je Code, Prozent im Bericht). In der qualitativen Forschung beschreiben sie die Verteilung im Material – sie sind kein Beleg für Verbreitung in einer Population.")}`,
+    quiz: [
+      { q: "Was ist das Hauptziel qualitativer Datenanalyse?", o: ["Häufigkeiten statistisch absichern", "Bedeutungen und Muster verstehen", "Hypothesen per Signifikanztest prüfen", "Möglichst große Stichproben auswerten"], a: 1, ex: "Es geht um Sinn, Deutungen und Muster – nicht um statistische Verallgemeinerung." },
+      { q: "In jellyqda kommt „Motivation“ in 7 von 10 Interviews vor. Was darfst du daraus schließen?", o: ["70 % aller Beschäftigten sind motiviert", "Das Thema war in deinem Material breit präsent", "Motivation ist der wichtigste Faktor", "Nichts, Zahlen sind in QDA verboten"], a: 1, ex: "Zahlen beschreiben dein Material. Sie sind erlaubt, aber nicht repräsentativ." }
+    ] },
+  { id: "logik", icon: "🔁", color: "#a78bfa", title: "Induktiv, deduktiv, abduktiv", blurb: "Woher kommen die Kategorien? Die wichtigste Weichenstellung – mit interaktivem Schaubild.",
+    body: () => `
+<div class="md"><p>Die zentrale Frage jeder Auswertung: <b>Woher kommen deine Kategorien?</b></p></div>
+${vis("logik")}
+<div class="tblwrap"><table class="tbl"><tr><th>Logik</th><th>Kategorien kommen aus …</th><th>typische Verfahren</th></tr>
+<tr><td><span class="tag de">deduktiv</span></td><td>Theorie, Forschungsstand, Leitfaden</td><td>Mayring strukturierend, Gläser & Laudel, Kuckartz evaluativ</td></tr>
+<tr><td><span class="tag in">induktiv</span></td><td>dem Material selbst</td><td>Mayring zusammenfassend, Meuser & Nagel, Grounded Theory</td></tr>
+<tr><td><span class="tag mix">deduktiv-induktiv</span></td><td>beidem: Hauptkategorien vorab, Subkategorien am Material</td><td>Kuckartz inhaltlich strukturierend, Flick, thematische Analyse</td></tr>
+<tr><td><span class="tag ab">abduktiv</span></td><td>überraschenden Befunden, die eine neue Erklärung brauchen</td><td>Grounded Theory, Narrationsanalyse, dokumentarische Methode</td></tr></table></div>
+${box("tip", "💡", "Rein induktiv gibt es nicht", "Niemand liest ein Transkript ohne Vorwissen. Wichtig ist, es offenzulegen – z. B. in einem Projekt-Memo „Mein Vorwissen“ in jellyqda, bevor du mit dem Kodieren beginnst.")}
+${box("jq", "🪼", "In jellyqda", "Deduktiv: Codes vorab anlegen + Kodierleitfaden. Induktiv: Text markieren → <b>In vivo</b>, später ordnen mit Umhängen und Zusammenführen. Beides ist jederzeit rückgängig zu machen (Strg+Z) und steht im Protokoll.")}`,
+    quiz: [
+      { q: "Du legst Codes aus den Themenblöcken deines Leitfadens an und ergänzt Subcodes beim Lesen. Das ist …", o: ["rein deduktiv", "rein induktiv", "deduktiv-induktiv", "abduktiv"], a: 2, ex: "Hauptkategorien vorab, Subkategorien am Material: die klassische Mischform." },
+      { q: "Welche jellyqda-Funktion ist typisch induktiv?", o: ["Kodierleitfaden vorab ausfüllen", "In-vivo-Code", "Alle Suchtreffer codieren", "Fallvergleich"], a: 1, ex: "In vivo macht die Worte der Befragten selbst zum Code." }
+    ] },
+  { id: "prozess", icon: "🗺️", color: "#34d399", title: "Der Forschungsprozess", blurb: "Von der Frage bis zum Methodenteil – und wo jellyqda dir hilft.",
+    body: () => `
+<div class="md"><p>Qualitative Forschung verläuft selten streng linear. Trotzdem hilft ein Ablaufplan – vor allem, um rechtzeitig mit der Auswertung zu beginnen.</p></div>
+${vis("prozess")}
+${box("tip", "💡", "Früh mit der Analyse anfangen", "Kodiere das erste Interview, bevor du alle geführt hast. Du merkst so, ob der Leitfaden funktioniert, und dein Postskript ist noch frisch.")}
+${box("warn", "⚠️", "Zeitplanung", "Faustregel aus der Praxis: Transkription kostet ein Vielfaches der Interviewdauer, und die Auswertung dauert fast immer länger als geplant. Plane Puffer ein.")}`,
+    quiz: [
+      { q: "Wann ist ein guter Zeitpunkt, mit dem Kodieren zu beginnen?", o: ["Erst wenn alle Interviews transkribiert sind", "Schon nach den ersten Interviews", "Nach dem Schreiben der Ergebnisse", "Vor der Entwicklung des Leitfadens"], a: 1, ex: "Frühes Kodieren verbessert Leitfaden und Sampling – bei Grounded Theory ist es sogar Pflicht." }
+    ] },
+  { id: "interviews", icon: "🎙️", color: "#f472b6", title: "Interviewformen & Offenheit", blurb: "Von narrativ bis strukturiert: welche Form für welche Frage – und was „leitfadengestützt“ eigentlich heißt.",
+    body: () => `
+<div class="md"><p>Interviewformen unterscheiden sich vor allem darin, <b>wie stark du das Gespräch strukturierst</b> und <b>welches Wissen</b> du erheben willst. Tippe auf eine Zeile für Details.</p></div>
+${vis("spektrum")}
+${box("tip", "💡", "„Leitfadengestützt“ ist kein eigener Offenheitsgrad", "Der Begriff beschreibt das Instrument, nicht die Offenheit: Es gibt halboffene Leitfäden (Reihenfolge flexibel, viel Raum für Erzählung) und strukturierte (feste Fragen). Die meisten Lehrbücher meinen mit Leitfadeninterview das halboffene.")}
+${box("warn", "⚠️", "Die Offenheit prägt die Auswertung", "Je offener die Erhebung, desto weniger passt ein starres, vorab festgelegtes Kategoriensystem. Ein narratives Interview rein deduktiv auszuwerten verschenkt genau das, wofür du es geführt hast.")}
+<div class="btnrow"><a class="btn primary" href="#/compass">${ICON.compass} Im Kompass deine Form wählen</a></div>`,
+    quiz: [
+      { q: "Welches Interview lebt von einer ununterbrochenen Stegreiferzählung?", o: ["Problemzentriertes Interview", "Narratives Interview", "Systematisierendes Experteninterview", "Fokussiertes Interview"], a: 1, ex: "Schützes narratives Interview: erst erzählen lassen, Nachfragen erst danach." },
+      { q: "Du willst das Deutungswissen von Führungskräften rekonstruieren. Was passt am besten?", o: ["Systematisierendes Experteninterview", "Theoriegenerierendes Experteninterview", "Standardisierter Fragebogen", "Fokussiertes Interview"], a: 1, ex: "Deutungswissen (Sichtweisen, Handlungslogiken) ist der Kern des theoriegenerierenden Experteninterviews." }
+    ] },
+  { id: "verfahren", icon: "🧭", color: "#fbbf24", title: "Verfahren-Landkarte", blurb: "Mayring, Kuckartz, Meuser & Nagel, Grounded Theory … wo steht was?",
+    body: () => `
+<div class="md"><p>Die Karte ordnet Verfahren nach zwei Achsen: <b>woher die Kategorien kommen</b> (deduktiv ↔ induktiv) und <b>wie tief interpretiert wird</b> (inhaltsanalytisch-beschreibend ↔ rekonstruktiv). Die Farbe zeigt, wie gut jellyqda das Verfahren unterstützt. Tippe auf einen Punkt.</p></div>
+${vis("karte")}
+${box("tip", "💡", "Eine Vereinfachung", "Die Positionen sind grob – viele Verfahren lassen sich deduktiver oder induktiver anwenden. Entscheidend ist, dass du dein Vorgehen begründest und die Schritte des gewählten Verfahrens nachvollziehbar dokumentierst.")}`,
+    quiz: [
+      { q: "Welches Verfahren wurde speziell für Experteninterviews entwickelt?", o: ["Narrationsanalyse", "Auswertung nach Meuser & Nagel", "Dokumentarische Methode", "Thematische Analyse"], a: 1, ex: "Meuser & Nagel: Paraphrase → Überschriften → thematischer Vergleich → Konzeptualisierung → Generalisierung." },
+      { q: "Paraphrase → Generalisierung → Reduktion gehört zu …", o: ["Mayrings zusammenfassender Inhaltsanalyse", "Grounded Theory", "Gläser & Laudel", "Kuckartz’ evaluativer QIA"], a: 0, ex: "Das sind die Z-Regeln der zusammenfassenden Inhaltsanalyse – in jellyqda als Mayring-Tabelle." }
+    ] },
+  { id: "kategorien", icon: "🌳", color: "#fb923c", title: "Codes, Kategorien & Kodierleitfaden", blurb: "Wie ein gutes Kategoriensystem aussieht – und warum Ankerbeispiele Gold wert sind.",
+    body: () => `
+<div class="md"><p>Ein <b>Code</b> ist ein Etikett für eine Textstelle. Mehrere Codes zusammen bilden ein <b>Kategoriensystem</b> – in jellyqda als Codebaum mit Codes und Subcodes, jede Familie in einer Farbe, verbunden durch einen „Faden“.</p></div>
+${vis("baum")}
+<div class="md"><p><b>Kodierleitfaden</b> – die drei Spalten, die jede Kategorie nachvollziehbar machen:</p></div>
+<div class="tblwrap"><table class="tbl"><tr><th>Kategorie</th><th>Definition</th><th>Ankerbeispiel</th><th>Kodierregel</th></tr>
+<tr><td><b>Teamklima › Unterstützung</b></td><td>Aussagen über konkrete Hilfe durch Kolleg:innen</td><td>„Bei uns im Team, da hilft jeder jedem.“ (B3, Abs. 12)</td><td>Nur erlebte Hilfe, nicht Wünsche. Wünsche → „Unterstützungsbedarf“</td></tr></table></div>
+<div class="md mt"><p><b>Gute Kategorien sind …</b></p><ul>
+<li><b>trennscharf</b> – eine Textstelle passt klar in die eine oder andere Kategorie (sonst: Kodierregel schärfen),</li>
+<li><b>auf einer Ebene</b> – Subcodes einer Familie sind gleichartig (nicht „Konflikte“ neben „Interview 3“),</li>
+<li><b>überschaubar</b> – lieber wenige gut definierte Hauptkategorien als 200 lose Codes,</li>
+<li><b>dokumentiert</b> – Definition und Änderungen stehen in Code-Memos.</li></ul></div>
+${box("tip", "💡", "Analyseeinheiten festlegen", "Was ist die kleinste kodierbare Einheit (Wort, Satz, Sinnabschnitt)? Wie viel Kontext darfst du heranziehen? Kurz entscheiden und im Methodenteil nennen. In jellyqda helfen Segmente: „ganzes Segment“ kodiert einen Redebeitrag am Stück.")}
+${box("jq", "🪼", "In jellyqda", "Buch-Symbol am Code öffnet den Kodierleitfaden. Eine kodierte Stelle anklicken → „Als Ankerbeispiel für …“. Definition und Regel erscheinen beim Kodieren als Hinweis über dem Code.")}`,
+    quiz: [
+      { q: "Zwei Kodierende ordnen dieselbe Stelle verschiedenen Kategorien zu. Was hilft am ehesten?", o: ["Mehr Codes anlegen", "Kodierregel und Ankerbeispiele schärfen", "Die Stelle ignorieren", "Nur noch Häufigkeiten zählen"], a: 1, ex: "Kodierregeln klären Grenzfälle, Ankerbeispiele zeigen den Prototyp." }
+    ] },
+  { id: "mayring", icon: "🪜", color: "#c084fc", title: "Zusammenfassen nach Mayring", blurb: "Paraphrase → Generalisierung → Reduktion – zum Durchklicken an einem Beispiel.",
+    body: () => `
+<div class="md"><p>Die zusammenfassende Inhaltsanalyse verdichtet Material schrittweise. Klick dich durch die vier Stufen – so sieht das später in der <b>Mayring-Tabelle</b> von jellyqda aus.</p></div>
+${vis("mayring")}
+${box("tip", "💡", "Abstraktionsniveau vorher festlegen", "Wie allgemein soll die Generalisierung sein? „Fehlende Mentorin“ oder „Unterstützungsbedarf“? Leg das Niveau fest, bevor du generalisierst, und halte es durch.")}
+${box("warn", "⚠️", "Rücküberprüfung nicht vergessen", "Am Ende prüfst du, ob das reduzierte Kategoriensystem das Ausgangsmaterial noch repräsentiert. Ein Klick auf eine Zeile der Mayring-Tabelle springt zur Stelle im Dokument.")}`,
+    quiz: [
+      { q: "„Würde ohne Kolleginnen kündigen“ ist …", o: ["eine Paraphrase", "eine Generalisierung", "eine Kategorie", "ein Ankerbeispiel"], a: 0, ex: "Inhalt knapp in eigenen Worten, noch nah am Einzelfall – eine Paraphrase." }
+    ] },
+  { id: "kuckartz", icon: "⭕", color: "#22d3ee", title: "Kuckartz: 7 Phasen", blurb: "Die inhaltlich strukturierende QIA – rund um die Forschungsfrage.",
+    body: () => `
+<div class="md"><p>Die inhaltlich strukturierende QIA nach Kuckartz & Rädiker ist in vielen Abschlussarbeiten der Standard. Die Phasen kreisen um die Forschungsfrage – du gehst nicht stur im Kreis, sondern kehrst immer wieder zu ihr zurück. Tippe auf eine Phase.</p></div>
+${vis("kreis")}
+${box("jq", "🪼", "Fallbezogene Zusammenfassungen", "Kuckartz empfiehlt thematische Fallzusammenfassungen je Kategorie und Fall. Genau dafür gibt es in jellyqda das <b>Summary Grid</b> (Code × Dokument).")}`,
+    quiz: [
+      { q: "Wo entstehen bei Kuckartz typischerweise die Subkategorien?", o: ["Vorab aus der Theorie", "Induktiv am Material nach dem ersten Kodierprozess", "Aus Worthäufigkeiten", "Erst beim Schreiben"], a: 1, ex: "Phase 4: Subkategorien werden induktiv am bereits grob kodierten Material gebildet." }
+    ] },
+  { id: "guete", icon: "✅", color: "#4ade80", title: "Gütekriterien & Reflexivität", blurb: "Wie qualitative Forschung überzeugt – ohne Reliabilitätskoeffizienten-Fetisch.",
+    body: () => `
+<div class="md"><p>Für qualitative Forschung gelten eigene Gütekriterien. Häufig zitiert sind die Kernkriterien nach <b>Steinke</b>:</p><ul>
+<li><b>Intersubjektive Nachvollziehbarkeit</b> – Vorgehen dokumentieren, Regeln offenlegen, in Gruppen interpretieren.</li>
+<li><b>Indikation</b> – passen Frage, Methode und Auswertung zusammen? (genau das prüft der Kompass)</li>
+<li><b>Empirische Verankerung</b> – Aussagen mit Textstellen belegen.</li>
+<li><b>Limitation</b> – Grenzen der Verallgemeinerbarkeit benennen.</li>
+<li><b>Kohärenz</b> – Widersprüche nicht glätten, sondern bearbeiten.</li>
+<li><b>Relevanz</b> – was trägt die Studie bei?</li>
+<li><b>Reflektierte Subjektivität</b> – deine Rolle im Forschungsprozess.</li></ul></div>
+${box("tip", "💡", "Konsensuelles Kodieren", "Zu zweit dieselben Interviews kodieren, Unterschiede besprechen und Kodierregeln schärfen. Das Gespräch über Abweichungen ist oft wertvoller als ein Übereinstimmungswert.")}
+${box("warn", "⚠️", "Intercoder-Übereinstimmung", "jellyqda berechnet derzeit keine Übereinstimmungskoeffizienten. Wenn deine Betreuung einen Wert verlangt: Codings als Tabelle exportieren und extern vergleichen – oder mit Betreuung klären, ob konsensuelles Kodieren genügt.")}
+${box("jq", "🪼", "Verfahrensdokumentation geschenkt", "Jede Aktion steht mit Zeitstempel im Protokoll: <code>qda_export(\"audit\")</code>. Codebuch, Kodierleitfaden und Memos landen im Bericht – ideal für Anhang und Methodenteil.")}`,
+    quiz: [
+      { q: "Welches Kriterium prüft, ob Forschungsfrage, Methode und Auswertung zusammenpassen?", o: ["Relevanz", "Indikation", "Limitation", "Kohärenz"], a: 1, ex: "Indikation des Forschungsprozesses: Ist das Vorgehen dem Gegenstand angemessen?" }
+    ] },
+  { id: "ethik", icon: "🔒", color: "#f87171", title: "Transkription, Datenschutz & Ethik", blurb: "Einwilligung, Pseudonymisierung und ein Transkriptformat, das jellyqda versteht.",
+    body: () => `
+<div class="md"><p>Interviewdaten sind personenbezogen und oft sensibel. Bevor die Analyse beginnt, sollten drei Dinge geklärt sein:</p><ol>
+<li><b>Informierte Einwilligung</b> – Zweck, Aufbewahrung, Löschung, Rücktrittsrecht; schriftlich dokumentiert.</li>
+<li><b>Pseudonymisierung</b> – Namen, Orte, Firmen, seltene Funktionen ersetzen. Bei Expert:innen besonders gründlich: kleine Felder machen Personen wiedererkennbar.</li>
+<li><b>Sichere Speicherung</b> – Rohdaten getrennt von der Zuordnungsliste, kein Upload in Cloud-Dienste ohne Vereinbarung.</li></ol></div>
+<div class="md"><p><b>Transkriptformat</b>, mit dem jellyqda Segmente nach Sprecherwechsel erkennt:</p></div>
+${vis("transkript")}
+${box("tip", "💡", "Transkriptionsregeln festlegen", "Einfaches oder erweitertes Transkript? Dialekt glätten? Pausen notieren? Leg die Regeln vorab fest (z. B. nach Dresing & Pehl) und nenne sie im Methodenteil. Für rekonstruktive Verfahren brauchst du mehr Details als für eine Inhaltsanalyse.")}
+${box("jq", "🪼", "Warum jellyqda hier hilft", "Komplett offline: keine Cloud, keine Uploads, die App läuft nur auf deinem Rechner. Ein Projekt ist eine Datei; Backups landen außerhalb des Projektordners. Interviewdaten gehören nicht in Git – die mitgelieferte <code>.gitignore</code> schließt sie aus.")}`,
+    quiz: [
+      { q: "Was gehört bei Experteninterviews besonders gründlich pseudonymisiert?", o: ["Nur der Name", "Name, Organisation, Funktion und erkennbare Anekdoten", "Nichts, Expert:innen sprechen öffentlich", "Nur die Zeitmarken"], a: 1, ex: "In kleinen Feldern reicht oft die Funktion, um eine Person zu erkennen." }
+    ] }
+];
+
+/* ---------- 3. jellyqda Schritt für Schritt ---------- */
+const TOUR = [
+  { t: "Installieren", tag: "start", img: [], txt: "Voraussetzung: R ab 4.0, am besten mit RStudio (beides kostenlos). Dann eine einzige Zeile in die R-Konsole – das Skript installiert alles, prüft die Installation und sagt dir, wie es weitergeht.",
+    r: 'source("https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/main/install_jellyqda.R")',
+    tips: ["Unter Linux braucht der PDF-/Word-Import einmalig Systembibliotheken – das Skript nennt den passenden Befehl."] },
+  { t: "Projekt anlegen & App starten", tag: "start", img: [["01-uebersicht.png", "Die Oberfläche: Dokumente, Codesystem, Dokument-Browser, Memos"]], txt: "Ein Projekt ist eine einzige Datei (<code>*.jellyqda</code>). Gespeichert wird sofort bei jeder Aktion.",
+    r: 'library(jellyqda)\nqda_open("meine-arbeit.jellyqda")  # anlegen oder wieder öffnen\nqda_app(lang = "de")               # App im Browser starten',
+    tips: ["Zum Ausprobieren ohne eigene Daten: das Beispiel-Interview aus dem Paket oder die fiktiven Transkripte im Ordner <code>demo/</code>."] },
+  { t: "Transkripte importieren & Variablen", tag: "beide", img: [["03-dokumente-import.png", "Import per Klick oder Drag & Drop"]], txt: "Links bei <b>Dokumente</b> importieren (.txt, .md, .docx, .pdf). Der Text wird beim Import „eingefroren“ – Markierungen verrutschen nie. Variablen wie Rolle, Branche oder Altersgruppe brauchst du später für den Fallvergleich.",
+    r: 'qda_import(c("interview_01.docx", "interview_02.docx"), segments = "speaker")\nqda_source_set_var(1, "Rolle", "Projektleitung")',
+    tips: ["Variablen gleich beim Import anlegen – nachträglich für 20 Interviews ist mühsam.", "Pseudonymisieren <b>vor</b> dem Import: Der Text ist danach bewusst unveränderlich."] },
+  { t: "Segmente prüfen", tag: "beide", img: [["09-segmentleiste.png", "Segmente teilen und zusammenführen"]], txt: "Segmente sind die Grundeinheiten deines Textes: nach Absätzen oder nach Sprecherwechseln (<code>[00:01:12] B: …</code>). Teilen und zusammenführen geht mit einem Klick in den Text.",
+    r: 'qda_segments_set(1, "speaker")   # Regel für Dokument 1 ändern', tips: ["Offene Interviews: eher Absätze. Leitfadeninterviews: Sprecherwechsel."] },
+  { t: "Codesystem aufbauen", tag: "de", img: [["05-codesystem.png", "Codebaum mit Codes, Subcodes und Faden"]], txt: "Im <b>Code System</b> mit „+ Code“ Hauptkategorien anlegen, darunter „+ Subcode“. Doppelklick benennt um, der Farbpunkt färbt die ganze Familie. Bei deduktivem Vorgehen entsteht hier dein Kategoriensystem aus Theorie oder Leitfaden.",
+    r: 'qda_code_add("Teamklima")\nqda_code_add("Unterstützung", parent = "Teamklima")\nqda_code_set_color("Teamklima", "#009E73")', tips: ["Bei induktivem Vorgehen startest du fast leer – die Codes entstehen beim Lesen."] },
+  { t: "Kodieren", tag: "beide", img: [["06-markieren-aktionsleiste.png", "Text markieren → Kodier-Leiste"], ["08-coding-leiste.png", "Coding anklicken: umkodieren, kommentieren, Mayring-Felder"]], txt: "Text markieren, Code anklicken, fertig. Per Tastatur: <b>Strg+1…9</b> wählt den Code, danach <b>1…9</b> den Subcode. Ein Klick auf ein bestehendes Coding öffnet die Coding-Leiste: umkodieren, Kommentar, Paraphrase, Ankerbeispiel.",
+    r: 'qda_code(source = 1, segment = 3, code = "Unterstützung")       # ganzes Segment\nqda_code(source = 1, start = 120, end = 340, code = "Teamklima") # Zeichenbereich', tips: ["Überlappende Codings sind grau mit Zahl – Maus drüber zeigt alle."] },
+  { t: "Memos schreiben", tag: "beide", img: [["10-memos.png", "Memos in vier Arten, mit Filter und Suche"]], txt: "Vier Arten: Textstelle (<b>Strg+M</b>), Dokument (z. B. dein Postskript), Code (Definition, Kodierregel) und Projekt (z. B. „Mein Vorwissen“, Methodenentscheidungen).",
+    r: 'qda_memo_add("Postskript: entspannte Atmosphäre, B3 wirkte unter Zeitdruck", source = 1, title = "Postskript")\nqda_memo_add("Nur explizite Aussagen codieren", code = "Unterstützung", title = "Kodierregel")', tips: ["Memos sind dein Forschungstagebuch – später Gold für den Methodenteil."] },
+  { t: "Kodierleitfaden", tag: "de", img: [["26-kodierleitfaden.png", "Definition, Ankerbeispiele, Kodierregel"]], txt: "Maus über einen Code → <b>Buch-Symbol</b>. Definition, Ankerbeispiele (eins pro Zeile) und Kodierregel. Ankerbeispiele übernimmst du direkt aus dem Text: Coding anklicken → „Als Ankerbeispiel für …“.",
+    r: 'qda_code_guide("Unterstützung",\n  definition = "Konkrete, erlebte Hilfe durch Kolleg:innen",\n  rule = "Nur erlebte Hilfe; Wünsche -> Unterstützungsbedarf")', tips: ["Nach dem Probedurchlauf (10–50 % des Materials) Leitfaden überarbeiten – das Protokoll dokumentiert die Änderung."] },
+  { t: "Induktiv verdichten", tag: "in", img: [["27-codes-zusammenfuehren.png", "Codes zusammenführen"]], txt: "<b>In vivo</b> in der Kodier-Leiste macht den markierten Text selbst zum Code. Später: umbenennen, als Subcode unter einen anderen Code hängen, ähnliche Codes zusammenführen (Pfeil-Symbol). Alles mit Strg+Z umkehrbar.",
+    r: 'qda_code_move("Mentorin fehlt", parent = "Unterstützungsbedarf")\nqda_code_merge("keiner zum Fragen", into = "Mentorin fehlt")', tips: ["Regelmäßig verdichten – nach jedem zweiten oder dritten Interview aufräumen."] },
+  { t: "Suchtreffer codieren", tag: "de", img: [["28-auto-codieren.png", "Alle Treffer auf einmal codieren"]], txt: "Unten in der Mitte suchen, dann „Alle N Treffer codieren mit …“ – nur das Wort oder das ganze Segment. Ein Strg+Z nimmt alle zurück.",
+    r: 'qda_autocode("Kolleg", code = "Teamklima", scope = "segment")', tips: ["Nicht blind vertrauen: Treffer danach über den Code durchsehen und Unpassendes löschen. Automatisches Kodieren ersetzt kein Lesen."] },
+  { t: "Mayring-Tabelle", tag: "in", img: [["32-mayring.png", "Paraphrase und Generalisierung für alle Codings"]], txt: "<b>Analyse → Zusammenfassung (Mayring)</b>: alle Codings mit Textstelle und je einem Feld für Paraphrase und Generalisierung. Gespeichert wird beim Verlassen eines Feldes; als CSV für Excel exportierbar.",
+    r: 'qda_coding_set_summary(12, paraphrase = "Würde ohne Kolleginnen kündigen",\n                       generalization = "Team als Bindungsfaktor")', tips: ["Paraphrasen erscheinen im Bericht auch in der Randspalte neben dem Interview."] },
+  { t: "Fälle vergleichen & zusammenfassen", tag: "beide", img: [["29-fallvergleich.png", "Fallvergleich in der Code-Matrix"], ["16-summary-grid.png", "Summary Grid: Zusammenfassung je Code und Dokument"]], txt: "<b>Code-Matrix</b> (Codes × Dokumente), bei „Spalten“ ein Fallvergleich nach Variable, z. B. Rolle. Das <b>Summary Grid</b> hält thematische Zusammenfassungen je Code und Fall – ideal für Kuckartz und Flick.",
+    r: 'qda_matrix()\nqda_case_matrix("Rolle")\nqda_summary_set("Teamklima", 1, "B1 erlebt das Team als zentrale Ressource …")', tips: ["Matrixzahlen zeigen, wo du genauer lesen solltest – nicht, was „gilt“."] },
+  { t: "Worthäufigkeiten & Stichwort im Kontext", tag: "in", img: [["30-worthaeufigkeiten.png", "Häufigste Wörter, ohne Füllwörter"], ["31-stichwort-im-kontext.png", "Stichwort im Kontext (KWIC)"]], txt: "<b>Analyse → Worthäufigkeiten</b> (auch nur innerhalb eines Codes) und <b>Stichwort im Kontext</b>: jedes Vorkommen eines Begriffs mit Text links und rechts. Ein Klick springt zur Stelle.",
+    r: 'qda_words(n = 30, code = "Motivation")\nqda_kwic("Familie")', tips: ["Gut zum Entdecken von Feldbegriffen und zum Gegenprüfen – nicht als Ersatz für das Kodieren."] },
+  { t: "Bericht & Export", tag: "beide", img: [["33-bericht-randspalte-a4.png", "Bericht mit Randspalte, druckfertig auf A4"]], txt: "<b>Bericht</b> öffnet einen neuen Tab, druckfertig auf A4: Codesystem mit Häufigkeiten, Codebuch, Memos, codierte Stellen und alle Interviews mit Randspalte. Das <b>Export</b>-Menü liefert CSV, Excel und Word.",
+    r: 'qda_export("all")       # CSV/Excel/Word/HTML nach exports/\nqda_export("codebook")  # Codebuch für den Anhang', tips: ["Codebuch und Kodierleitfaden in den Anhang – das erfüllt gleich mehrere Gütekriterien."] },
+  { t: "Rückgängig, Backup & Protokoll", tag: "start", img: [["17-rueckgaengig.png", "Rückgängig und Wiederholen für alles"]], txt: "<b>Strg+Z / Strg+Y</b> für alles. Backups automatisch alle 25 Aktionen und per Klick, als ZIP außerhalb des Projektordners. Das Protokoll hält jede Aktion mit Zeitstempel fest.",
+    r: 'qda_backup()\nqda_export("audit")   # Protokoll für den Methodenteil', tips: ["Vor großen Umbauten (Zusammenführen, Autocode) kurz Strg+S – das legt einen Sicherungspunkt an."] }
+];
+
+/* ---------- 4. Checklisten, Glossar, Literatur ---------- */
+const CHECK = [
+  { id: "vor", t: "Vor der Erhebung", em: "📝", items: ["Forschungsfrage(n) schriftlich und präzise formuliert", "Interviewform begründet gewählt (Kompass!)", "Sampling: Wer, wie viele, warum? Zugang geklärt", "Leitfaden entwickelt (SPSS-Prinzip) und im Pretest erprobt", "Einwilligungserklärung und Informationsblatt vorbereitet", "Aufnahmegerät getestet, Ersatz-Akku dabei", "Postskript-Vorlage bereit", "Vorwissen notiert (wird ein Projekt-Memo)"] },
+  { id: "trans", t: "Transkription", em: "⌨️", items: ["Transkriptionsregeln festgelegt und notiert", "Einheitliche Sprecherkürzel (I, B1, B2 …)", "Zeitmarken im Format [hh:mm:ss] am Beitragsanfang", "Namen, Orte, Organisationen pseudonymisiert", "Zuordnungsliste getrennt und sicher gespeichert", "Transkript gegen Audio korrekturgehört"] },
+  { id: "ana", t: "Analyse in jellyqda", em: "🪼", items: ["Projekt angelegt, Transkripte importiert", "Dokument-Variablen (Rolle, Gruppe …) gesetzt", "Postskripte als Dokument-Memos übernommen", "Analyseeinheiten festgelegt", "Kategoriensystem mit Kodierleitfaden dokumentiert", "Probekodierung gemacht und Leitfaden überarbeitet", "Methodische Entscheidungen in Projekt-Memos festgehalten", "Material vollständig kodiert (Fortschritt: qda_stats())", "Backup an einem zweiten Ort"] },
+  { id: "bericht", t: "Bericht & Methodenteil", em: "📄", items: ["Vorgehen Schritt für Schritt beschrieben (Verfahren + Quelle)", "Herkunft der Kategorien offengelegt (deduktiv/induktiv)", "Codebuch und Kodierleitfaden im Anhang", "Befunde mit Zitaten belegt (Interview, Absatz/Zeitmarke)", "Häufigkeiten vorsichtig interpretiert", "Grenzen der Studie benannt", "Eigene Rolle reflektiert"] }
+];
+const GLOSS = [
+  ["Abduktion", "Schluss von einem überraschenden Befund auf eine neue erklärende Hypothese, die dann am Material geprüft wird."],
+  ["Analyseeinheit", "Nach Mayring: Kodiereinheit (kleinster Textteil), Kontexteinheit (größter Textteil) und Auswertungseinheit (Reihenfolge der Bearbeitung)."],
+  ["Ankerbeispiel", "Typische Textstelle, die eine Kategorie prototypisch zeigt – Teil des Kodierleitfadens."],
+  ["Axiales Kodieren", "Grounded Theory: Beziehungen zwischen Kategorien rund um eine Achsenkategorie herausarbeiten."],
+  ["Code", "Etikett für eine Textstelle. In jellyqda: Codes und Subcodes im Codebaum."],
+  ["Coding", "Eine konkrete Zuordnung von Code und Textstelle."],
+  ["Deduktiv", "Kategorien werden vorab aus Theorie, Forschungsstand oder Leitfaden abgeleitet und am Material angewendet."],
+  ["Deutungswissen", "Subjektive Relevanzen, Sichtweisen und Interpretationen von Expert:innen – Gegenstand des theoriegenerierenden Experteninterviews."],
+  ["Erzählaufforderung", "Offene Frage, die eine Erzählung anregen soll („Erzählen Sie doch mal …“)."],
+  ["Fallvergleich", "Vergleich von Codehäufigkeiten oder Inhalten zwischen Gruppen von Fällen, z. B. nach Rolle. In jellyqda in der Code-Matrix."],
+  ["Generalisierung", "Mayring: Paraphrase auf ein festgelegtes Abstraktionsniveau heben."],
+  ["Grounded Theory", "Forschungsstil, in dem Theorie im ständigen Vergleich aus den Daten entwickelt wird (Glaser & Strauss)."],
+  ["In-vivo-Code", "Code, dessen Name ein Begriff der Befragten selbst ist."],
+  ["Induktiv", "Kategorien entstehen schrittweise aus dem Material."],
+  ["Intercoder-Übereinstimmung", "Maß, wie ähnlich zwei Personen kodieren. Alternative: konsensuelles Kodieren mit Diskussion der Abweichungen."],
+  ["Kategorie", "Begriff, der mehrere Textstellen unter einem gemeinsamen Gesichtspunkt bündelt. Oft synonym zu Code verwendet."],
+  ["Kodierleitfaden", "Tabelle mit Definition, Ankerbeispiel und Kodierregel je Kategorie."],
+  ["Kodierregel", "Regel zur Abgrenzung bei Grenzfällen zwischen Kategorien."],
+  ["KWIC", "Keyword in Context – Stichwort im Kontext: jedes Vorkommen eines Wortes mit Umgebungstext."],
+  ["Memo", "Notiz zu Textstelle, Dokument, Code oder Projekt; hält Ideen und Entscheidungen fest."],
+  ["Paraphrase", "Inhalt einer Textstelle knapp in eigenen Worten."],
+  ["Postskript", "Notizen direkt nach dem Interview zu Atmosphäre, Auffälligkeiten und nonverbalen Aspekten."],
+  ["Pretest", "Probeinterview, um Leitfaden und Erzählaufforderungen zu testen."],
+  ["Pseudonymisierung", "Ersetzen identifizierender Angaben durch Platzhalter; die Zuordnung wird getrennt aufbewahrt."],
+  ["Reduktion", "Mayring: Streichen bedeutungsgleicher und Bündeln ähnlicher Generalisierungen zu Kategorien."],
+  ["Rekonstruktiv", "Verfahren, die implizite Sinnstrukturen sequenziell herausarbeiten (z. B. Narrationsanalyse, dokumentarische Methode)."],
+  ["Sättigung", "Punkt, an dem neue Fälle keine neuen Erkenntnisse für die Kategorien mehr bringen."],
+  ["Segment", "In jellyqda: Grundeinheit eines Dokuments, nach Absätzen oder Sprecherwechseln."],
+  ["Sensibilisierendes Konzept", "Vorwissen, das die Aufmerksamkeit lenkt, ohne den Blick festzulegen (Blumer)."],
+  ["Sondierung", "PZI: allgemeine (Erzählungen vertiefen) und spezifische Sondierungen (Zurückspiegeln, Verständnisfragen, Konfrontation)."],
+  ["SPSS-Prinzip", "Leitfadenentwicklung nach Helfferich: Sammeln, Prüfen, Sortieren, Subsumieren."],
+  ["Summary Grid", "Tabelle Code × Dokument mit thematischen Zusammenfassungen."],
+  ["Theoretisches Sampling", "Grounded Theory: Auswahl weiterer Fälle nach dem Stand der entstehenden Theorie."],
+  ["Triangulation", "Verbindung mehrerer Datenquellen, Methoden oder Perspektiven."]
+];
+const LIT = {
+  mayring: "Mayring, P. (2022). <i>Qualitative Inhaltsanalyse. Grundlagen und Techniken</i> (13. Aufl.). Beltz.",
+  kuckartz: "Kuckartz, U. & Rädiker, S. (2022). <i>Qualitative Inhaltsanalyse. Methoden, Praxis, Computerunterstützung</i> (5. Aufl.). Beltz Juventa.",
+  witzel: "Witzel, A. (2000). Das problemzentrierte Interview. <i>Forum Qualitative Sozialforschung, 1</i>(1), Art. 22.",
+  bogner: "Bogner, A., Littig, B. & Menz, W. (2014). <i>Interviews mit Experten. Eine praxisorientierte Einführung</i>. Springer VS.",
+  meuser: "Meuser, M. & Nagel, U. (1991). ExpertInneninterviews – vielfach erprobt, wenig bedacht. In D. Garz & K. Kraimer (Hrsg.), <i>Qualitativ-empirische Sozialforschung</i> (S. 441–471). Westdeutscher Verlag.",
+  glaeser: "Gläser, J. & Laudel, G. (2010). <i>Experteninterviews und qualitative Inhaltsanalyse</i> (4. Aufl.). VS Verlag.",
+  helfferich: "Helfferich, C. (2011). <i>Die Qualität qualitativer Daten. Manual für die Durchführung qualitativer Interviews</i> (4. Aufl.). VS Verlag.",
+  schuetze: "Schütze, F. (1983). Biographieforschung und narratives Interview. <i>Neue Praxis, 13</i>(3), 283–293.",
+  flick: "Flick, U. (2011). <i>Das Episodische Interview</i>. In G. Oelerich & H.-U. Otto (Hrsg.), Empirische Forschung und Soziale Arbeit. VS Verlag.",
+  merton: "Merton, R. K. & Kendall, P. L. (1946). The focused interview. <i>American Journal of Sociology, 51</i>(6), 541–557.",
+  strauss: "Strauss, A. & Corbin, J. (1996). <i>Grounded Theory: Grundlagen Qualitativer Sozialforschung</i>. Beltz.",
+  braun: "Braun, V. & Clarke, V. (2006). Using thematic analysis in psychology. <i>Qualitative Research in Psychology, 3</i>(2), 77–101.",
+  bohnsack: "Bohnsack, R. (2014). <i>Rekonstruktive Sozialforschung. Einführung in qualitative Methoden</i> (9. Aufl.). Budrich.",
+  steinke: "Steinke, I. (1999). <i>Kriterien qualitativer Forschung</i>. Juventa.",
+  dresing: "Dresing, T. & Pehl, T. (2018). <i>Praxisbuch Interview, Transkription & Analyse</i> (8. Aufl.). Eigenverlag, Marburg.",
+  kruse: "Kruse, J. (2015). <i>Qualitative Interviewforschung. Ein integrativer Ansatz</i> (2. Aufl.). Beltz Juventa."
+};
+const IVLIT = { pzi: ["witzel"], exp_theo: ["bogner", "meuser"], exp_sys: ["bogner", "glaeser"], exp_expl: ["bogner"], narrativ: ["schuetze"], episodisch: ["flick"], fokussiert: ["merton"], leitfaden: ["helfferich", "kruse"], gruppe: ["bohnsack"] };
+
+/* ---------- 5. Oberfläche: Texte, Schaubild-Beschriftungen, Fahrplan ---------- */
+const IMG = "../../img/de/";
+const UI = {
+  lang: "de", other: { href: "../../assistant/", label: "EN", title: "English version" },
+  title: "jellyqda Assistenz", tagline: "Qualitativ forschen – Schritt für Schritt",
+  tabs: ["Start", "Kompass", "Grundlagen", "jellyqda", "Mehr"],
+  fit: ["eher nicht", "möglich", "passt gut"], rec: "empfohlen", toGoal: "zu deinem Ziel",
+  sup: ["nur unterstützend", "teilweise", "gut unterstützt"], supPre: "jellyqda: ",
+  back: "Zurück", next: "Weiter", copy: "Kopieren", copied: "Kopiert ✓", themeToggle: "Hell/Dunkel umschalten", textLabel: "Text",
+  shotMissing: "Screenshot erscheint auf der Projektseite",
+  steps: ["Ziel", "Interview", "Offenheit", "Logik", "Verfahren", "Fahrplan"],
+  komp: {
+    title: "Forschungs-Kompass", sub: "In fünf Schritten zu einem stimmigen Vorgehen", showPlan: "Fahrplan zeigen",
+    q: {
+      zi: ["Was willst du herausfinden?", "Wähle, was deinem Erkenntnisinteresse am nächsten kommt. Das ist nur ein Startpunkt – alles lässt sich später ändern."],
+      iv: ["Welche Art von Interview führst du?", "Tippe eine Form an, um mehr zu erfahren.", 'Mit <span class="fit r">empfohlen</span> markiert: was zu deinem Ziel passt.'],
+      st: ["Wie offen ist dein Interview?", "Bewertet für: "],
+      lg: ["Woher kommen deine Kategorien?", "Die Auswertungslogik. Bewertet nach Interviewform und Offenheit."],
+      pr: ["Mit welchem Verfahren wertest du aus?", "Sortiert nach Passung zu deiner Auswahl."]
+    }
+  },
+  det: { ivFor: "Naheliegende Interviewformen", lgFor: "Naheliegende Logik", after: "nach", wissen: "Welches Wissen?", ablauf: "Ablauf", achten: "Worauf achten",
+    ausw: "Was das für die Auswertung bedeutet", next: "Nächster Schritt", nextSt: "Wähle den Strukturierungsgrad. Für diese Form:", beispiel: "Beispielfrage",
+    seg: "Segmente in jellyqda", wann: "Wann sinnvoll", risiko: "Worauf achten", tools: "Passende jellyqda-Werkzeuge", steps: "Schritte", injq: "In jellyqda" },
+  plan: {
+    notAll: "Bitte erst alle Schritte auswählen.", title: "Dein Fahrplan", stimmig: "stimmig",
+    verdict: ["Hier knirscht es: Schau dir die roten Stellen am Faden an und überlege, ob eine andere Kombination besser passt.", "Grundsätzlich stimmig – an den gelben Stellen solltest du deine Wahl im Methodenteil begründen.", "Interviewform, Offenheit, Logik und Verfahren greifen gut ineinander."],
+    pdf: "Als PDF speichern (A4)", restart: "Neu starten", pdfHint: "Im Druckdialog „Als PDF speichern“ wählen. Das Layout ist für A4 vorbereitet.",
+    faden: "Der Faden deiner Entscheidungen", fadenLegend: 'Die Linie zwischen zwei Punkten zeigt, wie gut sie zusammenpassen: <span class="fit g">gut</span> <span class="fit o">begründen</span> <span class="fit b">überdenken</span>',
+    nodes: ["Ziel", "Interviewform", "Offenheit", "Auswertungslogik", "Verfahren"], change: "ändern",
+    goalOk: "Passt zu deinem Ziel.", goalNo: "Nicht die naheliegendste Form für dein Ziel – begründe die Wahl.",
+    achten: "⚠️ Worauf du achten solltest", sup0: (n) => "jellyqda unterstützt " + n + " nur als Werkzeug zum Markieren und Notieren – die sequenzielle Interpretation passiert außerhalb, am besten in einer Interpretationsgruppe.",
+    stepsT: "🪜 Schritte: ", jq: "🪼 Dein Weg in jellyqda", allSteps: "Alle Funktionen Schritt für Schritt mit Screenshots →",
+    method: "✍️ Baustein für den Methodenteil", methodNote: "Ein Startpunkt, kein fertiger Text. Platzhalter in [eckigen Klammern] ersetzen und mit Quellen belegen.",
+    lit: "📚 Zum Weiterlesen", litNote: "Auflagen bitte vor dem Zitieren prüfen.",
+    printTitle: "Forschungs-Fahrplan", printMade: "Erstellt mit der jellyqda Assistenz am ", printUrl: "thedivingshellyfish.github.io/jellyqda/de/assistenz/"
+  },
+  home: {
+    progress: "geschafft", heroDone: "Dein Fahrplan steht 🎉", heroNew: "Wo stehst du gerade?",
+    heroText: "Der Kompass führt dich von deiner Forschungsfrage über die Interviewform bis zum passenden Auswertungsverfahren – und zeigt, was das in jellyqda bedeutet.",
+    kpi: ["Grundlagen", "jellyqda-Schritte", "Checklisten"], start: " Kompass starten", cont: " Kompass fortsetzen", seePlan: " Fahrplan ansehen",
+    startWith: "Womit möchtest du anfangen?",
+    tiles: [["Forschungs-Kompass", "Interviewform, Offenheit, Logik, Verfahren – mit Passungs-Check und Fahrplan als A4-PDF."], ["Grundlagen", "Induktiv & deduktiv, Mayring, Kuckartz, Gütekriterien – mit Schaubildern und Mini-Quiz."], ["jellyqda Schritt für Schritt", "Von der Installation bis zum A4-Bericht – mit Screenshots und R-Code."], ["Checklisten", "Vor der Erhebung, Transkription, Analyse, Methodenteil."]],
+    faq: "Beliebte Fragen",
+    faqs: [["#/basics/logik", "🔁", "Induktiv oder deduktiv – was passt zu mir?", "mit interaktivem Schaubild"], ["#/basics/interviews", "🎙️", "Offen, halboffen, leitfadengestützt – was ist der Unterschied?", "Interviewformen im Überblick"], ["#/basics/verfahren", "🧭", "Mayring, Kuckartz oder Meuser & Nagel?", "Verfahren-Landkarte"], ["#/basics/mayring", "🪜", "Wie geht Paraphrase → Generalisierung → Reduktion?", "zum Durchklicken"], ["#/more/glossar", "🔤", "Was heißt eigentlich …?", " Begriffe im Glossar"]]
+  },
+  foot: 'jellyqda ist frei (MIT) und läuft komplett offline · <a href="../">Projektseite</a> · <a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a> · <a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/docs/wiki/de/Home.md">Wiki</a> · <a href="#/more/set">Datenschutz</a>',
+  basics: { title: "Grundlagen", read: (a, b) => a + " von " + b + " gelesen", quiz: "Quiz", quizT: "🎯 Kurz geprüft", right: "Richtig! ", wrong: "Nicht ganz. ", mark: " Als gelesen markieren", isRead: " Gelesen", good: "Gut gemacht ✓", crumb: "Grundlagen" },
+  tour: { title: "jellyqda Schritt für Schritt", done: (a, b) => a + " von " + b + " erledigt", step: "Schritt", asR: "Dasselbe als R-Code:", tip: "Tipp", isDone: " Erledigt", doneNext: " Erledigt & weiter",
+    more: 'Ausführlich mit allen Details: <a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/docs/wiki/de/Home.md">Wiki</a> · <a href="../../dev/reference/">R-Referenz</a>',
+    tags: { start: ["n", "Grundlagen"], beide: ["mix", "induktiv & deduktiv"], de: ["de", "eher deduktiv"], in: ["in", "eher induktiv"] } },
+  more: { title: "Mehr", sub: "Checklisten, Glossar, Literatur, Datenschutz & Einstellungen", tabs: [["check", "Checklisten"], ["glossar", "Glossar"], ["lit", "Literatur"], ["set", "Daten & Einstellungen"]],
+    search: "Begriff suchen …", noHit: "Kein Treffer.", litHint: "Eine Auswahl zum Einstieg. Auflagen bitte vor dem Zitieren prüfen.",
+    theme: "Darstellung", themeSub: "Hell, dunkel oder wie dein System", themes: [["auto", "Auto"], ["light", "Hell"], ["dark", "Dunkel"]],
+    wipe: "Gespeicherte Daten löschen", wipeSub: "Kompass-Auswahl, Quiz, Checklisten und erledigte Schritte aus diesem Browser entfernen", wipeBtn: " Löschen",
+    wipeQ: "Wirklich alle gespeicherten Daten dieser Seite aus deinem Browser löschen?", wiped: "Gelöscht",
+    privT: "🔒 Wo deine Daten liegen",
+    priv: "<p>Diese Seite <b>setzt keine Cookies</b> und hat <b>kein Tracking</b>. Damit dein Fortschritt beim nächsten Besuch noch da ist, speichert sie ihn im <b>lokalen Speicher deines Browsers</b> (<code>localStorage</code>) – technisch ähnlich wie ein Cookie, aber er wird nie an einen Server geschickt.</p><p>Gespeichert werden nur: deine Auswahl im Kompass, Quiz-Antworten, abgehakte Checklisten und Schritte sowie die Darstellung (hell/dunkel). Keine Namen, keine Forschungsdaten.</p><p>Die Daten bleiben auf diesem Gerät und in diesem Browser. Im privaten Fenster werden sie beim Schließen verworfen. Löschen kannst du sie jederzeit hier unten oder über die Browser-Einstellungen („Websitedaten löschen“).</p>",
+    noStore: "Dein Browser erlaubt gerade keinen lokalen Speicher (z. B. privates Fenster). Die Seite funktioniert trotzdem, vergisst den Fortschritt aber beim Schließen."
+  },
+  notice: { t: "Keine Cookies, kein Tracking.", d: "Dein Fortschritt wird nur lokal in deinem Browser gespeichert.", ok: "Verstanden", more: "Mehr dazu" },
+  check: { tot: "Checklisten" }
+};
+
+const VISTX = {
+  quali: { head: ["", "qualitativ", "quantitativ"], rows: [["Ziel", "verstehen, rekonstruieren", "messen, erklären, prüfen"], ["Daten", "Texte, Bilder, Beobachtungen", "Zahlen, standardisierte Antworten"], ["Stichprobe", "klein, gezielt ausgewählt", "groß, möglichst zufällig"], ["Vorgehen", "offen, zirkulär", "standardisiert, linear"], ["Verallgemeinerung", "auf Theorie / Typen", "auf eine Population"]] },
+  logik: { layers: [["Theorie & Vorwissen", "Forschungsstand, Leitfaden"], ["Kategorien", "Codes & Subcodes"], ["Material", "Transkripte, Notizen"]],
+    l: { ableiten: "ableiten", anwenden: "anwenden", buendeln: "bündeln", verall: "verallgemeinern", haupt: ["Haupt-", "kategorien"], sub: ["Sub-", "kategorien"], schaerfen: "schärfen", ab1: "Überraschung → Hypothese", ab2: "am Material prüfen" },
+    aria: "Schaubild ",
+    txt: { de: "<b>Deduktiv:</b> Die Theorie gibt Kategorien vor, du wendest sie mit einem Kodierleitfaden auf das Material an.", in: "<b>Induktiv:</b> Aus Textstellen werden Codes, aus Codes Kategorien, aus Kategorien Konzepte.", mix: "<b>Deduktiv-induktiv:</b> Hauptkategorien kommen aus Theorie oder Leitfaden (blau), Subkategorien entstehen am Material (violett).", ab: "<b>Abduktiv:</b> Ein überraschender Befund verlangt eine neue Erklärung, die du am Material prüfst – ein Kreislauf." } },
+  spek: { axis: ["offen", "halboffen", "strukturiert"], cap: "Punkt = typischer Strukturierungsgrad, gestrichelt = üblicher Spielraum.", wissen: "Wissen:", take: " Im Kompass übernehmen" },
+  karte: { aria: "Landkarte der Auswertungsverfahren", x: ["◀ deduktiv", "induktiv ▶"], y: ["beschreibend ▶", "◀ rekonstruktiv"], cap: "Tippe auf einen Punkt, um das Verfahren zu sehen." },
+  prozess: { P: [["Fragestellung & Vorwissen", "Frage präzisieren, Vorwissen offenlegen", "Projekt-Memo"], ["Sampling & Feldzugang", "Wer, wie viele, warum?", ""], ["Leitfaden & Pretest", "SPSS-Prinzip, Probeinterview", ""], ["Erhebung", "Interview + Postskript", "Dokument-Memo"],
+      ["Transkription", "Regeln, Pseudonymisierung, Zeitmarken", ""], ["Import & Segmente", "Text einfrieren, Variablen", "Import"], ["Kodieren & Kategorien", "deduktiv / induktiv", "Codebaum, Kodierleitfaden"], ["Interpretieren", "Memos, Zusammenfassungen", "Memos, Mayring, Summary Grid"],
+      ["Fallübergreifend analysieren", "Vergleiche, Muster, Typen", "Matrix, Fallvergleich, KWIC"], ["Bericht & Methodenteil", "belegen, dokumentieren", "Bericht, Protokoll, Codebuch"]],
+    loop: "↻ Bei Grounded Theory wechseln sich Erhebung und Auswertung ab (theoretisches Sampling)." },
+  baum: { T: [["#E69F00", "Berufsweg", 12, [["KMU", 7], ["Konzern", 4]]], ["#009E73", "Teamklima", 18, [["Unterstützung", 11], ["Konflikte", 5]]], ["#CC79A7", "Motivation", 9, [["intrinsisch", 6], ["extrinsisch", 3]]]],
+    cap: "So sieht der Codebaum in jellyqda aus: Hauptcode voll gefärbt, Subcodes mit Rahmen am farbigen Faden. Σ zählt die Codings inklusive Subcodes." },
+  mayring: { D: [["„Also ich war fünf Jahre in so ’nem kleinen Betrieb, da musste man halt alles machen, von Buchhaltung bis Kundengespräch.“", "Fünf Jahre im Kleinbetrieb, musste alle Aufgaben übernehmen", "Breites Aufgabenspektrum im KMU", 0],
+      ["„Was mir wirklich gefehlt hat, war jemand, den man mal fragen kann, so ’ne Mentorin oder so.“", "Hat eine Ansprechperson/Mentorin vermisst", "Fehlende Unterstützung durch Mentoring", 1],
+      ["„Bei uns im Team, da hilft jeder jedem, das ist echt das, was mich hält.“", "Gegenseitige Hilfe im Team hält sie im Job", "Team als Bindungsfaktor", 2],
+      ["„Ehrlich gesagt, ohne die Kolleginnen wär ich längst weg.“", "Würde ohne Kolleginnen kündigen", "Team als Bindungsfaktor", 2]],
+    K: [["Aufgabenvielfalt im KMU", "#E69F00"], ["Unterstützungsbedarf", "#56B4E9"], ["Team als Bindungsfaktor", "#009E73"]],
+    L: ["Original", "Paraphrase", "Generalisierung", "Reduktion"], th: ["Textstelle", "Paraphrase", "Generalisierung", "Kategorie"],
+    cap: ["Vier Textstellen aus einem (fiktiven) Interview.", "Z1 Paraphrase: Inhalt knapp in eigenen Worten, ohne Ausschmückungen.", "Z2 Generalisierung: auf ein einheitliches Abstraktionsniveau heben. Die beiden letzten Stellen werden gleich!", "Z3/Z4 Reduktion: Bedeutungsgleiches streichen, Ähnliches bündeln – aus vier Stellen werden drei Kategorien. In jellyqda: das sind deine Codes."] },
+  kreis: { P: [["Initiierende Textarbeit", "Lesen, wichtige Stellen markieren, Memos und erste Fallzusammenfassungen schreiben.", "Memos, Dokument-Memos"], ["Hauptkategorien entwickeln", "Meist aus Forschungsfrage, Theorie und Leitfaden.", "+ Code, Kodierleitfaden"], ["Erster Kodierprozess", "Das gesamte Material mit den Hauptkategorien kodieren.", "Kodier-Leiste, Strg+1…9"],
+      ["Subkategorien induktiv bilden", "Alle Stellen einer Hauptkategorie zusammenstellen und Subkategorien am Material bilden.", "Codings eines Codes, + Subcode, In vivo"], ["Zweiter Kodierprozess", "Das Material mit dem ausdifferenzierten System erneut kodieren.", "Umkodieren in der Coding-Leiste"],
+      ["Einfache & komplexe Analysen", "Kategorienbasiert, fallbezogen, Zusammenhänge, Fallvergleiche.", "Matrix, Fallvergleich, Summary Grid"], ["Verschriftlichen & dokumentieren", "Ergebnisse darstellen, Vorgehen nachvollziehbar machen.", "Bericht, Codebuch, Protokoll"]],
+    center: ["Forschungs-", "frage(n)"], phase: "Phase ", aria: "Sieben Phasen nach Kuckartz" },
+  transkript: '<div class="transcript">' +
+    '<div><span class="ts">[00:01:12]</span> <span class="sp">I:</span> Erzählen Sie doch mal, wie Sie zu <span class="ps">[Firma A]</span> gekommen sind.</div>' +
+    '<div><span class="ts">[00:01:20]</span> <span class="sp">B3:</span> Ja, also (.) das war eigentlich Zufall. <span class="pa">(lacht)</span> Ich hab in <span class="ps">[Stadt B]</span> studiert und …</div>' +
+    '<div><span class="ts">[00:02:47]</span> <span class="sp">I:</span> Wie war das dann am Anfang im Team?</div></div>' +
+    '<div class="cap"><span style="color:var(--accent2)">■</span> Zeitmarke &nbsp; <span style="color:var(--accent)">■</span> Sprecherkürzel – daraus bildet jellyqda mit <code>segments = "speaker"</code> je Redebeitrag ein Segment. &nbsp; <span style="color:var(--warn)">■</span> Pseudonym in eckigen Klammern.</div>'
+};
+
+function PRWHY(sel, p) {
+  const out = [];
+  if (sel.lg) {
+    const v = PR[p].lg[sel.lg], n = LG[sel.lg].name;
+    out.push(v === 2 ? "Arbeitet " + n.toLowerCase() + " – passt zu deiner Logik." : v === 1 ? "Lässt sich " + n.toLowerCase() + " anwenden, ist aber nicht der Kern des Verfahrens." : "Arbeitet anders als deine gewählte Logik (" + n + ").");
+  }
+  if (sel.iv) {
+    const iv = IV[sel.iv];
+    out.push(iv.good.includes(p) ? "Wird bei der Form „" + iv.name + "“ häufig genutzt." : iv.ok.includes(p) ? "Bei der Form „" + iv.name + "“ möglich – begründe die Wahl im Methodenteil." : "Bei der Form „" + iv.name + "“ eher unüblich.");
+  }
+  return out.join(" ");
+}
+
+function PLAN(sel) {
+  const st = ST[sel.st], L = [];
+  L.push({ t: "Projekt anlegen & Vorwissen festhalten", d: "Bevor du kodierst: ein Projekt-Memo „Mein Vorwissen & Annahmen“. Das ist die Basis für reflektierte Subjektivität.", r: 'library(jellyqda)\nqda_open("meine-arbeit.jellyqda")\nqda_memo_add("Vorwissen: …", title = "Mein Vorwissen")' });
+  L.push({ t: "Transkripte importieren", d: "Segmente nach " + (st.segmode === "speaker" ? "Sprecherwechsel" : "Absätzen") + ". Variablen (z. B. Rolle) gleich mit anlegen; Postskripte als Dokument-Memos.", r: 'qda_import(c("interview_01.docx", "interview_02.docx"), segments = "' + st.segmode + '")\nqda_source_set_var(1, "Rolle", "…")' });
+  if (sel.lg === "de") {
+    L.push({ t: "Kategoriensystem aus der Theorie anlegen", d: "Hauptkategorien und ggf. Ausprägungen als Subcodes. Eine Restkategorie „Sonstiges“ für Unerwartetes.", r: 'qda_code_add("Kategorie A")\nqda_code_add("Ausprägung 1", parent = "Kategorie A")\nqda_code_add("Sonstiges")' });
+    L.push({ t: "Kodierleitfaden schreiben", d: "Definition, Ankerbeispiel, Kodierregel für jede Kategorie (Buch-Symbol).", r: 'qda_code_guide("Kategorie A", definition = "…", rule = "…")' });
+    L.push({ t: "Probedurchlauf & Überarbeitung", d: "10–50 % des Materials kodieren, Kategorien und Regeln schärfen. Änderungen in einem Code-Memo begründen." });
+    L.push({ t: "Hauptdurchlauf", d: "Alles kodieren. Suchtreffer-Codieren nur mit anschließender Durchsicht." });
+  } else if (sel.lg === "in") {
+    L.push({ t: "Initiierende Textarbeit", d: "Erstes Interview langsam lesen, Auffälliges als Textstellen-Memo (Strg+M)." });
+    L.push({ t: "Offen kodieren", d: "Textnah benennen, gern In vivo. Noch nicht zu früh ordnen." });
+    if (["mayring_z", "meuser", "glaeser"].includes(sel.pr)) L.push({ t: "Paraphrasieren & generalisieren", d: "Analyse → Zusammenfassung (Mayring): Paraphrase und Generalisierung je Coding.", r: 'qda_coding_set_summary(1, paraphrase = "…", generalization = "…")' });
+    L.push({ t: "Verdichten", d: "Nach jedem zweiten/dritten Interview: umbenennen, als Subcode umhängen, zusammenführen. Code-Memos mit Definitionen.", r: 'qda_code_move("Code", parent = "Oberkategorie")\nqda_code_merge("Code alt", into = "Code neu")' });
+    L.push({ t: "Gegenprüfen mit Wortlisten", d: "Worthäufigkeiten und Stichwort im Kontext zeigen Feldbegriffe und Zusammenhänge.", r: 'qda_words(n = 30)\nqda_kwic("Begriff")' });
+  } else if (sel.lg === "mix") {
+    L.push({ t: "Hauptkategorien anlegen", d: "Aus Forschungsfrage und Leitfaden – deduktiv. Im Code-Memo vermerken: „vorab gebildet“.", r: 'qda_code_add("Thema aus Leitfaden-Block 1")\nqda_code_add("Thema aus Leitfaden-Block 2")' });
+    L.push({ t: "Erster Kodierdurchlauf", d: "Ganzes Material grob mit den Hauptkategorien kodieren (Strg+1…9)." });
+    L.push({ t: "Subkategorien am Material bilden", d: "Codings einer Hauptkategorie durchsehen, Subcodes bilden (In vivo, + Subcode). Im Code-Memo: „induktiv gebildet“." });
+    L.push({ t: "Kodierleitfaden & zweiter Durchlauf", d: "Leitfaden für das finale System, dann umkodieren in der Coding-Leiste.", r: 'qda_code_guide("Subkategorie", definition = "…", rule = "…")\nqda_coding_recode(12, "Subkategorie")' });
+  } else {
+    L.push({ t: "Sequenzen markieren", d: "Codes als Lesezeichen nutzen (z. B. „Erzählung“, „Argumentation“, „Eingangspassage“) – nicht als Ergebnis." });
+    L.push({ t: "Interpretieren in Memos", d: "Jede Interpretation als Textstellen-Memo direkt an der Sequenz." });
+    L.push({ t: "Interpretationsgruppe vorbereiten", d: "Bericht mit Randspalte drucken (A4) – Nummern im Text, Memos am Rand." });
+  }
+  if (["kuckartz_s", "flick", "kuckartz_t"].includes(sel.pr)) L.push({ t: "Fallzusammenfassungen", d: "Summary Grid: je Kategorie und Fall eine thematische Zusammenfassung.", r: 'qda_summary_set("Hauptkategorie", 1, "…")' });
+  L.push({ t: "Fallübergreifend auswerten", d: "Code-Matrix, Fallvergleich nach Variablen, Zitate sammeln.", r: 'qda_matrix()\nqda_case_matrix("Rolle")\nqda_segments("Kategorie A")' });
+  L.push({ t: "Dokumentieren", d: "Bericht, Codebuch und Protokoll für Anhang und Methodenteil; Backup an zweitem Ort.", r: 'qda_export("all")\nqda_export("audit")\nqda_backup()' });
+  return L;
+}
+
+function METHOD(sel) {
+  const iv = IV[sel.iv], st = ST[sel.st], pr = PR[sel.pr];
+  const lgTxt = { de: "deduktiv; die Kategorien wurden vorab aus [Theorie/Forschungsstand] abgeleitet und in einem Kodierleitfaden mit Definitionen, Ankerbeispielen und Kodierregeln festgehalten", in: "induktiv; die Kategorien wurden schrittweise am Material entwickelt und regelmäßig verdichtet", mix: "deduktiv-induktiv; Hauptkategorien wurden aus [Leitfaden/Theorie] abgeleitet, Subkategorien induktiv am Material gebildet", ab: "rekonstruktiv; die Interviews wurden sequenziell interpretiert, Codes dienten der Strukturierung des Materials" }[sel.lg];
+  return "Die Daten wurden in [N] Interviews erhoben, geführt als " + iv.name + " (nach " + iv.by + "). " +
+    "Die Interviews waren " + st.name.toLowerCase().replace(" (", ", ").replace(")", "") + " angelegt und dauerten zwischen [x] und [y] Minuten. " +
+    "Sie wurden aufgezeichnet, nach [Transkriptionsregeln] transkribiert und pseudonymisiert. " +
+    "Die Auswertung erfolgte " + lgTxt + ", orientiert an der " + pr.name + " nach " + pr.by + ". " +
+    "Kodiert wurde computergestützt mit dem R-Paket jellyqda (Version 0.7.0). Kodierleitfaden, Memos und ein vollständiges Änderungsprotokoll der Analyse sind im Anhang dokumentiert.";
+}
+
+/* ---------- Zustand (nur localStorage, keine Cookies) ---------- */
+const KEY = "jellyqda-assistenz-v1";
+const DEF = () => ({ theme: null, sel: {}, step: 0, read: {}, quiz: {}, tour: {}, check: {}, notice: false });
+let S = DEF(), CAN_STORE = true;
+try { S = Object.assign(DEF(), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { CAN_STORE = false; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { CAN_STORE = false; } }
+function wipe() { try { localStorage.removeItem(KEY); } catch (e) {} const t = S.theme; S = DEF(); S.theme = t; S.notice = true; }
+
+function applyTheme() {
+  const sys = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  const th = S.theme || sys;
+  document.documentElement.setAttribute("data-theme", th);
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", th === "light" ? "#f5f6fb" : "#0b1020");
+}
+
+/* ---------- Helfer ---------- */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const I = (p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + "</svg>";
+const ICON = {
+  home: I('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'),
+  compass: I('<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'),
+  book: I('<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V4.5"/>'),
+  jelly: I('<path d="M5 12a7 7 0 0 1 14 0c0 .8-.6 1.3-1.3 1.3H6.3C5.6 13.3 5 12.8 5 12z"/><path d="M8 14c0 3-1.5 4-1.5 6M11 14c0 3 1 4 0 7M14 14c0 3-1 4 0 7M17 14c0 3 1.5 4 1.5 6"/>'),
+  more: I('<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'),
+  back: I('<path d="M15 18 9 12l6-6"/>'), chev: I('<path d="m9 6 6 6-6 6"/>'), right: I('<path d="m9 18 6-6-6-6"/>'), left: I('<path d="m15 18-6-6 6-6"/>'),
+  check: I('<path d="M20 6 9 17l-5-5"/>'), copy: I('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>'),
+  search: I('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  pdf: I('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6M9 15l3 3 3-3"/>'),
+  sun: I('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  moon: I('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'), reset: I('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
+  lock: I('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')
+};
+const LOGO = '<svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient><linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+  '<rect width="64" height="64" rx="18" fill="url(#lg)"/><rect width="64" height="64" rx="18" fill="url(#gl)"/><path d="M16 32c0-9 7-16 16-16s16 7 16 16c0 2-1.5 3-3 3H19c-1.5 0-3-1-3-3z" fill="#fff"/>' +
+  '<path d="M22 37c0 6-3 8-3 12M28 37c0 6 2 8 0 13M36 37c0 6-2 8 0 13M42 37c0 6 3 8 3 12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+  '<circle cx="27" cy="27" r="2.3" fill="#4c3fb0"/><circle cx="37" cy="27" r="2.3" fill="#4c3fb0"/><path d="M29.5 30.5q2.5 2 5 0" stroke="#4c3fb0" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+const FITC = ["b", "o", "g"];
+const fitTag = (f) => f == null ? "" : '<span class="fit ' + FITC[f] + '">' + UI.fit[f] + "</span>";
+const box = (k, em, t, d) => '<div class="box ' + k + '"><span>' + em + "</span><div><b>" + t + "</b>" + d + "</div></div>";
+const head = (t, sub, back) => '<div class="pagehead">' + (back ? '<a class="iconbtn" href="' + back + '" aria-label="' + UI.back + '">' + ICON.back + "</a>" : "") +
+  '<div style="flex:1;min-width:0"><h2>' + t + "</h2>" + (sub ? '<div class="sub">' + sub + "</div>" : "") + "</div></div>";
+function ring(p) {
+  const r = 32, c = 2 * Math.PI * r;
+  return '<svg viewBox="0 0 78 78"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent2)"/></linearGradient></defs><circle cx="39" cy="39" r="' + r + '" stroke="var(--line)" stroke-width="8" fill="none"/>' +
+    (p > 0 ? '<circle cx="39" cy="39" r="' + r + '" stroke="url(#rg)" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="' + (c * p).toFixed(1) + " " + c.toFixed(1) + '"/>' : "") + "</svg>";
+}
+const codeStore = [];
+function hlR(code) {
+  return esc(code).replace(/(#.*)$/gm, '<span class="c-com">$1</span>')
+    .replace(/(&quot;[^&]*?&quot;)/g, '<span class="c-str">$1</span>')
+    .replace(/\b(qda_\w+|library|source)\(/g, '<span class="c-fn">$1</span>(');
+}
+function codeBox(code, label, prose) {
+  const id = codeStore.push(code) - 1;
+  return '<div class="codebox"><div class="codebar"><span class="lang">' + (label || "R") + '</span><button data-act="copy" data-id="' + id + '">' + ICON.copy + " " + UI.copy + "</button></div>" +
+    '<pre class="' + (prose ? "prose" : "") + '">' + (prose ? esc(code) : hlR(code)) + "</pre></div>";
+}
+const shot = (f, cap) => '<figure class="shot" data-missing="' + esc(UI.shotMissing) + '"><img src="' + IMG + f + '" alt="' + esc(cap) + '" loading="lazy" onerror="this.parentNode.classList.add(\'noimg\')"><figcaption>' + cap + "</figcaption></figure>";
+const lgTag = (k) => '<span class="tag ' + LG[k].cls + '">' + LG[k].name + "</span>";
+const supTag = (s) => '<span class="fit ' + FITC[s] + '">' + UI.supPre + UI.sup[s] + "</span>";
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 1800); }
+
+/* ---------- Passung ---------- */
+function fitSt(sel, s) { return sel.iv ? IV[sel.iv].st[s] : null; }
+function fitLg(sel, l) {
+  const f = [];
+  if (sel.iv) f.push(IV[sel.iv].lg[l]);
+  if (sel.st) f.push(ST[sel.st].lg[l]);
+  return f.length ? Math.min.apply(null, f) : null;
+}
+function fitPr(sel, p) {
+  const f = [];
+  if (sel.iv) f.push(IV[sel.iv].good.includes(p) ? 2 : IV[sel.iv].ok.includes(p) ? 1 : 0);
+  if (sel.lg) f.push(PR[p].lg[sel.lg]);
+  return f.length ? Math.min.apply(null, f) : null;
+}
+const STEPS = ["zi", "iv", "st", "lg", "pr", "plan"];
+function links(sel) {
+  return {
+    iv: sel.zi && sel.iv ? (ZI[sel.zi].iv.includes(sel.iv) ? 2 : 1) : null,
+    st: sel.iv && sel.st ? fitSt(sel, sel.st) : null,
+    lg: sel.iv && sel.lg ? fitLg(sel, sel.lg) : null,
+    pr: sel.pr ? fitPr(sel, sel.pr) : null
+  };
+}
+function score(sel) {
+  const v = Object.values(links(sel)).filter((x) => x != null);
+  if (!v.length) return null;
+  return v.reduce((a, b) => a + b, 0) / (2 * v.length) * (Math.min.apply(null, v) === 0 ? .6 : 1);
+}
+
+/* ---------- Visualisierungen ---------- */
+const VS = { logik: "mix", spek: null, karte: null, may: 0, kreis: 0, gq: "" };
+function vis(name) { return '<div class="vis" id="vis-' + name + '">' + VIS[name]() + "</div>"; }
+function rerenderVis(name) { const el = document.getElementById("vis-" + name); if (el) el.innerHTML = VIS[name](); }
+const arrowDefs = "<defs>" + ["de", "in", "mix", "ab"].map((k) => '<marker id="ar-' + k + '" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="var(--' + k + ')"/></marker>').join("") + "</defs>";
+const VIS = {
+  quali: () => { const X = VISTX.quali; return '<div class="tblwrap"><table class="tbl"><tr>' + X.head.map((h) => "<th>" + h + "</th>").join("") + "</tr>" +
+    X.rows.map((r) => "<tr><td><b>" + r[0] + "</b></td><td>" + r[1] + '</td><td class="muted">' + r[2] + "</td></tr>").join("") + "</table></div>"; },
+  logik: () => {
+    const m = VS.logik, X = VISTX.logik, l = X.l;
+    const lay = (y, t) => '<rect class="svgbox" x="70" y="' + y + '" width="200" height="40" rx="12"/><text class="svgt" x="170" y="' + (y + 19) + '" text-anchor="middle">' + t[0] + '</text><text class="svgs" x="170" y="' + (y + 32) + '" text-anchor="middle">' + t[1] + "</text>";
+    const ar = (x1, y1, x2, y2, k, lbl, lx, anchor) => '<path d="M' + x1 + " " + y1 + " L" + x2 + " " + y2 + '" stroke="var(--' + k + ')" stroke-width="3" marker-end="url(#ar-' + k + ')"/>' + (lbl ? '<text class="svgs" x="' + lx + '" y="' + ((y1 + y2) / 2 + 4) + '" text-anchor="' + anchor + '" style="fill:var(--' + k + ')">' + lbl + "</text>" : "");
+    let a = "";
+    if (m === "de") a = ar(170, 62, 170, 106, "de", l.ableiten, 180, "start") + ar(170, 152, 170, 196, "de", l.anwenden, 180, "start");
+    if (m === "in") a = ar(170, 196, 170, 152, "in", l.buendeln, 180, "start") + ar(170, 106, 170, 62, "in", l.verall, 180, "start");
+    if (m === "mix") a = ar(120, 62, 120, 106, "de", l.haupt[0], 110, "end") + '<text class="svgs" x="110" y="98" text-anchor="end" style="fill:var(--de)">' + l.haupt[1] + "</text>" + ar(120, 152, 120, 196, "de", l.anwenden, 110, "end") +
+      ar(220, 196, 220, 152, "in", l.sub[0], 230, "start") + '<text class="svgs" x="230" y="188" text-anchor="start" style="fill:var(--in)">' + l.sub[1] + "</text>" + ar(220, 106, 220, 62, "in", l.schaerfen, 230, "start");
+    if (m === "ab") a = '<path d="M275 216 C330 200 330 40 275 22" stroke="var(--ab)" stroke-width="3" fill="none" marker-end="url(#ar-ab)"/><path d="M65 22 C10 40 10 200 65 216" stroke="var(--ab)" stroke-width="3" fill="none" marker-end="url(#ar-ab)"/>' +
+      '<text class="svgs" x="318" y="122" text-anchor="middle" style="fill:var(--ab)" transform="rotate(-90 318 122)">' + l.ab1 + '</text><text class="svgs" x="22" y="122" text-anchor="middle" style="fill:var(--ab)" transform="rotate(-90 22 122)">' + l.ab2 + "</text>";
+    return '<div class="seg" role="tablist">' + ["de", "in", "mix", "ab"].map((k) => '<button data-act="vis-logik" data-k="' + k + '" class="' + (m === k ? "on" : "") + '">' + LG[k].name + "</button>").join("") + "</div>" +
+      '<svg viewBox="0 0 340 240" role="img" aria-label="' + X.aria + LG[m].name + '">' + arrowDefs + lay(20, X.layers[0]) + lay(110, X.layers[1]) + lay(196, X.layers[2]) + a + "</svg>" +
+      '<div class="cap">' + X.txt[m] + "</div>";
+  },
+  spektrum: () => {
+    const X = VISTX.spek, ids = Object.keys(IV).sort((a, b) => (IV[a].pos[0] + IV[a].pos[1]) - (IV[b].pos[0] + IV[b].pos[1]));
+    let h = '<div class="spaxis"><span></span><div>' + X.axis.map((t) => "<span>" + t + "</span>").join("") + "</div></div>";
+    ids.forEach((k) => {
+      const iv = IV[k], c = (iv.pos[0] + iv.pos[1]) / 2;
+      h += '<button class="sprow' + (VS.spek === k ? " on" : "") + '" data-act="vis-spek" data-k="' + k + '"><b>' + iv.em + " " + iv.name + '</b><span class="track"><s style="left:' + (iv.pos[0] * 100) + "%;width:" + ((iv.pos[1] - iv.pos[0]) * 100) + '%"></s><i style="left:' + (c * 100) + '%"></i></span></button>';
+    });
+    h += '<div class="cap">' + X.cap + "</div>";
+    if (VS.spek) {
+      const iv = IV[VS.spek];
+      h += '<div class="panel detail" style="margin:10px 0 0"><h3>' + iv.em + " " + iv.name + '</h3><p class="small muted" style="margin:0 0 8px">' + iv.by + "</p><p>" + iv.short + '</p><p class="small"><b>' + X.wissen + "</b> " + iv.wissen + "</p>" +
+        '<a class="btn small primary" href="#/compass" data-act="pick-iv" data-k="' + VS.spek + '">' + ICON.compass + X.take + "</a></div>";
+    }
+    return h;
+  },
+  karte: () => {
+    const X = VISTX.karte, px = (x) => 34 + x * 280, py = (y) => 262 - y * 236;
+    let s = '<svg viewBox="0 0 340 300" role="img" aria-label="' + X.aria + '">' +
+      '<defs><linearGradient id="kx" x1="0" x2="1"><stop offset="0" stop-color="var(--de)" stop-opacity=".18"/><stop offset="1" stop-color="var(--in)" stop-opacity=".18"/></linearGradient></defs>' +
+      '<rect x="34" y="26" width="280" height="236" rx="12" fill="url(#kx)" stroke="var(--line)"/>' +
+      '<line x1="174" y1="26" x2="174" y2="262" stroke="var(--line2)" stroke-dasharray="4 4"/><line x1="34" y1="144" x2="314" y2="144" stroke="var(--line2)" stroke-dasharray="4 4"/>' +
+      '<text class="svgs" x="34" y="282">' + X.x[0] + '</text><text class="svgs" x="314" y="282" text-anchor="end">' + X.x[1] + "</text>" +
+      '<text class="svgs" x="18" y="262" transform="rotate(-90 18 262)">' + X.y[0] + '</text><text class="svgs" x="18" y="26" text-anchor="end" transform="rotate(-90 18 26)">' + X.y[1] + "</text>";
+    const sel = S.sel.pr;
+    Object.keys(PR).forEach((k) => {
+      const p = PR[k], x = px(p.x), y = py(p.y), on = VS.karte === k || (!VS.karte && sel === k);
+      const col = ["var(--bad)", "var(--warn)", "var(--good)"][p.sup];
+      s += '<g data-act="vis-karte" data-k="' + k + '" style="cursor:pointer"><circle cx="' + x + '" cy="' + y + '" r="16" fill="transparent"/>' +
+        (on ? '<circle cx="' + x + '" cy="' + y + '" r="11" fill="none" stroke="var(--text)" stroke-width="2"/>' : "") +
+        '<circle cx="' + x + '" cy="' + y + '" r="6.5" fill="' + col + '" stroke="var(--card)" stroke-width="2"/>' +
+        '<text class="svgt" style="font-size:10.5px" x="' + (x + (p.la === "l" ? -11 : 11)) + '" y="' + (y + 4) + '" text-anchor="' + (p.la === "l" ? "end" : "start") + '">' + p.short + "</text></g>";
+    });
+    s += '</svg><div class="chips small" style="gap:12px;margin-top:4px">' + [2, 1, 0].map((i) => '<span class="fit ' + FITC[i] + '">' + UI.sup[i] + "</span>").join("") + "</div>";
+    const k = VS.karte || sel;
+    return s + (k ? prCard(k, true) : '<div class="cap">' + X.cap + "</div>");
+  },
+  prozess: () => {
+    const X = VISTX.prozess;
+    return '<ul class="steps">' + X.P.map((p, i) => "<li><b>" + p[0] + "</b><small>" + p[1] + "</small>" + (p[2] ? '<span class="tag n" style="margin-top:4px">🪼 ' + p[2] + "</span>" : "") +
+      (i === 3 ? '<div class="small" style="color:var(--ab);margin-top:6px">' + X.loop + "</div>" : "") + "</li>").join("") + "</ul>";
+  },
+  baum: () => {
+    const X = VISTX.baum;
+    return '<ul class="tree">' + X.T.map((c) => '<li style="--fc:' + c[0] + '"><span class="cf">' + c[1] + '</span><span class="n">Σ ' + c[2] + "</span><ul>" + c[3].map((s) => "<li><span>" + s[0] + '</span><span class="n">' + s[1] + "</span></li>").join("") + "</ul></li>").join("") + "</ul>" +
+      '<div class="cap">' + X.cap + "</div>";
+  },
+  mayring: () => {
+    const X = VISTX.mayring, n = VS.may;
+    let h = '<div class="seg">' + X.L.map((l, i) => '<button data-act="vis-may" data-k="' + i + '" class="' + (n === i ? "on" : "") + '">' + (i + 1) + ". " + l + "</button>").join("") + "</div>";
+    h += '<div class="tblwrap mt"><table class="tbl mtable"><tr>' + X.th.slice(0, n + 1).map((t) => "<th>" + t + "</th>").join("") + "</tr>";
+    X.D.forEach((d) => {
+      h += "<tr><td>" + d[0] + "</td>" + (n >= 1 ? '<td class="' + (n === 1 ? "new" : "") + '">' + d[1] + "</td>" : "") + (n >= 2 ? '<td class="' + (n === 2 ? "new" : "") + '">' + d[2] + "</td>" : "") +
+        (n >= 3 ? '<td class="new"><span class="mcat" style="background:' + X.K[d[3]][1] + '">' + X.K[d[3]][0] + "</span></td>" : "") + "</tr>";
+    });
+    return h + '</table></div><div class="cap">' + X.cap[n] + "</div>";
+  },
+  kreis: () => {
+    const X = VISTX.kreis, P = X.P, cx = 170, cy = 150, R = 112, sel = VS.kreis;
+    let s = '<svg viewBox="0 0 340 300" role="img" aria-label="' + X.aria + '">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="var(--line2)" stroke-width="2" stroke-dasharray="3 5"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="48" fill="color-mix(in srgb, var(--accent) 22%, var(--card))" stroke="var(--accent)" stroke-width="2"/>' +
+      '<text class="svgt" x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle">' + X.center[0] + '</text><text class="svgt" x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle">' + X.center[1] + "</text>";
+    P.forEach((p, i) => {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / 7, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), on = i === sel;
+      s += '<line x1="' + (cx + 50 * Math.cos(a)) + '" y1="' + (cy + 50 * Math.sin(a)) + '" x2="' + (cx + (R - 22) * Math.cos(a)) + '" y2="' + (cy + (R - 22) * Math.sin(a)) + '" stroke="' + (on ? "var(--accent)" : "var(--line2)") + '" stroke-width="' + (on ? 2.5 : 1.5) + '"/>' +
+        '<g data-act="vis-kreis" data-k="' + i + '" style="cursor:pointer"><circle cx="' + x + '" cy="' + y + '" r="21" fill="' + (on ? "var(--accent)" : "var(--card)") + '" stroke="var(--accent)" stroke-width="2"/>' +
+        '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" style="font:800 14px system-ui;fill:' + (on ? "#fff" : "var(--text)") + '">' + (i + 1) + "</text></g>";
+    });
+    const p = P[sel];
+    return s + '</svg><div class="panel detail" style="margin:6px 0 0"><h3>' + X.phase + (sel + 1) + ": " + p[0] + '</h3><p style="margin:0 0 8px">' + p[1] + '</p><span class="tag n">🪼 ' + p[2] + "</span></div>";
+  },
+  transkript: () => VISTX.transkript
+};
+
+function prCard(k, inVis) {
+  const p = PR[k];
+  return '<div class="panel detail" style="margin:' + (inVis ? "10px 0 0" : "0") + '"><h3>' + p.name + '</h3><p class="small muted" style="margin:0 0 8px">' + p.by + "</p>" +
+    '<div class="chips" style="gap:6px;margin-bottom:8px">' + Object.keys(LG).filter((l) => p.lg[l] === 2).map(lgTag).join("") + supTag(p.sup) + "</div><p>" + p.what + "</p>" +
+    "<h4>" + UI.det.steps + '</h4><ol class="steps">' + p.steps.map((s) => "<li><small>" + s + "</small></li>").join("") + "</ol>" + box("jq", "🪼", UI.det.injq, p.jq) + "</div>";
+}
+
+/* ---------- Kompass ---------- */
+function vKompass() {
+  const sel = S.sel, k = Math.min(S.step, 5), id = STEPS[k], K = UI.komp;
+  let h = head(K.title, K.sub);
+  h += '<div class="stepper">' + STEPS.map((s, i) => '<button data-act="go-step" data-k="' + i + '" class="' + (i === k ? "on" : (sel[s] || (s === "plan" && sel.pr)) ? "done" : "") + '"' + (i === 5 && !sel.pr ? " disabled" : "") + "><i></i><span>" + (i + 1) + " " + UI.steps[i] + "</span></button>").join("") + "</div>";
+  if (id === "plan") return h + vPlan();
+  const q = K.q[id];
+  const sub = id === "iv" ? (sel.zi ? q[2] : q[1]) : id === "st" ? q[1] + "<b>" + (sel.iv ? IV[sel.iv].name : "–") + "</b>" : q[1];
+  h += '<p class="q">' + q[0] + '</p><p class="qsub">' + sub + "</p>";
+  let items = [];
+  if (id === "zi") items = Object.keys(ZI).map((x) => [x, ZI[x], null, ""]);
+  if (id === "iv") items = Object.keys(IV).map((x) => [x, IV[x], null, sel.zi && ZI[sel.zi].iv.includes(x) ? '<span class="fit r">' + UI.rec + "</span>" : ""]);
+  if (id === "st") items = Object.keys(ST).map((x) => [x, ST[x], fitSt(sel, x), ""]);
+  if (id === "lg") items = Object.keys(LG).map((x) => [x, LG[x], fitLg(sel, x), sel.zi && ZI[sel.zi].lg === x ? '<span class="fit r">' + UI.toGoal + "</span>" : ""]);
+  if (id === "pr") items = Object.keys(PR).map((x) => [x, PR[x], fitPr(sel, x), supTag(PR[x].sup)]).sort((a, b) => (b[2] || 0) - (a[2] || 0));
+  if (id === "iv" && sel.zi) items.sort((a, b) => (b[3] ? 1 : 0) - (a[3] ? 1 : 0));
+  h += '<div class="choices">' + items.map((it) => {
+    const [key, o, f, extra] = it, on = sel[id] === key;
+    return '<button class="choice' + (on ? " on" : "") + (f === 0 && !on ? " dim" : "") + '" data-act="choose" data-step="' + id + '" data-k="' + key + '" aria-pressed="' + on + '">' +
+      '<span class="ct">' + (o.em ? '<span class="em">' + o.em + "</span>" : "") + "<b>" + o.name + (o.by && id === "pr" ? ' <small class="muted" style="font-weight:600">(' + o.by + ")</small>" : "") + "</b></span>" +
+      "<small>" + (o.short.length > 140 ? o.short.slice(0, 137) + "…" : o.short) + "</small>" +
+      (f != null || extra ? '<span class="fits">' + fitTag(f) + extra + "</span>" : "") + "</button>";
+  }).join("") + "</div>";
+  if (sel[id]) h += detail(id, sel[id]);
+  h += '<div class="wnav">' + (k > 0 ? '<button class="btn" data-act="go-step" data-k="' + (k - 1) + '">' + ICON.left + " " + UI.back + "</button>" : "") +
+    '<button class="btn primary" data-act="go-step" data-k="' + (k + 1) + '"' + (sel[id] ? "" : " disabled") + ">" + (k === 4 ? K.showPlan : UI.next) + " " + ICON.right + "</button></div>";
+  return h;
+}
+
+function detail(id, key) {
+  const sel = S.sel, D = UI.det;
+  let h = '<div class="panel detail" id="detail">';
+  if (id === "zi") {
+    const z = ZI[key];
+    h += "<h3>" + z.em + " " + z.name + "</h3><p>" + z.short + "</p><h4>" + D.ivFor + '</h4><div class="chips">' + z.iv.map((x) => '<span class="tag n">' + IV[x].em + " " + IV[x].name + "</span>").join("") + "</div>" +
+      "<h4>" + D.lgFor + "</h4>" + lgTag(z.lg);
+  }
+  if (id === "iv") {
+    const iv = IV[key];
+    h += "<h3>" + iv.em + " " + iv.name + "</h3>" + (iv.alt ? '<p class="small muted" style="margin:-4px 0 6px">' + iv.alt + "</p>" : "") + '<p class="small muted" style="margin:0 0 8px">' + D.after + " " + iv.by + "</p><p>" + iv.short + "</p>" +
+      "<h4>" + D.wissen + "</h4><p>" + iv.wissen + "</p><h4>" + D.ablauf + '</h4><div class="timeline">' + iv.ablauf.map((a) => "<div><b>" + a[0] + "</b>" + a[1] + "</div>").join("") + "</div>" +
+      "<h4>" + D.achten + '</h4><ul class="md">' + iv.achten.map((a) => "<li>" + a + "</li>").join("") + "</ul>" +
+      "<h4>" + D.ausw + "</h4><p>" + iv.auswertung + "</p>" +
+      "<h4>" + D.next + '</h4><p class="small">' + D.nextSt + " " + Object.keys(ST).map((s) => ST[s].name.split(" ")[0] + " " + fitTag(iv.st[s])).join(" &nbsp; ") + "</p>";
+  }
+  if (id === "st") {
+    const st = ST[key];
+    h += "<h3>" + st.em + " " + st.name + " " + fitTag(fitSt(sel, key)) + "</h3>" + (sel.iv ? '<p class="small">' + IV[sel.iv].stNote[key] + "</p>" : "") + "<p>" + st.short + "</p>" +
+      "<h4>" + D.beispiel + "</h4><p><i>" + st.frage + "</i></p><h4>" + D.ausw + '</h4><ul class="md">' + st.folgen.map((a) => "<li>" + a + "</li>").join("") + "</ul>" +
+      box("jq", "🪼", D.seg, st.seg);
+  }
+  if (id === "lg") {
+    const l = LG[key];
+    h += "<h3>" + l.em + " " + l.name + " " + fitTag(fitLg(sel, key)) + "</h3>" + (sel.iv ? '<p class="small">' + IV[sel.iv].lgNote + "</p>" : "") + "<p>" + l.short + "</p>" +
+      "<h4>" + D.wann + "</h4><p>" + l.wann + "</p>" + box("warn", "⚠️", D.risiko, l.risiko) + box("jq", "🪼", D.tools, l.tools);
+  }
+  if (id === "pr") return '<div id="detail" class="detail"><p class="small" style="margin:0 0 8px">' + fitTag(fitPr(sel, key)) + " " + PRWHY(sel, key) + "</p>" + prCard(key, false) + "</div>";
+  return h + "</div>";
+}
+
+function vPlan() {
+  const sel = S.sel, P = UI.plan;
+  if (!(sel.iv && sel.st && sel.lg && sel.pr)) return '<div class="panel">' + P.notAll + "</div>";
+  const l = links(sel), sc = score(sel), iv = IV[sel.iv], st = ST[sel.st], lg = LG[sel.lg], pr = PR[sel.pr];
+  const col = (f) => f == null ? "var(--line)" : ["var(--bad)", "var(--warn)", "var(--good)"][f];
+  const node = (lab, val, f, why, step) => '<li style="--nc:var(--accent);--lc:' + col(f) + '"><div class="fl">' + lab + '</div><div class="fv">' + val + ' <a href="#/compass" data-act="go-step" data-k="' + step + '" class="small noprint">' + P.change + "</a></div>" + (why ? '<div class="fw">' + why + "</div>" : "") + "</li>";
+  const date = new Date().toLocaleDateString(UI.lang === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+  let h = '<div class="printhead">' + LOGO + "<div><b>" + P.printTitle + "</b><span>" + P.printMade + date + "</span></div></div>";
+  h += '<div class="hero"><div class="row"><div class="ring">' + ring(sc) + '<div class="v"><div>' + Math.round(sc * 100) + "%<small>" + P.stimmig + "</small></div></div></div><div><h3>" + P.title + "</h3><p>" +
+    P.verdict[sc > .85 ? 2 : sc > .6 ? 1 : 0] + '</p></div></div><div class="btnrow noprint"><button class="btn small primary" data-act="print">' + ICON.pdf + " " + P.pdf + '</button><button class="btn small" data-act="restart">' + ICON.reset + " " + P.restart + '</button></div><p class="small noprint" style="position:relative;z-index:1;margin:8px 0 0;color:var(--muted)">' + P.pdfHint + "</p></div>";
+  h += '<div class="panel"><h3>' + P.faden + '</h3><p class="small muted" style="margin:0 0 12px">' + P.fadenLegend + '</p><ul class="faden">' +
+    (sel.zi ? node(P.nodes[0], ZI[sel.zi].em + " " + ZI[sel.zi].name, l.iv, "", 0) : "") +
+    node(P.nodes[1], iv.em + " " + iv.name, l.st, sel.zi ? (l.iv === 2 ? P.goalOk : P.goalNo) : "", 1) +
+    node(P.nodes[2], st.em + " " + st.name, l.lg, iv.stNote[sel.st], 2) +
+    node(P.nodes[3], lgTag(sel.lg), l.pr, iv.lgNote, 3) +
+    node(P.nodes[4], pr.name + ' <span class="muted small">(' + pr.by + ")</span>", null, PRWHY(sel, sel.pr), 4) + "</ul></div>";
+  const tips = [].concat(iv.achten.slice(0, 3), [lg.risiko], st.folgen.slice(0, 1));
+  if (pr.sup === 0) tips.push(P.sup0(pr.name));
+  if (pr.sup === 1) tips.push(pr.jq);
+  h += '<div class="panel"><h3>' + P.achten + '</h3><ul class="md">' + tips.map((t) => "<li>" + t + "</li>").join("") + "</ul></div>";
+  h += '<div class="panel"><h3>' + P.stepsT + pr.name + '</h3><ol class="steps">' + pr.steps.map((s) => "<li><small>" + s + "</small></li>").join("") + "</ol></div>";
+  h += '<div class="panel"><h3>' + P.jq + '</h3><ol class="steps">' + PLAN(sel).map((s) => "<li><b>" + s.t + "</b><small>" + s.d + "</small>" + (s.r ? codeBox(s.r) : "") + "</li>").join("") + "</ol>" +
+    '<p class="small noprint"><a href="#/tool">' + P.allSteps + "</a></p></div>";
+  h += '<div class="panel"><h3>' + P.method + '</h3><p class="small muted" style="margin:0">' + P.methodNote + "</p>" + codeBox(METHOD(sel), UI.textLabel, true) + "</div>";
+  const keys = [].concat(IVLIT[sel.iv] || [], pr.lit || [], ["steinke"]).filter((v, i, a) => a.indexOf(v) === i);
+  h += '<div class="panel"><h3>' + P.lit + "</h3>" + keys.map((k) => '<p class="small" style="margin:0 0 8px">' + LIT[k] + "</p>").join("") + '<p class="small muted" style="margin:0">' + P.litNote + "</p></div>";
+  h += '<div class="printfoot">jellyqda · ' + P.printUrl + "</div>";
+  return h;
+}
+
+/* ---------- Weitere Ansichten ---------- */
+function progress() {
+  const mods = MOD.filter((m) => S.read[m.id]).length, tour = TOUR.filter((t, i) => S.tour[i]).length;
+  const ckTot = CHECK.reduce((a, c) => a + c.items.length, 0), ck = CHECK.reduce((a, c) => a + c.items.filter((x, i) => S.check[c.id + i]).length, 0);
+  const komp = S.sel.pr ? 1 : 0;
+  return { mods, tour, ck, ckTot, p: (komp * 4 + mods + tour + ck / ckTot * 5) / (4 + MOD.length + TOUR.length + 5) };
+}
+function noticeBar() {
+  if (S.notice) return "";
+  const N = UI.notice;
+  return '<div class="notice" role="note"><span style="font-size:20px">' + "🔒" + '</span><div class="t"><b>' + N.t + "</b>" + N.d + '</div><a class="btn small ghost" href="#/more/set">' + N.more + '</a><button class="btn small" data-act="notice-ok">' + N.ok + "</button></div>";
+}
+function vHome() {
+  const P = progress(), sel = S.sel, H = UI.home;
+  const th = document.documentElement.getAttribute("data-theme");
+  let h = '<div class="top">' + LOGO + '<div class="grow"><h1>' + UI.title + "</h1><p>" + UI.tagline + '</p></div><a class="iconbtn langbtn" href="' + UI.other.href + location.hash + '" title="' + UI.other.title + '" lang="' + UI.other.label.toLowerCase() + '">' + UI.other.label + '</a><button class="iconbtn" data-act="theme" aria-label="' + UI.themeToggle + '">' + (th === "light" ? ICON.moon : ICON.sun) + "</button></div>";
+  h += noticeBar();
+  h += '<div class="hero"><div class="row"><div class="ring">' + ring(P.p) + '<div class="v"><div>' + Math.round(P.p * 100) + "%<small>" + H.progress + "</small></div></div></div><div><h3>" +
+    (sel.pr ? H.heroDone : H.heroNew) + "</h3><p>" + (sel.pr ? IV[sel.iv].name + " · " + LG[sel.lg].name + " · " + PR[sel.pr].name : H.heroText) + "</p></div></div>" +
+    '<div class="kpis"><div class="kpi"><b>' + P.mods + " / " + MOD.length + "</b><span>" + H.kpi[0] + '</span></div><div class="kpi"><b>' + P.tour + " / " + TOUR.length + "</b><span>" + H.kpi[1] + '</span></div><div class="kpi"><b>' + P.ck + " / " + P.ckTot + "</b><span>" + H.kpi[2] + "</span></div></div>" +
+    '<div class="btnrow"><a class="btn primary" href="#/compass">' + ICON.compass + (sel.pr ? H.seePlan : sel.zi ? H.cont : H.start) + "</a></div></div>";
+  h += '<div class="sectiontitle"><h3>' + H.startWith + '</h3></div><div class="tiles">' +
+    tile("#/compass", "🧭", "#8b7cf6", H.tiles[0], sel.pr) + tile("#/basics", "📚", "#38bdf8", H.tiles[1], P.mods === MOD.length) +
+    tile("#/tool", "🪼", "#34d399", H.tiles[2], P.tour === TOUR.length) + tile("#/more/check", "✅", "#fbbf24", H.tiles[3], P.ck === P.ckTot) + "</div>";
+  h += '<div class="sectiontitle"><h3>' + H.faq + '</h3></div><div class="list">' + H.faqs.map((f, i) => li(f[0], f[1], f[2], i === H.faqs.length - 1 ? GLOSS.length + f[3] : f[3])).join("") + "</div>";
+  return h + foot();
+}
+const tile = (href, ic, c, t, done) => '<a class="tile" style="--dc:' + c + ';text-decoration:none" href="' + href + '">' + (done ? '<span class="done">' + ICON.check + "</span>" : "") + '<span class="h"><span class="ic">' + ic + "</span><span><b>" + t[0] + "</b></span></span><p>" + t[1] + "</p></a>";
+const li = (href, ic, t, s) => '<a class="li" style="text-decoration:none" href="' + href + '"><span style="font-size:20px">' + ic + '</span><span class="t"><b>' + t + "</b>" + (s ? "<small>" + s + "</small>" : "") + "</span>" + ICON.chev + "</a>";
+const foot = () => '<div class="foot">' + UI.foot + "</div>";
+
+function vBasics() {
+  const B = UI.basics;
+  let h = head(B.title, B.read(MOD.filter((m) => S.read[m.id]).length, MOD.length));
+  h += '<div class="tiles">' + MOD.map((m) => {
+    const q = m.quiz.filter((x, i) => S.quiz[m.id + i] === x.a).length;
+    return '<a class="tile" style="--dc:' + m.color + ';text-decoration:none" href="#/basics/' + m.id + '">' + (S.read[m.id] ? '<span class="done">' + ICON.check + "</span>" : "") +
+      '<span class="h"><span class="ic">' + m.icon + "</span><span><b>" + m.title + "</b><small>" + B.quiz + " " + q + "/" + m.quiz.length + "</small></span></span><p>" + m.blurb + "</p></a>";
+  }).join("") + "</div>";
+  return h + foot();
+}
+function vModule(id) {
+  const B = UI.basics, i = MOD.findIndex((m) => m.id === id), m = MOD[i];
+  if (!m) return vBasics();
+  let h = head(m.icon + " " + m.title, B.crumb + " · " + (i + 1) + " / " + MOD.length, "#/basics");
+  h += '<div class="panel">' + m.body() + "</div>";
+  h += '<div class="panel"><h3>' + B.quizT + "</h3>" + m.quiz.map((q, qi) => {
+    const k = m.id + qi, ans = S.quiz[k];
+    return '<div class="mt"><b>' + q.q + '</b><div class="opts">' + q.o.map((o, oi) => {
+      const cls = ans == null ? "" : oi === q.a ? " right" : oi === ans ? " wrong" : "";
+      return '<button class="opt' + cls + '" data-act="quiz" data-k="' + k + '" data-o="' + oi + '"' + (ans != null ? " disabled" : "") + '><span class="k">' + "ABCD"[oi] + "</span><span>" + o + "</span></button>";
+    }).join("") + "</div>" + (ans != null ? '<div class="verdict"><b class="' + (ans === q.a ? "ok" : "no") + '">' + (ans === q.a ? B.right : B.wrong) + "</b>" + q.ex + "</div>" : "") + "</div>";
+  }).join("") + "</div>";
+  h += '<div class="btnrow">' + (i > 0 ? '<a class="btn" href="#/basics/' + MOD[i - 1].id + '">' + ICON.left + " " + UI.back + "</a>" : "") +
+    '<button class="btn' + (S.read[id] ? "" : " primary") + '" data-act="read" data-k="' + id + '">' + ICON.check + (S.read[id] ? B.isRead : B.mark) + "</button>" +
+    (i < MOD.length - 1 ? '<a class="btn" href="#/basics/' + MOD[i + 1].id + '">' + UI.next + " " + ICON.right + "</a>" : "") + "</div>";
+  return h;
+}
+function vTour() {
+  const T = UI.tour, n = TOUR.filter((t, i) => S.tour[i]).length;
+  let h = head(T.title, T.done(n, TOUR.length));
+  h += '<div class="panel" style="padding:12px 14px"><div class="bar"><i style="width:' + (100 * n / TOUR.length) + '%"></i></div></div>';
+  h += '<div class="list">' + TOUR.map((t, i) => '<a class="li" style="text-decoration:none" href="#/tool/' + (i + 1) + '"><span class="num' + (S.tour[i] ? " ok" : "") + '">' + (S.tour[i] ? "✓" : i + 1) + '</span><span class="t"><b>' + t.t + '</b><small><span class="tag ' + T.tags[t.tag][0] + '">' + T.tags[t.tag][1] + "</span></small></span>" + ICON.chev + "</a>").join("") + "</div>";
+  return h + '<p class="hint">' + T.more + "</p>";
+}
+function vTourStep(n) {
+  const T = UI.tour, i = n - 1, t = TOUR[i];
+  if (!t) return vTour();
+  let h = head(t.t, T.step + " " + n + " / " + TOUR.length + ' · <span class="tag ' + T.tags[t.tag][0] + '">' + T.tags[t.tag][1] + "</span>", "#/tool");
+  h += '<div class="panel"><div class="md"><p>' + t.txt + "</p></div>" + t.img.map((x) => shot(x[0], x[1])).join("") + (t.r ? '<div class="small muted mt">' + T.asR + "</div>" + codeBox(t.r) : "") +
+    t.tips.map((x) => box("tip", "💡", T.tip, x)).join("") + "</div>";
+  h += '<div class="btnrow">' + (i > 0 ? '<a class="btn" href="#/tool/' + (n - 1) + '" aria-label="' + UI.back + '">' + ICON.left + "</a>" : "") +
+    '<button class="btn' + (S.tour[i] ? "" : " primary") + '" data-act="tour" data-k="' + i + '">' + ICON.check + (S.tour[i] ? T.isDone : T.doneNext) + "</button>" +
+    (i < TOUR.length - 1 ? '<a class="btn" href="#/tool/' + (n + 1) + '" aria-label="' + UI.next + '">' + ICON.right + "</a>" : "") + "</div>";
+  return h;
+}
+function vMore(sub) {
+  const M = UI.more;
+  sub = sub || "check";
+  let h = head(M.title, M.sub);
+  h += '<div class="seg" style="margin-bottom:14px">' + M.tabs.map((x) => '<a href="#/more/' + x[0] + '" style="text-decoration:none"><button class="' + (sub === x[0] ? "on" : "") + '" tabindex="-1">' + x[1] + "</button></a>").join("") + "</div>";
+  if (sub === "check") {
+    CHECK.forEach((c) => {
+      const d = c.items.filter((x, i) => S.check[c.id + i]).length;
+      h += '<div class="sectiontitle"><h3>' + c.em + " " + c.t + "</h3><span>" + d + " / " + c.items.length + '</span></div><div class="list">' +
+        c.items.map((it, i) => { const k = c.id + i; return '<label class="ck' + (S.check[k] ? " on" : "") + '"><input type="checkbox" data-act="check" data-k="' + k + '"' + (S.check[k] ? " checked" : "") + "><span>" + it + "</span></label>"; }).join("") + "</div>";
+    });
+  }
+  if (sub === "glossar") h += '<div class="searchbox">' + ICON.search + '<input id="gq" type="search" placeholder="' + M.search + '" aria-label="' + M.search + '" value="' + esc(VS.gq) + '"></div><div class="list" id="gl">' + glossList(VS.gq) + "</div>";
+  if (sub === "lit") h += '<div class="list">' + Object.keys(LIT).map((k) => '<div class="lit">' + LIT[k] + "</div>").join("") + '</div><p class="hint">' + M.litHint + "</p>";
+  if (sub === "set") {
+    const th = S.theme || "auto";
+    h += '<div class="panel"><h3>' + M.privT + '</h3><div class="md">' + M.priv + "</div>" + (CAN_STORE ? "" : box("warn", "⚠️", "", M.noStore)) + "</div>";
+    h += '<div class="list"><div class="setrow"><div class="t"><b>' + M.theme + "</b><small>" + M.themeSub + '</small></div><div class="seg">' +
+      M.themes.map((x) => '<button data-act="settheme" data-k="' + x[0] + '" class="' + (th === x[0] ? "on" : "") + '">' + x[1] + "</button>").join("") + "</div></div>" +
+      '<div class="setrow"><div class="t"><b>' + M.wipe + "</b><small>" + M.wipeSub + '</small></div><button class="btn small" data-act="wipe">' + ICON.reset + M.wipeBtn + "</button></div></div>";
+  }
+  return h + foot();
+}
+function glossList(q) {
+  const ql = q.trim().toLowerCase();
+  const hl = (s) => ql ? esc(s).replace(new RegExp("(" + ql.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi"), "<mark>$1</mark>") : esc(s);
+  const r = GLOSS.filter((g) => !ql || (g[0] + " " + g[1]).toLowerCase().includes(ql));
+  return r.length ? r.map((g) => '<div class="gl"><b>' + hl(g[0]) + "</b><div>" + hl(g[1]) + "</div></div>").join("") : '<div class="gl muted">' + UI.more.noHit + "</div>";
+}
+
+/* ---------- Router & Events ---------- */
+const TABS = [["home", "#/", ICON.home], ["compass", "#/compass", ICON.compass], ["basics", "#/basics", ICON.book], ["tool", "#/tool", ICON.jelly], ["more", "#/more", ICON.more]];
+function render(keepScroll) {
+  const parts = location.hash.replace(/^#\/?/, "").split("/");
+  const r = parts[0] || "home";
+  let html;
+  if (r === "compass") html = vKompass();
+  else if (r === "basics") html = parts[1] ? vModule(parts[1]) : vBasics();
+  else if (r === "tool") html = parts[1] ? vTourStep(+parts[1]) : vTour();
+  else if (r === "more") html = vMore(parts[1]);
+  else html = vHome();
+  const y = window.scrollY;
+  document.getElementById("app").innerHTML = '<div class="view">' + html + "</div>";
+  window.scrollTo(0, keepScroll ? y : 0);
+  document.getElementById("tabbar").innerHTML = '<div class="in">' + TABS.map((t, i) => '<a class="tab' + (r === t[0] ? " on" : "") + '" href="' + t[1] + '">' + t[2] + "<span>" + UI.tabs[i] + "</span></a>").join("") + "</div>";
+}
+window.addEventListener("hashchange", () => render(false));
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  const a = el.dataset.act, k = el.dataset.k;
+  if (a === "choose") {
+    S.sel[el.dataset.step] = k; save(); render(true);
+    const d = document.getElementById("detail");
+    if (d && window.innerWidth < 700) d.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (a === "go-step") {
+    e.preventDefault();
+    if (el.disabled) return;
+    S.step = Math.max(0, Math.min(5, +k)); save();
+    if (location.hash !== "#/compass") location.hash = "#/compass"; else render(false);
+  } else if (a === "restart") {
+    S.sel = {}; S.step = 0; save(); render(false);
+  } else if (a === "print") {
+    window.print();
+  } else if (a === "copy") {
+    const txt = codeStore[+el.dataset.id], done = () => toast(UI.copied);
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+  } else if (a === "quiz") {
+    S.quiz[k] = +el.dataset.o; save(); render(true);
+  } else if (a === "read") {
+    S.read[k] = !S.read[k]; save(); render(true); if (S.read[k]) toast(UI.basics.good);
+  } else if (a === "tour") {
+    const i = +k, was = S.tour[i]; S.tour[i] = !was; save();
+    if (!was && i < TOUR.length - 1) location.hash = "#/tool/" + (i + 2); else render(true);
+  } else if (a === "theme") {
+    S.theme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light"; save(); applyTheme(); render(true);
+  } else if (a === "settheme") {
+    S.theme = k === "auto" ? null : k; save(); applyTheme(); render(true);
+  } else if (a === "notice-ok") {
+    S.notice = true; save(); render(true);
+  } else if (a === "wipe") {
+    if (confirm(UI.more.wipeQ)) { wipe(); render(true); toast(UI.more.wiped); }
+  } else if (a === "pick-iv") {
+    S.sel.iv = k; S.step = 2; save();
+  } else if (a.startsWith("vis-")) {
+    const n = a.slice(4);
+    if (n === "logik") VS.logik = k;
+    if (n === "spek") VS.spek = VS.spek === k ? null : k;
+    if (n === "karte") VS.karte = k;
+    if (n === "may") VS.may = +k;
+    if (n === "kreis") VS.kreis = +k;
+    rerenderVis({ logik: "logik", spek: "spektrum", karte: "karte", may: "mayring", kreis: "kreis" }[n]);
+  }
+});
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if (el.dataset && el.dataset.act === "check") { S.check[el.dataset.k] = el.checked; save(); el.closest(".ck").classList.toggle("on", el.checked); }
+});
+document.addEventListener("input", (e) => {
+  if (e.target.id === "gq") { VS.gq = e.target.value; document.getElementById("gl").innerHTML = glossList(VS.gq); }
+});
+function fallbackCopy(txt, cb) {
+  const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); cb(); } catch (e) {} ta.remove();
+}
+if (window.matchMedia) matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (!S.theme) { applyTheme(); render(true); } });
+applyTheme();
+render(false);
+})();
+</script>
+</body>
+</html>
