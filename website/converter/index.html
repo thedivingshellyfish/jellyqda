@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Convert MAXQDA, ATLAS.ti or NVivo projects (REFI-QDA, .qdpx) into a jellyqda project file – entirely in your browser, no upload.">
+<title>jellyqda Converter</title>
+<style>
+/* jellyqda Assistenz – Styles. Farben als Tokens; Dark/Light per data-theme (Standard: Systemeinstellung). */
+:root {
+  --bg: #0b1020; --bg2: #0f1629; --card: #141c33; --card2: #1a2440;
+  --line: #26324f; --line2: #33426a;
+  --text: #eef2ff; --text2: #b8c2dc; --muted: #8590b0;
+  --accent: #8b7cf6; --accent2: #38bdf8; --good: #34d399; --warn: #fbbf24; --bad: #f87171;
+  --de: #38bdf8; --in: #a78bfa; --mix: #f0abfc; --ab: #fbbf24;
+  --code-bg: #0a0f1d; --code-text: #dbe3ff; --tk-fn: #82aaff; --tk-str: #a5e3a0; --tk-com: #6b7899;
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --gloss: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 55%);
+  --radius: 18px; --safe-b: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f5f6fb; --bg2: #eceffa; --card: #ffffff; --card2: #f4f5fb;
+  --line: #e1e5f2; --line2: #cdd3e6;
+  --text: #141a2e; --text2: #3d4766; --muted: #626c88;
+  --accent: #6d5ce8; --accent2: #0284c7; --good: #047857; --warn: #a16207; --bad: #dc2626;
+  --de: #0284c7; --in: #7c3aed; --mix: #c026d3; --ab: #b45309;
+  --code-bg: #f7f8fc; --code-text: #1f2640; --tk-fn: #1d5fd6; --tk-str: #2f7d32; --tk-com: #8a93ad;
+  --shadow: 0 8px 24px rgba(20,26,46,.08);
+  --gloss: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,0) 60%);
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  padding-bottom: calc(80px + var(--safe-b));
+}
+button { font: inherit; color: inherit; }
+a { color: var(--accent2); }
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+code, pre, .mono { font-family: ui-monospace, "SF Mono", "Roboto Mono", "Cascadia Mono", Menlo, Consolas, monospace; }
+#app { max-width: 780px; margin: 0 auto; padding: 14px 16px 24px; }
+.view { animation: fadein .22s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Kopf */
+.top { display: flex; align-items: center; gap: 12px; margin: 4px 0 18px; }
+.top .logo { width: 46px; height: 46px; flex: none; filter: drop-shadow(0 6px 14px rgba(139,124,246,.45)); }
+.top h1 { margin: 0; font-size: 22px; letter-spacing: -.02em; font-weight: 800; }
+.top p { margin: 0; color: var(--muted); font-size: 13px; }
+.top .grow { flex: 1; min-width: 0; }
+.iconbtn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); display: inline-grid; place-items: center; cursor: pointer; flex: none; color: var(--text2); }
+.iconbtn svg { width: 20px; height: 20px; }
+.pagehead { display: flex; align-items: center; gap: 10px; margin: 2px 0 16px; }
+.pagehead h2 { margin: 0; font-size: 20px; letter-spacing: -.01em; }
+.pagehead .sub { color: var(--muted); font-size: 13px; }
+
+/* Karten */
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.panel h3 { margin: 0 0 8px; font-size: 16px; }
+.panel > p:first-child { margin-top: 0; }
+.hero {
+  position: relative; overflow: hidden; border-radius: 22px; padding: 18px; margin-bottom: 16px;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(139,124,246,.38), transparent 55%),
+              radial-gradient(120% 140% at 100% 100%, rgba(56,189,248,.30), transparent 50%), var(--card);
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+}
+.hero::after { content: ""; position: absolute; inset: 0; background: var(--gloss); pointer-events: none; border-radius: inherit; }
+.hero::before { content: ""; position: absolute; top: -60%; left: -30%; width: 40%; height: 220%; transform: rotate(20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent); animation: sheen 7s ease-in-out infinite; pointer-events: none; }
+@keyframes sheen { 0%, 70% { left: -40%; } 100% { left: 130%; } }
+.hero .row { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+.hero h3 { margin: 0 0 4px; font-size: 17px; }
+.hero p { margin: 0; color: var(--text2); font-size: 13.5px; }
+.hero .btnrow { position: relative; z-index: 1; }
+.ring { width: 80px; height: 80px; flex: none; position: relative; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .v { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: 17px; text-align: center; line-height: 1.1; }
+.ring .v small { display: block; font-size: 10px; color: var(--muted); font-weight: 600; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; position: relative; z-index: 1; }
+.kpi { background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 14px; padding: 10px 6px; text-align: center; }
+:root[data-theme="light"] .kpi { background: rgba(255,255,255,.65); }
+.kpi b { display: block; font-size: 18px; }
+.kpi span { font-size: 11.5px; color: var(--muted); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; padding: 11px 16px; min-height: 46px;
+  border: 1px solid var(--line2); background: var(--card2); font-weight: 700; cursor: pointer; text-decoration: none; color: var(--text); position: relative; overflow: hidden; }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn.primary { background: linear-gradient(135deg, var(--accent), #6d8cf6); border: none; color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+.btn.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 55%); pointer-events: none; }
+.btn.small { min-height: 34px; padding: 6px 12px; font-size: 13px; border-radius: 11px; }
+.btn.ghost { background: none; }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn:active { transform: scale(.98); }
+.btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.btnrow > .btn { flex: 1 1 auto; }
+
+.sectiontitle { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 22px 2px 10px; }
+.sectiontitle h3 { margin: 0; font-size: 15px; }
+.sectiontitle span { color: var(--muted); font-size: 12.5px; }
+
+/* Kacheln */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.tile { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; cursor: pointer;
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; color: var(--text); }
+.tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--dc, var(--accent)); }
+.tile::after { content: ""; position: absolute; inset: 0; background: var(--gloss); opacity: .5; pointer-events: none; }
+.tile .h { display: flex; align-items: center; gap: 10px; }
+.tile .ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: color-mix(in srgb, var(--dc, var(--accent)) 20%, transparent); flex: none; }
+.tile b { font-size: 15px; display: block; line-height: 1.25; }
+.tile small { color: var(--muted); font-size: 12px; }
+.tile p { margin: 0; color: var(--text2); font-size: 12.8px; line-height: 1.45; }
+.tile .done { position: absolute; top: 12px; right: 12px; color: var(--good); width: 20px; height: 20px; }
+.tile .done svg { width: 20px; height: 20px; }
+
+/* Listen */
+.list { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.li { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 0; border-bottom: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%; background: none; color: var(--text); }
+.li:last-child { border-bottom: 0; }
+.li .t { flex: 1; min-width: 0; }
+.li .t b { display: block; font-size: 14px; font-weight: 650; line-height: 1.35; }
+.li .t small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.li .chev, .li > svg { color: var(--muted); width: 18px; height: 18px; flex: none; }
+.num { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-size: 12.5px; font-weight: 800; background: var(--card2); border: 1px solid var(--line); flex: none; }
+.num.ok { background: var(--good); color: #04261a; border-color: var(--good); }
+
+/* Chips & Badges */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; color: var(--text); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip svg { width: 15px; height: 15px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 750; padding: 2px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent; }
+.tag.de { color: var(--de); background: color-mix(in srgb, var(--de) 15%, transparent); }
+.tag.in { color: var(--in); background: color-mix(in srgb, var(--in) 15%, transparent); }
+.tag.mix { color: var(--mix); background: color-mix(in srgb, var(--mix) 15%, transparent); }
+.tag.ab { color: var(--ab); background: color-mix(in srgb, var(--ab) 15%, transparent); }
+.tag.n { color: var(--text2); background: var(--card2); border-color: var(--line); }
+.fit { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.fit::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.fit.g { color: var(--good); background: color-mix(in srgb, var(--good) 15%, transparent); }
+.fit.o { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.fit.b { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+.fit.r { color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* Kompass */
+.stepper { display: flex; gap: 4px; margin: 0 0 14px; }
+.stepper button { flex: 1; border: 0; background: none; padding: 0; cursor: pointer; text-align: left; color: var(--muted); font-size: 10.5px; font-weight: 700; min-width: 0; }
+.stepper button i { display: block; height: 6px; border-radius: 999px; background: var(--line); margin-bottom: 5px; transition: background .3s; }
+.stepper button.done i { background: color-mix(in srgb, var(--accent) 60%, var(--line)); }
+.stepper button.on i { background: linear-gradient(90deg, var(--accent), var(--accent2)); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+.stepper button.on { color: var(--text); }
+.stepper button span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q { font-size: clamp(19px, 5vw, 23px); font-weight: 800; line-height: 1.3; letter-spacing: -.01em; margin: 0 0 4px; }
+.qsub { color: var(--text2); margin: 0 0 14px; font-size: 14px; }
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.choice { text-align: left; border: 1.5px solid var(--line2); background: var(--card); border-radius: 16px; padding: 13px 14px; cursor: pointer; color: var(--text);
+  display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; transition: border-color .2s, box-shadow .2s, transform .1s; }
+.choice::after { content: ""; position: absolute; inset: 0; background: var(--gloss); opacity: .45; pointer-events: none; }
+.choice .ct { display: flex; align-items: flex-start; gap: 8px; }
+.choice .ct b { flex: 1; font-size: 14.5px; line-height: 1.3; }
+.choice .em { font-size: 20px; line-height: 1; }
+.choice small { color: var(--text2); font-size: 12.5px; line-height: 1.4; }
+.choice .fits { display: flex; gap: 6px; flex-wrap: wrap; }
+.choice.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent), 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--card)); }
+.choice.dim { opacity: .62; }
+.choice:active { transform: scale(.99); }
+.detail { margin-top: 14px; animation: fadein .25s ease; }
+.detail h4 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.detail h4:first-child { margin-top: 0; }
+.wnav { display: flex; gap: 10px; margin-top: 16px; position: sticky; bottom: calc(76px + var(--safe-b)); z-index: 5; padding: 10px 0 0;
+  background: linear-gradient(180deg, transparent, var(--bg) 35%); }
+.wnav .btn { flex: 1; }
+
+/* Faden (wie der Codebaum in jellyqda) */
+.faden { list-style: none; margin: 0; padding: 0; }
+.faden li { position: relative; padding: 0 0 14px 30px; }
+.faden li:last-child { padding-bottom: 0; }
+.faden li::before { content: ""; position: absolute; left: 8px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--nc, var(--accent)); box-shadow: 0 0 10px color-mix(in srgb, var(--nc, var(--accent)) 70%, transparent); }
+.faden li::after { content: ""; position: absolute; left: 13.5px; top: 19px; bottom: -3px; width: 3px; border-radius: 2px; background: var(--lc, var(--line)); }
+.faden li:last-child::after { display: none; }
+.faden li.empty::before { background: var(--card2); border: 2px dashed var(--line2); box-shadow: none; }
+.faden .fl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.faden .fv { font-weight: 700; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.faden .fw { font-size: 12.5px; color: var(--text2); margin-top: 2px; }
+.gauge { display: flex; align-items: center; gap: 14px; }
+.gauge .meter { flex: 1; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--bad), var(--warn), var(--good)); position: relative; }
+.gauge .meter i { position: absolute; top: 50%; width: 20px; height: 20px; border-radius: 50%; background: var(--card); border: 3px solid var(--text); transform: translate(-50%, -50%); box-shadow: var(--shadow); transition: left .5s; }
+
+/* Inhalte */
+.md { font-size: 15px; }
+.md p { margin: 0 0 10px; }
+.md p:last-child { margin-bottom: 0; }
+.md ul, .md ol { margin: 4px 0 10px; padding-left: 22px; }
+.md li { margin: 4px 0; }
+.md code { background: var(--card2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 6px; font-size: .88em; color: var(--tk-fn); word-break: break-word; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tblwrap { overflow-x: auto; margin: 6px 0 4px; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+.tbl th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.box { border-radius: 14px; padding: 12px 14px; margin: 12px 0; font-size: 14px; border: 1px solid; display: flex; gap: 10px; }
+.box > span:first-child { font-size: 18px; line-height: 1.2; flex: none; }
+.box b { display: block; margin-bottom: 2px; }
+.box.tip { background: color-mix(in srgb, var(--good) 10%, var(--card)); border-color: color-mix(in srgb, var(--good) 35%, var(--line)); }
+.box.warn { background: color-mix(in srgb, var(--warn) 10%, var(--card)); border-color: color-mix(in srgb, var(--warn) 40%, var(--line)); }
+.box.jq { background: color-mix(in srgb, var(--accent) 10%, var(--card)); border-color: color-mix(in srgb, var(--accent) 38%, var(--line)); }
+.steps { counter-reset: st; list-style: none; padding: 0; margin: 6px 0; }
+.steps li { counter-increment: st; position: relative; padding: 0 0 12px 38px; }
+.steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center;
+  font-size: 12px; font-weight: 800; background: color-mix(in srgb, var(--accent) 20%, var(--card2)); color: var(--accent); }
+.steps li::after { content: ""; position: absolute; left: 12px; top: 28px; bottom: 2px; width: 2px; background: var(--line); }
+.steps li:last-child::after { display: none; }
+.steps li b { display: block; }
+.steps li small { color: var(--text2); font-size: 13px; display: block; }
+.timeline { display: flex; gap: 0; overflow-x: auto; padding: 4px 0 8px; }
+.timeline div { flex: 1 0 120px; position: relative; padding: 18px 8px 0 0; font-size: 12.5px; color: var(--text2); }
+.timeline div::before { content: ""; position: absolute; top: 5px; left: 0; right: 0; height: 3px; background: var(--line2); }
+.timeline div::after { content: ""; position: absolute; top: 0; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); }
+.timeline div b { display: block; color: var(--text); font-size: 13px; }
+
+/* Code */
+.codebox { margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--code-bg); }
+.codebar { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--muted); }
+.codebar .lang { font-weight: 800; letter-spacing: .05em; text-transform: uppercase; flex: 1; }
+.codebar button { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 3px 8px; font-size: 11.5px; cursor: pointer; color: var(--text2); display: inline-flex; gap: 4px; align-items: center; }
+.codebar button svg { width: 13px; height: 13px; }
+.codebox pre { margin: 0; padding: 10px 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; color: var(--code-text); white-space: pre; }
+.codebox pre.prose { white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.6; }
+.c-com { color: var(--tk-com); font-style: italic; }
+.c-str { color: var(--tk-str); }
+.c-fn { color: var(--tk-fn); }
+
+/* Screenshots */
+.shot { margin: 12px 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--card2); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 12px; color: var(--muted); padding: 7px 12px; border-top: 1px solid var(--line); }
+.shot.noimg img { display: none; }
+.shot.noimg::before { content: "🖼️  " attr(data-missing); display: block; padding: 26px 12px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Visualisierungen */
+.vis { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin: 12px 0; }
+.vis svg { display: block; width: 100%; max-width: 480px; margin: 0 auto; height: auto; }
+.vis .cap { font-size: 12.5px; color: var(--text2); margin-top: 8px; }
+.seg { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; flex-wrap: wrap; gap: 2px; }
+.seg button { border: 0; background: none; padding: 6px 11px; border-radius: 9px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--muted); }
+.seg button.on { background: var(--accent); color: #fff; }
+.svgt { fill: var(--text); font: 700 12px system-ui, sans-serif; }
+.svgs { fill: var(--muted); font: 600 10px system-ui, sans-serif; }
+.svgbox { fill: var(--card); stroke: var(--line2); stroke-width: 1.5; }
+.sprow { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 10px; align-items: center; padding: 7px 4px; border: 0; background: none; width: 100%; text-align: left; cursor: pointer; color: var(--text); border-radius: 10px; }
+.sprow:hover, .sprow.on { background: var(--card); }
+.sprow b { font-size: 13px; font-weight: 650; line-height: 1.25; }
+.sprow .track { height: 10px; border-radius: 999px; position: relative; background: linear-gradient(90deg, color-mix(in srgb, var(--in) 55%, transparent), color-mix(in srgb, var(--de) 55%, transparent)); }
+.sprow .track i { position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%; background: var(--card); border: 3px solid var(--text); transform: translate(-50%, -50%); }
+.sprow .track s { position: absolute; top: 50%; height: 16px; transform: translateY(-50%); border-radius: 999px; border: 2px dashed color-mix(in srgb, var(--text) 45%, transparent); }
+.spaxis { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 10px; font-size: 11px; color: var(--muted); font-weight: 700; padding: 0 4px 4px; }
+.spaxis div { display: flex; justify-content: space-between; }
+.tree { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+.tree > li { margin-bottom: 8px; }
+.tree .cf { display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 9px; background: var(--fc); color: #10131f; font-weight: 700; }
+.tree ul { list-style: none; margin: 4px 0 0 14px; padding: 0 0 0 14px; border-left: 3px solid var(--fc); }
+.tree ul li { position: relative; margin: 5px 0; }
+.tree ul li::before { content: ""; position: absolute; left: -14px; top: 50%; width: 11px; height: 3px; background: var(--fc); }
+.tree ul li span { display: inline-block; padding: 3px 9px; border-radius: 8px; border: 2px solid var(--fc); font-weight: 600; }
+.tree .n { font-size: 11px; color: var(--muted); margin-left: 6px; font-weight: 700; }
+.mtable td.new { animation: pop .4s ease; }
+@keyframes pop { from { background: color-mix(in srgb, var(--accent) 30%, transparent); } to { background: transparent; } }
+.mcat { display: inline-block; padding: 3px 9px; border-radius: 8px; font-weight: 700; font-size: 12px; color: #10131f; }
+.transcript { font: 13px/1.7 ui-monospace, Menlo, Consolas, monospace; background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; overflow-x: auto; }
+.transcript div { white-space: pre-wrap; }
+.transcript .ts { color: var(--accent2); font-weight: 700; }
+.transcript .sp { color: var(--accent); font-weight: 800; }
+.transcript .ps { background: color-mix(in srgb, var(--warn) 25%, transparent); border-radius: 4px; padding: 0 2px; }
+.transcript .pa { color: var(--muted); }
+
+/* Quiz */
+.opts { display: grid; gap: 8px; margin-top: 10px; }
+.opt { text-align: left; border: 1.5px solid var(--line2); background: var(--card2); border-radius: 13px; padding: 11px 13px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4; color: var(--text); }
+.opt .k { width: 24px; height: 24px; border-radius: 8px; background: var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 800; flex: none; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--card2)); }
+.opt.right .k { background: var(--good); color: #04261a; }
+.opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card2)); }
+.opt.wrong .k { background: var(--bad); color: #fff; }
+.opt:disabled { cursor: default; }
+.verdict { margin-top: 10px; font-size: 14px; }
+.verdict b.ok { color: var(--good); } .verdict b.no { color: var(--bad); }
+
+/* Checklisten, Suche, Einstellungen */
+.ck { display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.ck:last-child { border-bottom: 0; }
+.ck input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; margin: 1px 0 0; }
+.ck span { font-size: 14px; }
+.ck.on span { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.bar { height: 7px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; }
+.searchbox { position: relative; margin-bottom: 14px; }
+.searchbox input { width: 100%; border-radius: 14px; border: 1px solid var(--line2); background: var(--card); color: var(--text); padding: 13px 14px 13px 42px; font: inherit; outline: none; }
+.searchbox input:focus { border-color: var(--accent); }
+.searchbox svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 19px; height: 19px; color: var(--muted); }
+mark { background: color-mix(in srgb, var(--warn) 35%, transparent); color: inherit; border-radius: 3px; }
+.gl { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.gl:last-child { border-bottom: 0; }
+.gl b { display: block; font-size: 14.5px; margin-bottom: 2px; }
+.gl div { font-size: 13.8px; color: var(--text2); }
+.lit { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13.8px; }
+.lit:last-child { border-bottom: 0; }
+.lit .chips { margin-top: 6px; gap: 5px; }
+.setrow { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+.setrow:last-child { border-bottom: 0; }
+.setrow .t { flex: 1; min-width: 0; }
+.setrow .t b { display: block; font-size: 14px; }
+.setrow .t small { color: var(--muted); font-size: 12px; }
+
+/* Tabbar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center;
+  background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line); padding: 6px 6px calc(6px + var(--safe-b)); }
+.tabbar .in { display: flex; width: 100%; max-width: 580px; }
+.tab { flex: 1; border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; color: var(--muted); font-size: 11px; font-weight: 650; border-radius: 12px; text-decoration: none; }
+.tab svg { width: 23px; height: 23px; }
+.tab.on { color: var(--accent); }
+.tab.on svg { filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--accent) 60%, transparent)); }
+.toast { position: fixed; left: 50%; bottom: calc(92px + var(--safe-b)); transform: translateX(-50%) translateY(20px); opacity: 0; background: var(--text); color: var(--bg);
+  padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 13.5px; transition: all .25s; pointer-events: none; z-index: 50; max-width: 90vw; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.muted { color: var(--muted); } .small { font-size: 12.5px; } .mt { margin-top: 12px; }
+.hint { font-size: 12px; color: var(--muted); text-align: center; margin-top: 14px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 26px; }
+.foot a { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* Hinweis lokale Speicherung */
+.notice { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: color-mix(in srgb, var(--accent2) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent2) 35%, var(--line));
+  border-radius: 16px; padding: 12px 14px; margin: 0 0 16px; font-size: 13.5px; }
+.notice .t { flex: 1 1 220px; }
+.notice .t b { display: block; }
+.notice .btn { min-height: 34px; }
+.langbtn { font-weight: 800; font-size: 13px; text-decoration: none; }
+.printhead, .printfoot { display: none; }
+
+/* Druck / PDF: A4, immer helle Farben, nur der Inhalt */
+@page { size: A4; margin: 15mm 14mm 16mm; }
+@media print {
+  :root, :root[data-theme] {
+    --bg: #fff; --bg2: #fff; --card: #fff; --card2: #f6f7fb; --line: #d9deea; --line2: #c5cbdc;
+    --text: #111827; --text2: #374151; --muted: #6b7280; --accent: #5b4bd6; --accent2: #0369a1;
+    --good: #047857; --warn: #a16207; --bad: #b91c1c; --de: #0369a1; --in: #6d28d9; --mix: #a21caf; --ab: #a16207;
+    --code-bg: #f6f7fb; --code-text: #111827; --tk-fn: #1d4ed8; --tk-str: #166534; --tk-com: #6b7280; --shadow: none; --gloss: none;
+    color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; animation: none !important; transition: none !important; }
+  html, body { background: #fff !important; color: var(--text); font-size: 10.5pt; line-height: 1.45; }
+  body { padding: 0 !important; }
+  #app { max-width: none; padding: 0; }
+  .tabbar, .wnav, .noprint, .toast, .iconbtn, .stepper, .notice, .pagehead, .foot { display: none !important; }
+  .printhead { display: flex !important; align-items: center; gap: 10px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 12px; }
+  .printhead .logo { width: 30px; height: 30px; }
+  .printhead b { font-size: 15pt; display: block; }
+  .printhead span { font-size: 9pt; color: var(--muted); }
+  .printfoot { display: block !important; margin-top: 10px; font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; }
+  .hero { background: #fff !important; border: 1.5px solid var(--line2); padding: 12px 14px; margin-bottom: 10px; }
+  .hero::before, .hero::after, .tile::after, .choice::after { display: none !important; }
+  .ring { width: 64px; height: 64px; }
+  .panel { padding: 10px 12px; margin-bottom: 8px; border-radius: 10px; }
+  .panel h3 { font-size: 12pt; }
+  .panel { break-inside: auto; }
+  .panel h3 { break-after: avoid; }
+  .hero, .steps li, .faden li, .box { break-inside: avoid; }
+  .steps li { padding-bottom: 8px; }
+  .codebox { break-inside: avoid; border-radius: 8px; }
+  .codebar button { display: none; }
+  .codebox pre { white-space: pre-wrap; word-break: break-word; overflow: visible; font-size: 8.5pt; padding: 6px 10px; }
+  .codebox pre.prose { font-size: 10pt; }
+  a { color: inherit; text-decoration: none; }
+}
+
+/* ---------- Converter ---------- */
+body { padding-bottom: 24px; }
+.notice .t span { display: block; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step h3 { margin: 4px 0 8px; font-size: 17px; }
+.step p { margin: 0 0 8px; color: var(--text2); }
+.sn { width: 34px; height: 34px; border-radius: 11px; flex: none; display: grid; place-items: center; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent); }
+.drop { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; border: 2px dashed var(--line2); border-radius: 16px;
+  padding: 26px 14px; cursor: pointer; background: color-mix(in srgb, var(--accent) 5%, var(--card)); transition: border-color .2s, background .2s; }
+.drop:hover, .drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--card)); }
+.drop .dic { font-size: 30px; }
+#busy { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+#busy[hidden], #err[hidden], [hidden] { display: none !important; }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--line2); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.kpis5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 4px 0 10px; }
+.kpis5 div { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 4px; text-align: center; }
+.kpis5 b { display: block; font-size: 18px; }
+.kpis5 span { font-size: 11px; color: var(--muted); }
+@media (max-width: 520px) { .kpis5 { grid-template-columns: repeat(3, 1fr); } }
+#result h4 { margin: 18px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.tree .sc { display: inline-block; padding: 3px 9px; border-radius: 8px; border: 2px solid var(--fc); font-weight: 600; }
+.tree ul ul { margin-left: 18px; }
+.list .li { cursor: default; }
+.smp { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; background: var(--card2); }
+.smp .sh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 4px; }
+.smp .sh small { color: var(--muted); }
+.smp .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.smp q { display: block; font-size: 13.5px; color: var(--text2); quotes: "„" "“"; white-space: pre-wrap; }
+:root[lang="en"] .smp q { quotes: "“" "”"; }
+.warns { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--text2); }
+.warns li { margin: 4px 0; }
+.saverow { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.saverow label { flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px; }
+.saverow input { border-radius: 12px; border: 1px solid var(--line2); background: var(--card2); color: var(--text); padding: 11px 12px; font: inherit; }
+#rcode { margin: 0; padding: 10px 14px; font-size: 12.5px; color: var(--code-text); white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#38bdf8"/></linearGradient><linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="url(#lg)"/><rect width="64" height="64" rx="18" fill="url(#gl)"/><path d="M16 32c0-9 7-16 16-16s16 7 16 16c0 2-1.5 3-3 3H19c-1.5 0-3-1-3-3z" fill="#fff"/><path d="M22 37c0 6-3 8-3 12M28 37c0 6 2 8 0 13M36 37c0 6-2 8 0 13M42 37c0 6 3 8 3 12" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="27" cy="27" r="2.3" fill="#4c3fb0"/><circle cx="37" cy="27" r="2.3" fill="#4c3fb0"/><path d="M29.5 30.5q2.5 2 5 0" stroke="#4c3fb0" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    <div class="grow"><h1 data-t="title"></h1><p data-t="tagline"></p></div>
+    <a class="iconbtn langbtn" id="langlink" href="#"></a>
+    <button class="iconbtn" id="themebtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+  </div>
+
+  <div class="notice" role="note"><span style="font-size:20px">🔒</span><div class="t"><b data-t="privT"></b><span data-t="privD"></span></div></div>
+
+  <section class="panel step"><div class="sn">1</div><div>
+    <h3 data-t="s1"></h3><p data-t="s1d"></p><p class="small muted" data-t="s1x"></p>
+  </div></section>
+
+  <section class="panel step"><div class="sn">2</div><div style="flex:1;min-width:0">
+    <h3 data-t="s2"></h3>
+    <label id="drop" class="drop"><input type="file" id="file" accept=".qdpx,.qdc,.qde,.zip" hidden><span class="dic">🪼</span><span data-t="drop"></span><span class="small muted" data-t="or"></span><span class="btn small primary" data-t="pick"></span></label>
+    <div id="busy" hidden><span class="spin"></span><span data-t="working"></span></div>
+    <div id="err" class="box warn" hidden></div>
+  </div></section>
+
+  <section class="panel step" id="step3" hidden><div class="sn">3</div><div style="flex:1;min-width:0">
+    <h3 data-t="s3"></h3>
+    <div id="result"></div>
+    <div class="saverow"><label><span class="small muted" data-t="fname"></span><input id="fname" spellcheck="false"></label><button class="btn primary" id="save" type="button">⬇ <span data-t="save"></span></button></div>
+  </div></section>
+
+  <section class="panel step" id="step4" hidden><div class="sn">4</div><div style="flex:1;min-width:0">
+    <h3 data-t="nextT"></h3><p data-t="nextD"></p>
+    <div class="codebox"><div class="codebar"><span class="lang">R</span></div><pre id="rcode"></pre></div>
+    <ul class="md mt" data-t="nextTips"></ul>
+    <button class="btn small" id="reset" type="button" data-t="resetBtn"></button>
+  </div></section>
+
+  <div class="foot" data-t="foot"></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+/* ============================================================
+   jellyqda Converter – REFI-QDA (.qdpx / .qdc, z. B. aus MAXQDA) -> .jellyqda
+   Läuft komplett im Browser: ZIP lesen (DecompressionStream), XML (DOMParser),
+   SQLite-Datei selbst schreiben. Keine Bibliotheken, kein Upload, keine Cookies.
+   ============================================================ */
+(function () {
+"use strict";
+const LANG = document.documentElement.lang === "de" ? "de" : "en";
+
+/* ---------- 1. Texte ---------- */
+const TX = {
+  de: {
+    title: "jellyqda Converter", tagline: "MAXQDA & Co. → jellyqda, direkt im Browser",
+    other: { href: "../../converter/", label: "EN", title: "English version" }, home: "../", assistant: "../assistenz/",
+    privT: "Deine Daten bleiben auf deinem Rechner.",
+    privD: "Die Umwandlung passiert vollständig in diesem Browser-Tab. Es wird nichts hochgeladen, es gibt keine Cookies und kein Tracking. Du kannst die Seite auch speichern und offline benutzen.",
+    s1: "In MAXQDA exportieren", s1d: "Exportiere dein Projekt im Austauschformat <b>REFI-QDA</b> (Dateiendung <code>.qdpx</code>). In MAXQDA findest du das im Export-Menü des Projekts als „REFI-QDA-Projekt“ (je nach Version unter <i>Start</i> bzw. <i>Projekt → Exportieren</i>). Nur den Codebaum? Dann „Codesystem als REFI-QDA-Codebuch“ (<code>.qdc</code>).",
+    s1x: "Funktioniert genauso mit Exporten aus ATLAS.ti, NVivo, QDA Miner und anderen Programmen, die REFI-QDA unterstützen.",
+    s2: "Datei hier ablegen", drop: "<b>.qdpx</b> oder <b>.qdc</b> hierher ziehen", or: "oder", pick: "Datei auswählen",
+    working: "Wird umgewandelt …", s3: "Ergebnis prüfen & speichern",
+    k: ["Dokumente", "Codes", "Codings", "Memos", "Variablen"],
+    origin: "Herkunft", tree: "Codebaum", docs: "Dokumente", docCod: (n) => n + (n === 1 ? " Coding" : " Codings"), docChars: (n) => n.toLocaleString("de-DE") + " Zeichen",
+    sample: "Stichprobe: Stimmen die Markierungen?", sampleD: "Zufällig ausgewählte Codings mit dem markierten Text. Wenn die Ausschnitte zum Code passen, sind die Positionen richtig übernommen.",
+    again: "Neue Stichprobe", check: "Positions-Check", checkOk: (a, b) => "Bei " + a + " von " + b + " prüfbaren Markierungen stimmt der Text mit dem MAXQDA-Ausschnitt überein.",
+    checkNone: "MAXQDA hat keine Textausschnitte mitgeliefert – bitte die Stichprobe von Hand prüfen.",
+    checkShift: (h) => "Hinweis: Die Positionen waren " + h + " gezählt und wurden automatisch angepasst.",
+    warnT: "Was nicht übernommen wurde", noWarn: "Alles übernommen – keine Hinweise.",
+    fname: "Dateiname", save: "Als .jellyqda speichern", saved: "Gespeichert ✓",
+    nextT: "So geht’s weiter in R",
+    nextD: "Lege die Datei in deinen Projektordner und öffne sie wie jedes jellyqda-Projekt. Beim ersten Öffnen ergänzt jellyqda automatisch Indizes und Tabellen.",
+    nextTips: ["Interviews mit Zeitmarken? In der App bei <b>Dokumente</b> „Segmente neu einteilen“ → <b>Sprecherwechsel</b> wählen.", "Behalte den MAXQDA-Export als Original auf – der Import steht im jellyqda-Protokoll (<code>qda_export(\"audit\")</code>).", "Prüfe ein paar Stellen direkt in der App, bevor du weiterarbeitest."],
+    resetBtn: "Andere Datei umwandeln",
+    w: {
+      notzip: "Das ist keine gültige .qdpx-Datei (kein ZIP-Archiv).", zip64: "Sehr große ZIP-Archive (ZIP64) werden noch nicht unterstützt.", noqde: "Im Archiv fehlt die Projektbeschreibung project.qde.",
+      xml: "Die XML-Datei ist fehlerhaft und kann nicht gelesen werden.", method: "Unbekannte Komprimierung im ZIP-Archiv.", nodecomp: "Dein Browser kann keine ZIP-Dateien entpacken. Bitte einen aktuellen Chrome, Edge, Firefox oder Safari verwenden.",
+      wrongtype: "Bitte eine .qdpx- oder .qdc-Datei wählen.",
+      pic: (n) => "Bild „" + n + "“ übersprungen (jellyqda kann nur Text).", media: (n) => "Audio/Video „" + n + "“ übersprungen – nur ein vorhandenes Transkript wird übernommen.",
+      notext: (n) => "„" + n + "“ hat keinen Text im Export und wurde übersprungen.", pdfsel: (n, k) => "„" + n + "“: " + k + " Markierung(en) im PDF-Layout (Koordinaten) – nicht übertragbar.",
+      outside: (n, k) => "„" + n + "“: " + k + " Markierung(en) außerhalb des Textes übersprungen.", nocode: (k) => k + " Coding(s) verweisen auf unbekannte Codes und wurden übersprungen.",
+      dup: (a, b) => "Doppelter Code-Name „" + a + "“ umbenannt in „" + b + "“.", memo: "Ein Hauptcode hieß „Memo“ und wurde in „Memo (MAXQDA)“ umbenannt (jellyqda reserviert diesen Namen).",
+      slash: (a) => "„/“ im Code-Namen „" + a + "“ ersetzt (jellyqda trennt Pfade mit „ / “).", bom: "Byte-Order-Mark am Textanfang entfernt.",
+      links: (k) => k + " Verknüpfung(en) zwischen Elementen (Links) gibt es in jellyqda nicht.", graphs: (k) => k + " Map(s)/Grafik(en) übersprungen.",
+      notesel: (k) => k + " Markierung(en) innerhalb von Memos übersprungen.", users: (k) => "Benutzer:innen (" + k + ") werden nicht übernommen; Erstellungsdaten der Memos bleiben erhalten.",
+      enc: (n) => "„" + n + "“ war nicht UTF-8 und wurde umkodiert – bitte Umlaute prüfen.", codeset: (k) => k + " Code-Set(s) übersprungen (nur Dokument-Sets werden zu Variablen)."
+    },
+    vCase: "Fall", vSet: "Dokumentset", projMemo: "Projektbeschreibung", descMemo: "Beschreibung", conv: "umgewandelt aus",
+    noname: "(ohne Namen)", foot: 'Teil von <a href="../">jellyqda</a> · <a href="../assistenz/">Assistenz</a> · <a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a>', theme: "Hell/Dunkel umschalten"
+  },
+  en: {
+    title: "jellyqda Converter", tagline: "MAXQDA & co. → jellyqda, right in your browser",
+    other: { href: "../de/konverter/", label: "DE", title: "Deutsche Version" }, home: "../", assistant: "../assistant/",
+    privT: "Your data stays on your computer.",
+    privD: "The conversion happens entirely in this browser tab. Nothing is uploaded, there are no cookies and no tracking. You can also save the page and use it offline.",
+    s1: "Export from MAXQDA", s1d: "Export your project in the <b>REFI-QDA</b> exchange format (file extension <code>.qdpx</code>). In MAXQDA it is in the project’s export menu as “REFI-QDA Project” (depending on the version under <i>Home</i> or <i>Project → Export</i>). Only the code tree? Then “Code system as REFI-QDA codebook” (<code>.qdc</code>).",
+    s1x: "Works just the same with exports from ATLAS.ti, NVivo, QDA Miner and other programs that support REFI-QDA.",
+    s2: "Drop the file here", drop: "Drag a <b>.qdpx</b> or <b>.qdc</b> file here", or: "or", pick: "Choose file",
+    working: "Converting …", s3: "Check & save the result",
+    k: ["Documents", "Codes", "Codings", "Memos", "Variables"],
+    origin: "Origin", tree: "Code tree", docs: "Documents", docCod: (n) => n + (n === 1 ? " coding" : " codings"), docChars: (n) => n.toLocaleString("en-GB") + " characters",
+    sample: "Sample: are the markings right?", sampleD: "Randomly chosen codings with their marked text. If the excerpts fit the code, the positions were carried over correctly.",
+    again: "New sample", check: "Position check", checkOk: (a, b) => "For " + a + " of " + b + " checkable markings the text matches the excerpt stored by MAXQDA.",
+    checkNone: "MAXQDA didn’t include text excerpts – please check the sample by hand.",
+    checkShift: (h) => "Note: positions were counted " + h + " and have been adjusted automatically.",
+    warnT: "What was not carried over", noWarn: "Everything carried over – no notes.",
+    fname: "File name", save: "Save as .jellyqda", saved: "Saved ✓",
+    nextT: "Next steps in R",
+    nextD: "Put the file into your project folder and open it like any jellyqda project. On first opening, jellyqda adds indexes and tables automatically.",
+    nextTips: ["Interviews with timestamps? In the app under <b>Documents</b>, choose “Re-segment” → <b>speaker turns</b>.", "Keep the MAXQDA export as your original – the import is recorded in the jellyqda audit trail (<code>qda_export(\"audit\")</code>).", "Check a few passages in the app before you carry on."],
+    resetBtn: "Convert another file",
+    w: {
+      notzip: "This is not a valid .qdpx file (not a ZIP archive).", zip64: "Very large ZIP archives (ZIP64) are not supported yet.", noqde: "The archive has no project description project.qde.",
+      xml: "The XML file is broken and can’t be read.", method: "Unknown compression in the ZIP archive.", nodecomp: "Your browser can’t unpack ZIP files. Please use a current Chrome, Edge, Firefox or Safari.",
+      wrongtype: "Please choose a .qdpx or .qdc file.",
+      pic: (n) => "Image “" + n + "” skipped (jellyqda handles text only).", media: (n) => "Audio/video “" + n + "” skipped – only an existing transcript is carried over.",
+      notext: (n) => "“" + n + "” has no text in the export and was skipped.", pdfsel: (n, k) => "“" + n + "”: " + k + " marking(s) in the PDF layout (coordinates) – can’t be carried over.",
+      outside: (n, k) => "“" + n + "”: " + k + " marking(s) outside the text skipped.", nocode: (k) => k + " coding(s) refer to unknown codes and were skipped.",
+      dup: (a, b) => "Duplicate code name “" + a + "” renamed to “" + b + "”.", memo: "A top-level code was called “Memo” and was renamed to “Memo (MAXQDA)” (jellyqda reserves this name).",
+      slash: (a) => "Replaced “/” in the code name “" + a + "” (jellyqda separates paths with “ / ”).", bom: "Removed a byte order mark at the start of a text.",
+      links: (k) => k + " link(s) between items – jellyqda has no links.", graphs: (k) => k + " map(s)/graph(s) skipped.",
+      notesel: (k) => k + " marking(s) inside memos skipped.", users: (k) => "Users (" + k + ") are not carried over; memo creation dates are kept.",
+      enc: (n) => "“" + n + "” was not UTF-8 and was re-encoded – please check special characters.", codeset: (k) => k + " code set(s) skipped (only document sets become variables)."
+    },
+    vCase: "Case", vSet: "Document set", projMemo: "Project description", descMemo: "Description", conv: "converted from",
+    noname: "(no name)", foot: 'Part of <a href="../">jellyqda</a> · <a href="../assistant/">Assistant</a> · <a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a>', theme: "Switch light/dark"
+  }
+}[LANG];
+
+/* ---------- 2. ZIP lesen ---------- */
+const fail = (msg) => { const e = new Error(msg); e.user = true; return e; };
+function unzipIndex(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw fail(TX.w.notzip);
+  const n = dv.getUint16(eocd + 10, true);
+  let off = dv.getUint32(eocd + 16, true);
+  if (off === 0xffffffff || n === 0xffff) throw fail(TX.w.zip64);
+  const dec = new TextDecoder("utf-8"), files = new Map();
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) throw fail(TX.w.notzip);
+    const method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+    const nlen = dv.getUint16(off + 28, true), elen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true), lho = dv.getUint32(off + 42, true);
+    const name = dec.decode(u8.subarray(off + 46, off + 46 + nlen)).replace(/\\/g, "/");
+    off += 46 + nlen + elen + clen;
+    if (name.endsWith("/")) continue;
+    const start = lho + 30 + dv.getUint16(lho + 26, true) + dv.getUint16(lho + 28, true);
+    files.set(name.toLowerCase().replace(/^\.\//, ""), { name, method, data: u8.subarray(start, start + csize) });
+  }
+  return files;
+}
+async function unzipEntry(e) {
+  if (e.method === 0) return e.data;
+  if (e.method !== 8) throw fail(TX.w.method);
+  if (typeof DecompressionStream === "undefined") throw fail(TX.w.nodecomp);
+  const s = new Blob([e.data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+function decodeText(bytes, name, notes) {
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) return new TextDecoder("utf-16le").decode(bytes.subarray(2));
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) return new TextDecoder("utf-16be").decode(bytes.subarray(2));
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+  catch (e) { notes.push(TX.w.enc(name)); return new TextDecoder("windows-1252").decode(bytes); }
+}
+
+/* ---------- 3. REFI-QDA lesen ---------- */
+const kids = (el, name) => el ? Array.from(el.children).filter((c) => c.localName === name) : [];
+const kid = (el, name) => kids(el, name)[0] || null;
+const desc = (el, name) => el ? Array.from(el.getElementsByTagNameNS("*", name)) : [];
+const txt = (el) => el ? el.textContent.trim() : "";
+const attr = (el, a) => el && el.hasAttribute(a) ? el.getAttribute(a) : null;
+
+async function readProject(file) {
+  const notes = [];
+  const lower = file.name.toLowerCase();
+  let doc, zip = null;
+  const parseXml = (s) => {
+    const d = new DOMParser().parseFromString(s.replace(/^﻿/, ""), "application/xml");
+    if (d.getElementsByTagName("parsererror").length) throw fail(TX.w.xml);
+    return d;
+  };
+  if (lower.endsWith(".qdc") || lower.endsWith(".qde") || lower.endsWith(".xml")) {
+    doc = parseXml(await file.text());
+  } else if (lower.endsWith(".qdpx") || lower.endsWith(".zip")) {
+    zip = unzipIndex(await file.arrayBuffer());
+    let qde = zip.get("project.qde");
+    if (!qde) for (const [k, v] of zip) if (k.endsWith(".qde")) { qde = v; break; }
+    if (!qde) throw fail(TX.w.noqde);
+    doc = parseXml(new TextDecoder("utf-8").decode(await unzipEntry(qde)));
+  } else throw fail(TX.w.wrongtype);
+
+  const root = doc.documentElement;
+  const readInternal = async (path, name) => {
+    if (!path || !zip) return null;
+    const m = /^internal:\/\/(.+)$/i.exec(path);
+    const rel = (m ? "sources/" + m[1] : path.replace(/^[a-z]+:\/\//i, "")).toLowerCase();
+    const e = zip.get(rel) || zip.get(rel.replace(/^sources\//, "")) || [...zip.entries()].find(([k]) => k.endsWith("/" + rel.split("/").pop()))?.[1];
+    return e ? decodeText(await unzipEntry(e), name, notes) : null;
+  };
+
+  // Codes (Baum)
+  const codes = [];
+  const codeByGuid = new Map();
+  const walk = (el, parent) => kids(el, "Code").forEach((c) => {
+    const o = { guid: attr(c, "guid"), name: attr(c, "name") || TX.noname, color: attr(c, "color"), desc: txt(kid(c, "Description")), parent, notes: kids(c, "NoteRef").map((r) => attr(r, "targetGUID")) };
+    codes.push(o); if (o.guid) codeByGuid.set(o.guid, o); walk(c, o);
+  });
+  const cb = root.localName === "CodeBook" ? root : kid(root, "CodeBook");
+  walk(kid(cb, "Codes"), null);
+
+  // Notizen (Memos)
+  const noteByGuid = new Map();
+  for (const n of kids(kid(root, "Notes"), "Note")) {
+    let t = txt(kid(n, "PlainTextContent"));
+    if (!t && attr(n, "plainTextPath")) t = ((await readInternal(attr(n, "plainTextPath"), attr(n, "name"))) || "").trim();
+    const sel = kids(n, "PlainTextSelection").length;
+    if (sel) notes.push(TX.w.notesel(sel));
+    noteByGuid.set(attr(n, "guid"), { name: attr(n, "name") || "", text: t || txt(kid(n, "Description")), created: attr(n, "creationDateTime") || attr(n, "modifiedDateTime"), used: false });
+  }
+
+  // Variablen
+  const varByGuid = new Map(kids(kid(root, "Variables"), "Variable").map((v) => [attr(v, "guid"), attr(v, "name") || "?"]));
+  const readVars = (el) => {
+    const out = {};
+    for (const vv of kids(el, "VariableValue")) {
+      const ref = attr(kid(vv, "VariableRef"), "targetGUID");
+      const valEl = Array.from(vv.children).find((c) => /Value$/.test(c.localName));
+      if (ref && valEl) out[varByGuid.get(ref) || ref] = valEl.textContent.trim();
+    }
+    return out;
+  };
+
+  // Quellen
+  const sources = [];
+  const srcByGuid = new Map();
+  const addText = async (el, name, guid, format, outer) => {
+    let text = null;
+    if (attr(el, "plainTextPath")) text = await readInternal(attr(el, "plainTextPath"), name);
+    if (text == null && kid(el, "PlainTextContent")) text = kid(el, "PlainTextContent").textContent;
+    if (text == null) { notes.push(TX.w.notext(name)); return; }
+    if (text.charCodeAt(0) === 0xfeff) { text = text.slice(1); notes.push(TX.w.bom); }
+    const sels = kids(el, "PlainTextSelection").map((s) => ({
+      s: +attr(s, "startPosition"), e: +attr(s, "endPosition"), name: attr(s, "name") || "",
+      comment: txt(kid(s, "Description")), created: attr(s, "creationDateTime"),
+      codes: kids(s, "Coding").map((c) => attr(kid(c, "CodeRef"), "targetGUID")),
+      notes: kids(s, "NoteRef").map((r) => attr(r, "targetGUID"))
+    }));
+    const src = { guid, name, format, text, sels, desc: txt(kid(outer, "Description")), notes: kids(outer, "NoteRef").map((r) => attr(r, "targetGUID")), vars: readVars(outer) };
+    sources.push(src); if (guid) srcByGuid.set(guid, src);
+  };
+  for (const s of Array.from(kid(root, "Sources")?.children || [])) {
+    const name = attr(s, "name") || TX.noname, guid = attr(s, "guid");
+    if (s.localName === "TextSource") await addText(s, name, guid, "txt", s);
+    else if (s.localName === "PDFSource") {
+      const rep = kid(s, "Representation");
+      const pdfSel = kids(s, "PDFSelection").length;
+      if (pdfSel) notes.push(TX.w.pdfsel(name, pdfSel));
+      if (rep) await addText(rep, name, guid, "pdf", s); else notes.push(TX.w.notext(name));
+    } else if (s.localName === "PictureSource") notes.push(TX.w.pic(name));
+    else if (s.localName === "AudioSource" || s.localName === "VideoSource") {
+      const tr = kids(s, "Transcript");
+      if (!tr.length) notes.push(TX.w.media(name));
+      for (const t of tr) await addText(t, name + (tr.length > 1 ? " – " + (attr(t, "name") || "") : ""), tr.length === 1 ? guid : attr(t, "guid"), "txt", s);
+    }
+  }
+  // Fälle und Sets -> Variablen
+  for (const c of kids(kid(root, "Cases"), "Case")) {
+    const v = readVars(c), cname = attr(c, "name");
+    for (const r of kids(c, "SourceRef")) {
+      const src = srcByGuid.get(attr(r, "targetGUID"));
+      if (src) { Object.assign(src.vars, v); if (cname) src.vars[TX.vCase] = cname; }
+    }
+  }
+  let codeSets = 0;
+  for (const st of kids(kid(root, "Sets"), "Set")) {
+    const members = kids(st, "MemberSource");
+    if (!members.length && kids(st, "MemberCode").length) { codeSets++; continue; }
+    for (const m of members) {
+      const src = srcByGuid.get(attr(m, "targetGUID"));
+      if (src) src.vars[TX.vSet] = src.vars[TX.vSet] ? src.vars[TX.vSet] + ", " + attr(st, "name") : attr(st, "name");
+    }
+  }
+  if (codeSets) notes.push(TX.w.codeset(codeSets));
+  const nLinks = kids(kid(root, "Links"), "Link").length; if (nLinks) notes.push(TX.w.links(nLinks));
+  const nGraphs = kids(kid(root, "Graphs"), "Graph").length; if (nGraphs) notes.push(TX.w.graphs(nGraphs));
+  const nUsers = kids(kid(root, "Users"), "User").length; if (nUsers) notes.push(TX.w.users(nUsers));
+
+  return {
+    kind: root.localName === "CodeBook" ? "codebook" : "project",
+    projName: attr(root, "name") || file.name.replace(/\.[^.]+$/, ""), origin: attr(root, "origin") || "",
+    projDesc: txt(kid(root, "Description")), projNotes: kids(root, "NoteRef").map((r) => attr(r, "targetGUID")),
+    codes, codeByGuid, noteByGuid, sources, notes
+  };
+}
+
+/* ---------- 4. Text normalisieren, Positionen umrechnen ---------- */
+// jellyqda: CRLF -> LF, NFC, Leerraum am Ende weg; Positionen sind Zeichen (Codepoints), 1-basiert, Ende inklusive.
+// REFI-QDA: Codepoints ab 0, Ende exklusiv. Falls MAXQDA Textausschnitte mitliefert, wird die Zählweise geprüft.
+const squash = (s) => s.replace(/\r\n?/g, "\n").normalize("NFC").replace(/\s+/g, " ").trim();
+function detectShift(cps, sels) {
+  const tests = sels.filter((s) => s.name && squash(s.name).length >= 4).slice(0, 400);
+  if (!tests.length) return { ds: 0, de: 0, checked: 0, ok: 0 };
+  const score = (ds, de) => tests.reduce((a, s) => {
+    const got = squash(cps.slice(Math.max(0, s.s + ds), Math.max(0, s.e + de)).join("")), want = squash(s.name);
+    const n = Math.min(got.length, want.length, 60);
+    return a + (n >= 3 && got.slice(0, n) === want.slice(0, n) && Math.abs(got.length - want.length) <= Math.max(2, want.length * 0.02) ? 1 : 0);
+  }, 0);
+  const H = [[0, 0], [0, 1], [-1, 0], [-1, -1], [1, 1]];
+  let best = H[0], bs = score(0, 0);
+  for (const h of H.slice(1)) { const v = score(h[0], h[1]); if (v > bs * 1.5 && v > tests.length * 0.3) { best = h; bs = v; } }
+  return { ds: best[0], de: best[1], checked: tests.length, ok: bs };
+}
+function convertText(raw, sels) {
+  const cps = Array.from(raw);
+  const shift = detectShift(cps, sels);
+  // CRLF/CR -> LF mit Positions-Abbildung
+  const map = new Int32Array(cps.length + 1), out = [];
+  for (let i = 0; i < cps.length; i++) {
+    map[i] = out.length;
+    if (cps[i] === "\r") { if (cps[i + 1] === "\n") continue; out.push("\n"); } else out.push(cps[i]);
+  }
+  map[cps.length] = out.length;
+  const clamp = (p) => Math.max(0, Math.min(cps.length, p));
+  const pos = sels.map((s) => [map[clamp(s.s + shift.ds)], map[clamp(s.e + shift.de)]]);
+  // NFC stückweise zwischen allen Markierungsgrenzen
+  const bounds = Array.from(new Set([0, out.length].concat(...pos))).sort((a, b) => a - b);
+  const nmap = new Map(); let text = "", len = 0;
+  for (let k = 0; k < bounds.length; k++) {
+    nmap.set(bounds[k], len);
+    if (k < bounds.length - 1) { const piece = out.slice(bounds[k], bounds[k + 1]).join("").normalize("NFC"); text += piece; len += Array.from(piece).length; }
+  }
+  text = text.replace(/[ \t\n]+$/, "");
+  const L = Array.from(text).length;
+  const res = pos.map(([a, b]) => { const s = Math.min(nmap.get(a), L), e = Math.min(nmap.get(b), L); return e > s ? [s + 1, e] : null; });
+  return { text, len: L, pos: res, shift };
+}
+
+/* ---------- 5. Modell für jellyqda bauen ---------- */
+const PALETTE = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999"];
+const now = () => new Date().toISOString().replace(/\.\d+Z$/, "Z");
+const normColor = (c) => {
+  if (!c) return null;
+  const m = /^#?([0-9a-f]{8}|[0-9a-f]{6})$/i.exec(c.trim());
+  if (!m) return null;
+  const h = m[1].length === 8 ? m[1].slice(2) : m[1];   // #AARRGGBB -> #RRGGBB
+  return "#" + h.toUpperCase();
+};
+async function sha256(text) {
+  try { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)); return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, "0")).join(""); }
+  catch (e) { return null; }
+}
+async function buildModel(P, fileName) {
+  const notes = P.notes.slice(), t = now();
+  const origin = (P.origin || "REFI-QDA").trim();
+  // Codes
+  const codeRows = [], codeId = new Map(), seen = new Set();
+  let pal = 0;
+  P.codes.forEach((c) => {
+    let label = c.name.replace(/\s+/g, " ").trim() || TX.noname;
+    if (label.includes("/")) { const l2 = label.replace(/\s*\/\s*/g, " – "); notes.push(TX.w.slash(label)); label = l2; }
+    const pid = c.parent ? codeId.get(c.parent) : null;
+    if (!pid && label === "Memo" && !P.codes.some((x) => x.parent === c)) { label = "Memo (MAXQDA)"; notes.push(TX.w.memo); }
+    let l = label, k = 2;
+    while (seen.has((pid || 0) + "\u0000" + l)) l = label + " (" + k++ + ")";
+    if (l !== label) notes.push(TX.w.dup(label, l));
+    seen.add((pid || 0) + "\u0000" + l);
+    const parentRow = pid ? codeRows[pid - 1] : null;
+    const color = normColor(c.color) || (parentRow ? parentRow.color : PALETTE[pal++ % PALETTE.length]);
+    const id = codeRows.length + 1;
+    codeRows.push({ id, label: l, parent_id: pid, color, description: c.desc || "", src: c });
+    codeId.set(c, id);
+  });
+  // Dokumente, Codings
+  const srcRows = [], codingRows = [], memoRows = [], events = [];
+  let nocode = 0, nVars = new Set(), check = { checked: 0, ok: 0, shifted: null };
+  const usedNames = new Set();
+  const addMemo = (ref, kind, extra) => {
+    const n = P.noteByGuid.get(ref); if (!n) return;
+    n.used = true;
+    memoRows.push(Object.assign({ id: memoRows.length + 1, text_: n.text, created_at: n.created || t, kind, title: n.name, source_id: null, code_id: null, start: null, end: null, updated_at: n.created || t }, extra));
+  };
+  for (const s of P.sources) {
+    const cv = convertText(s.text, s.sels);
+    check.checked += cv.shift.checked; check.ok += cv.shift.ok;
+    if (cv.shift.ds || cv.shift.de) check.shifted = (cv.shift.ds === -1 ? (LANG === "de" ? "ab 1" : "from 1") : "") + (cv.shift.de === 1 ? (LANG === "de" ? " mit eingeschlossenem Ende" : " with inclusive end") : "");
+    let name = s.name, k = 2;
+    while (usedNames.has(name)) name = s.name + " (" + k++ + ")";
+    usedNames.add(name);
+    const id = srcRows.length + 1;
+    Object.keys(s.vars).forEach((v) => nVars.add(v));
+    const meta = { file: name, original: null, sha256: await sha256(cv.text), encoding: "UTF-8", pages: null, format: s.format, imported_at: t,
+      converted_from: origin, qdpx_file: fileName, variables: s.vars };
+    if (!Object.keys(s.vars).length) delete meta.variables;
+    srcRows.push({ id, name, format: s.format, frozen_text: cv.text, meta_json: JSON.stringify(meta), chars: cv.len, codings: 0 });
+    let outside = 0;
+    s.sels.forEach((sel, i) => {
+      const p = cv.pos[i];
+      if (!p) { if (sel.codes.length || sel.notes.length) outside++; return; }
+      sel.codes.forEach((g) => {
+        const c = P.codeByGuid.get(g), cid = c && codeId.get(c);
+        if (!cid) { nocode++; return; }
+        codingRows.push({ id: codingRows.length + 1, source_id: id, code_id: cid, start: p[0], end: p[1], memo: sel.comment || "", paraphrase: "", generalization: "" });
+        srcRows[id - 1].codings++;
+      });
+      if (!sel.codes.length && sel.comment) memoRows.push({ id: memoRows.length + 1, text_: sel.comment, created_at: sel.created || t, kind: "passage", title: "", source_id: id, code_id: null, start: p[0], end: p[1], updated_at: sel.created || t });
+      sel.notes.forEach((g) => addMemo(g, "passage", { source_id: id, start: p[0], end: p[1] }));
+    });
+    if (outside) notes.push(TX.w.outside(name, outside));
+    if (s.desc) memoRows.push({ id: memoRows.length + 1, text_: s.desc, created_at: t, kind: "document", title: TX.descMemo, source_id: id, code_id: null, start: null, end: null, updated_at: t });
+    s.notes.forEach((g) => addMemo(g, "document", { source_id: id }));
+  }
+  if (nocode) notes.push(TX.w.nocode(nocode));
+  codeRows.forEach((c) => c.src.notes.forEach((g) => addMemo(g, "code", { code_id: c.id })));
+  if (P.projDesc) memoRows.push({ id: memoRows.length + 1, text_: P.projDesc, created_at: t, kind: "project", title: TX.projMemo, source_id: null, code_id: null, start: null, end: null, updated_at: t });
+  P.projNotes.forEach((g) => addMemo(g, "project", {}));
+  for (const [, n] of P.noteByGuid) if (!n.used && n.text) { n.used = true; memoRows.push({ id: memoRows.length + 1, text_: n.text, created_at: n.created || t, kind: "project", title: n.name, source_id: null, code_id: null, start: null, end: null, updated_at: n.created || t }); }
+  // Protokoll (nur System-Ereignisse, die Rückgängig nicht beeinflussen)
+  const outName = (P.projName || "projekt").replace(/[\\/:*?"<>|]+/g, "-").trim() + ".jellyqda";
+  events.push({ action: "project_create", details: JSON.stringify({ file: outName }), created_at: t });
+  srcRows.forEach((s) => events.push({ action: "import", details: JSON.stringify({ source_id: s.id, file: s.name, format: s.format, chars: s.chars, sha256: JSON.parse(s.meta_json).sha256, warning: false, converted_from: origin }), created_at: t }));
+  events.push({ action: "qdpx_convert", details: JSON.stringify({ file: fileName, origin, sources: srcRows.length, codes: codeRows.length, codings: codingRows.length, memos: memoRows.length, notes, desc: TX.conv + " " + fileName }), created_at: t });
+  events.forEach((e, i) => e.id = i + 1);
+  return { srcRows, codeRows, codingRows, memoRows, events, notes, nVars: nVars.size, check, outName, origin };
+}
+
+/* ---------- 6. SQLite-Datei schreiben ---------- */
+// Minimaler Writer für das dokumentierte SQLite-Dateiformat (https://sqlite.org/fileformat2.html):
+// Tabellen-B-Bäume mit Überlaufseiten. Indizes legt jellyqda beim ersten qda_open() selbst an.
+const SCHEMA = {
+  sources: "CREATE TABLE sources (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      name TEXT NOT NULL,\n      format TEXT NOT NULL,\n      frozen_text TEXT NOT NULL,\n      meta_json TEXT NOT NULL DEFAULT '{}'\n    )",
+  codes: "CREATE TABLE codes (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      label TEXT NOT NULL,\n      parent_id INTEGER REFERENCES codes(id) ON DELETE CASCADE,\n      color TEXT NOT NULL DEFAULT '#E69F00',\n      description TEXT NOT NULL DEFAULT '',\n      anchor TEXT DEFAULT '',\n      coding_rule TEXT DEFAULT ''\n    )",
+  codings: "CREATE TABLE codings (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,\n      code_id INTEGER NOT NULL REFERENCES codes(id) ON DELETE CASCADE,\n      start INTEGER NOT NULL,\n      end INTEGER NOT NULL,\n      memo TEXT NOT NULL DEFAULT '',\n      paraphrase TEXT DEFAULT '',\n      generalization TEXT DEFAULT '',\n      CHECK (start >= 1 AND end >= start)\n    )",
+  memos: "CREATE TABLE memos (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      text_ TEXT NOT NULL,\n      created_at TEXT NOT NULL,\n      kind TEXT NOT NULL DEFAULT 'project',\n      title TEXT NOT NULL DEFAULT '',\n      source_id INTEGER REFERENCES sources(id) ON DELETE CASCADE,\n      code_id INTEGER REFERENCES codes(id) ON DELETE CASCADE,\n      start INTEGER,\n      end INTEGER,\n      updated_at TEXT\n    )",
+  events: "CREATE TABLE events (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      action TEXT NOT NULL,\n      details TEXT NOT NULL DEFAULT '{}',\n      created_at TEXT NOT NULL\n    )"
+};
+const COLS = {
+  sources: ["id", "name", "format", "frozen_text", "meta_json"],
+  codes: ["id", "label", "parent_id", "color", "description", "anchor", "coding_rule"],
+  codings: ["id", "source_id", "code_id", "start", "end", "memo", "paraphrase", "generalization"],
+  memos: ["id", "text_", "created_at", "kind", "title", "source_id", "code_id", "start", "end", "updated_at"],
+  events: ["id", "action", "details", "created_at"]
+};
+function sqliteBytes(M) {
+  const PS = 4096, enc = new TextEncoder(), pages = [null];
+  const alloc = () => { pages.push(new Uint8Array(PS)); return pages.length; };
+  const varint = (n) => { if (n < 0x80) return [n]; const g = []; while (n > 0) { g.unshift(n % 128); n = Math.floor(n / 128); } return g.map((x, i) => i < g.length - 1 ? x | 0x80 : x); };
+  const intBytes = (v, n) => { const b = []; let x = v < 0 ? 2 ** (8 * n) + v : v; for (let i = 0; i < n; i++) { b.unshift(x % 256); x = Math.floor(x / 256); } return b; };
+  function record(vals) {
+    const types = [], body = [];
+    for (const v of vals) {
+      if (v === null || v === undefined) types.push(0);
+      else if (typeof v === "number") {
+        if (v === 0) types.push(8); else if (v === 1) types.push(9);
+        else { const sizes = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 6], [6, 8]]; const [t, n] = sizes.find(([, n]) => v >= -(2 ** (8 * n - 1)) && v < 2 ** (8 * n - 1)); types.push(t); body.push(...intBytes(v, n)); }
+      } else { const b = enc.encode(String(v)); types.push(13 + 2 * b.length); for (let i = 0; i < b.length; i++) body.push(b[i]); }
+    }
+    const th = types.flatMap(varint); let hs = th.length + 1;
+    while (varint(hs).length + th.length !== hs) hs = varint(hs).length + th.length;
+    const out = new Uint8Array(hs + body.length);
+    out.set(varint(hs)); out.set(th, varint(hs).length); out.set(body, hs);
+    return out;
+  }
+  function leafCell(rowid, payload) {
+    const U = PS, P = payload.length, X = U - 35, Mn = Math.floor((U - 12) * 32 / 255) - 23;
+    let local = P;
+    if (P > X) { const K = Mn + ((P - Mn) % (U - 4)); local = K <= X ? K : Mn; }
+    const head = varint(P).concat(varint(rowid));
+    const cell = new Uint8Array(head.length + local + (local < P ? 4 : 0));
+    cell.set(head); cell.set(payload.subarray(0, local), head.length);
+    if (local < P) {
+      let rest = payload.subarray(local), prev = null, first = 0;
+      while (rest.length) {
+        const pg = alloc(), chunk = rest.subarray(0, U - 4);
+        pages[pg - 1].set(chunk, 4);
+        if (prev) new DataView(pages[prev - 1].buffer).setUint32(0, pg); else first = pg;
+        prev = pg; rest = rest.subarray(U - 4);
+      }
+      new DataView(cell.buffer).setUint32(head.length + local, first);
+    }
+    return cell;
+  }
+  function writePage(pg, type, cells, right) {
+    const p = pages[pg - 1], dv = new DataView(p.buffer), off = pg === 1 ? 100 : 0, hl = right != null ? 12 : 8;
+    let pos = PS;
+    cells.forEach((c, i) => { pos -= c.length; p.set(c, pos); dv.setUint16(off + hl + 2 * i, pos); });
+    p[off] = type; dv.setUint16(off + 1, 0); dv.setUint16(off + 3, cells.length); dv.setUint16(off + 5, cells.length ? pos : PS === 65536 ? 0 : PS); p[off + 7] = 0;
+    if (right != null) dv.setUint32(off + 8, right);
+  }
+  function buildTree(rows, rootOnPage1) {
+    const cells = rows.map((r) => ({ key: r[0], c: leafCell(r[0], record(r[1])) }));
+    if (rootOnPage1) {
+      const used = 100 + 8 + cells.reduce((a, x) => a + 2 + x.c.length, 0);
+      if (used > PS) throw new Error("schema too large for page 1");
+      writePage(1, 0x0d, cells.map((x) => x.c)); return 1;
+    }
+    let level = [], cur = [], used = 8;
+    const flushLeaf = () => { const pg = alloc(); writePage(pg, 0x0d, cur.map((x) => x.c)); level.push({ pg, key: cur.length ? cur[cur.length - 1].key : 0 }); cur = []; used = 8; };
+    for (const x of cells) { if (used + 2 + x.c.length > PS && cur.length) flushLeaf(); cur.push(x); used += 2 + x.c.length; }
+    flushLeaf();
+    while (level.length > 1) {
+      const next = []; let grp = [], u = 12;
+      const flush = () => {
+        const last = grp[grp.length - 1], pg = alloc();
+        const ic = grp.slice(0, -1).map((g) => { const k = varint(g.key), c = new Uint8Array(4 + k.length); new DataView(c.buffer).setUint32(0, g.pg); c.set(k, 4); return c; });
+        writePage(pg, 0x05, ic, last.pg); next.push({ pg, key: last.key }); grp = []; u = 12;
+      };
+      for (const e of level) {
+        if (grp.length && u + 2 + 4 + varint(grp[grp.length - 1].key).length > PS) flush();
+        if (grp.length) u += 2 + 4 + varint(grp[grp.length - 1].key).length;
+        grp.push(e);
+      }
+      flush(); level = next;
+    }
+    return level[0].pg;
+  }
+  pages[0] = new Uint8Array(PS);
+  const tables = [["sources", M.srcRows], ["codes", M.codeRows], ["codings", M.codingRows], ["memos", M.memoRows], ["events", M.events]];
+  const master = [], seq = [];
+  let rid = 1;
+  for (const [name, rows] of tables) {
+    const root = buildTree(rows.map((r) => [r.id, COLS[name].map((c) => c === "id" ? null : r[c] === undefined ? null : r[c])]));
+    master.push([rid++, ["table", name, name, root, SCHEMA[name]]]);
+    if (name === "sources") master.push([rid++, ["table", "sqlite_sequence", "sqlite_sequence", -1, "CREATE TABLE sqlite_sequence(name,seq)"]]);
+    if (rows.length) seq.push([seq.length + 1, [name, rows[rows.length - 1].id]]);
+  }
+  const seqRoot = buildTree(seq);
+  master.forEach((m) => { if (m[1][3] === -1) m[1][3] = seqRoot; });
+  buildTree(master, true);
+  const h = new DataView(pages[0].buffer);
+  enc.encodeInto("SQLite format 3\u0000", pages[0]);
+  h.setUint16(16, PS); pages[0][18] = 1; pages[0][19] = 1; pages[0][20] = 0; pages[0][21] = 64; pages[0][22] = 32; pages[0][23] = 32;
+  h.setUint32(24, 1); h.setUint32(28, pages.length); h.setUint32(40, 1); h.setUint32(44, 4); h.setUint32(56, 1); h.setUint32(92, 1); h.setUint32(96, 3045001);
+  const out = new Uint8Array(pages.length * PS);
+  pages.forEach((p, i) => out.set(p, i * PS));
+  return out;
+}
+
+/* ---------- 7. Oberfläche ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let RESULT = null;
+const cpSlice = (text, s, e) => Array.from(text).slice(s - 1, e).join("");
+function treeHtml(rows) {
+  const by = new Map(); rows.forEach((r) => { const k = r.parent_id || 0; if (!by.has(k)) by.set(k, []); by.get(k).push(r); });
+  const cnt = new Map(); RESULT.M.codingRows.forEach((c) => cnt.set(c.code_id, (cnt.get(c.code_id) || 0) + 1));
+  const sum = (id) => (cnt.get(id) || 0) + (by.get(id) || []).reduce((a, r) => a + sum(r.id), 0);
+  const rec = (pid, depth) => (by.get(pid) || []).map((r) => '<li style="--fc:' + r.color + '"><span class="' + (depth ? "sc" : "cf") + '">' + esc(r.label) + '</span><span class="n">' + sum(r.id) + "</span>" + (by.has(r.id) ? "<ul>" + rec(r.id, depth + 1) + "</ul>" : "") + "</li>").join("");
+  return '<ul class="tree">' + rec(0, 0) + "</ul>";
+}
+function sampleHtml() {
+  const M = RESULT.M, C = M.codingRows;
+  if (!C.length) return "";
+  const pick = C.length <= 5 ? C : Array.from({ length: 5 }, () => C[Math.floor(Math.random() * C.length)]);
+  const path = (id) => { const r = M.codeRows[id - 1]; return r.parent_id ? path(r.parent_id) + " / " + r.label : r.label; };
+  return pick.map((c) => {
+    const s = M.srcRows[c.source_id - 1], t = cpSlice(s.frozen_text, c.start, c.end);
+    return '<div class="smp"><div class="sh"><span class="dot" style="background:' + M.codeRows[c.code_id - 1].color + '"></span><b>' + esc(path(c.code_id)) + "</b><small>" + esc(s.name) + " · " + c.start + "–" + c.end + "</small></div><q>" + esc(t.length > 280 ? t.slice(0, 277) + " …" : t) + "</q></div>";
+  }).join("");
+}
+function render() {
+  const R = RESULT, M = R.M;
+  const ck = M.check;
+  $("result").innerHTML =
+    '<div class="kpis5">' + [M.srcRows.length, M.codeRows.length, M.codingRows.length, M.memoRows.length, M.nVars].map((v, i) => "<div><b>" + v + "</b><span>" + TX.k[i] + "</span></div>").join("") + "</div>" +
+    '<p class="small muted">' + TX.origin + ": <b>" + esc(M.origin || "REFI-QDA") + "</b> · " + esc(R.file) + "</p>" +
+    (ck.checked ? '<div class="box ' + (ck.ok >= ck.checked * 0.9 ? "tip" : "warn") + '"><span>' + (ck.ok >= ck.checked * 0.9 ? "✅" : "⚠️") + "</span><div><b>" + TX.check + "</b>" + TX.checkOk(ck.ok, ck.checked) + (ck.shifted ? " " + TX.checkShift(ck.shifted) : "") + "</div></div>"
+      : M.codingRows.length ? '<div class="box warn"><span>🔎</span><div><b>' + TX.check + "</b>" + TX.checkNone + "</div></div>" : "") +
+    (M.codeRows.length ? '<h4>' + TX.tree + "</h4>" + treeHtml(M.codeRows) : "") +
+    (M.srcRows.length ? "<h4>" + TX.docs + '</h4><div class="list">' + M.srcRows.map((s) => '<div class="li"><span class="t"><b>' + esc(s.name) + "</b><small>" + TX.docChars(s.chars) + " · " + TX.docCod(s.codings) + (JSON.parse(s.meta_json).variables ? " · " + esc(Object.entries(JSON.parse(s.meta_json).variables).map(([k, v]) => k + ": " + v).join(", ")) : "") + "</small></span></div>").join("") + "</div>" : "") +
+    (M.codingRows.length ? "<h4>" + TX.sample + '</h4><p class="small muted" style="margin-top:0">' + TX.sampleD + '</p><div id="smp">' + sampleHtml() + '</div><button class="btn small" id="again">' + TX.again + "</button>" : "") +
+    "<h4>" + TX.warnT + "</h4>" + (M.notes.length ? '<ul class="warns">' + Array.from(new Set(M.notes)).map((n) => "<li>" + esc(n) + "</li>").join("") + "</ul>" : '<p class="small">' + TX.noWarn + "</p>");
+  $("fname").value = M.outName;
+  $("step3").hidden = false; $("step4").hidden = false;
+  const again = $("again"); if (again) again.onclick = () => { $("smp").innerHTML = sampleHtml(); };
+  $("step3").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function handle(file) {
+  $("err").hidden = true; $("busy").hidden = false; $("step3").hidden = true; $("step4").hidden = true;
+  try {
+    const P = await readProject(file);
+    const M = await buildModel(P, file.name);
+    const bytes = sqliteBytes(M);
+    RESULT = { M, bytes, file: file.name };
+    render();
+  } catch (e) {
+    console.error(e);
+    $("err").textContent = e.user ? e.message : (LANG === "de" ? "Unerwarteter Fehler: " : "Unexpected error: ") + e.message;
+    $("err").hidden = false;
+  } finally { $("busy").hidden = true; }
+}
+function save() {
+  if (!RESULT) return;
+  let n = $("fname").value.trim() || RESULT.M.outName;
+  if (!/\.jellyqda$/i.test(n)) n += ".jellyqda";
+  const url = URL.createObjectURL(new Blob([RESULT.bytes], { type: "application/vnd.sqlite3" }));
+  const a = document.createElement("a"); a.href = url; a.download = n; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  const b = $("save"); b.textContent = TX.saved; setTimeout(() => { b.innerHTML = SAVE_LABEL; }, 2000);
+  $("rcode").textContent = 'library(jellyqda)\nqda_open("' + n + '")\nqda_app()';
+}
+let SAVE_LABEL = "";
+function init() {
+  try { const t = localStorage.getItem("jellyqda-assistenz-v1"); const th = t && JSON.parse(t).theme; if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  if (!document.documentElement.getAttribute("data-theme")) document.documentElement.setAttribute("data-theme", matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  document.querySelectorAll("[data-t]").forEach((el) => { const v = el.dataset.t.split(".").reduce((o, k) => o[k], TX); el.innerHTML = Array.isArray(v) ? v.map((x) => "<li>" + x + "</li>").join("") : v; });
+  const ol = $("langlink"); ol.href = TX.other.href; ol.textContent = TX.other.label; ol.title = TX.other.title;
+  $("themebtn").setAttribute("aria-label", TX.theme);
+  $("themebtn").onclick = () => {
+    const th = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", th);
+    try { const s = JSON.parse(localStorage.getItem("jellyqda-assistenz-v1") || "{}"); s.theme = th; localStorage.setItem("jellyqda-assistenz-v1", JSON.stringify(s)); } catch (e) {}
+  };
+  SAVE_LABEL = $("save").innerHTML;
+  const dz = $("drop"), fi = $("file");
+  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("over"); });
+  dz.addEventListener("dragleave", () => dz.classList.remove("over"));
+  dz.addEventListener("drop", (e) => { e.preventDefault(); dz.classList.remove("over"); if (e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]); });
+  fi.addEventListener("change", () => { if (fi.files[0]) handle(fi.files[0]); fi.value = ""; });
+  $("save").onclick = save;
+  $("reset").onclick = () => { RESULT = null; $("step3").hidden = true; $("step4").hidden = true; window.scrollTo({ top: 0, behavior: "smooth" }); };
+  $("rcode").textContent = 'library(jellyqda)\nqda_open("projekt.jellyqda")\nqda_app()';
+}
+init();
+// Für Tests: window.__jq = { readProject, buildModel, sqliteBytes }
+window.__jq = { readProject, buildModel, sqliteBytes };
+})();
+
+</script>
+</body>
+</html>
