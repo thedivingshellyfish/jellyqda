@@ -4,7 +4,9 @@
 
 > Contact: jellyqda {@} systemli.org or in github | Later, maybe: a community space on Matrix or Discord
 
-**DEMO:** [https://thedivingshellyfish.shinyapps.io/jellyqda-demo/](https://thedivingshellyfish.shinyapps.io/jellyqda-demo/)
+- **DEMO:** [https://thedivingshellyfish.shinyapps.io/jellyqda-demo/](https://thedivingshellyfish.shinyapps.io/jellyqda-demo/)
+- **Converter:** MAXQDA & co. → jellyqda, right in your browser > [https://thedivingshellyfish.github.io/jellyqda/converter/](https://thedivingshellyfish.github.io/jellyqda/converter/)
+- **Assistant:** Qualitative research – step by step > [https://thedivingshellyfish.github.io/jellyqda/assistant/](https://thedivingshellyfish.github.io/jellyqda/assistant/)
 
 # jellyqda
 
