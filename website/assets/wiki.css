@@ -1,0 +1,34 @@
+/* jellyqda web wiki (built by dev/wiki/build_wiki.sh from docs/wiki/).
+   Colours, fonts, header and dark mode come from style.css. */
+body.wiki header { border-bottom: 1px solid var(--line); }
+.wiki .brand img { display: block; border-radius: 7px; }
+.wikigrid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; padding-top: 34px; padding-bottom: 60px; }
+.wikiside { position: sticky; top: 84px; align-self: start; max-height: calc(100vh - 100px); overflow-y: auto; font-size: .92rem; }
+.wikiside p { margin: 16px 0 6px; color: var(--ink-2); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+.wikiside p:first-child { margin-top: 0; text-transform: none; letter-spacing: 0; font-size: .92rem; color: var(--ink); }
+.wikiside ul { list-style: none; margin: 0; padding: 0; }
+.wikiside li a { display: block; padding: 4px 10px; border-radius: 7px; color: var(--ink); text-decoration: none; }
+.wikiside li a:hover { background: var(--surface-2); }
+.wikiside a[aria-current="page"] { background: var(--surface-2); color: var(--blue); font-weight: 650; }
+.wikimain { min-width: 0; max-width: 820px; }
+.wikimain h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 18px; letter-spacing: -.015em; }
+.wikimain h2 { font-size: 1.35rem; margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+.wikimain h3 { font-size: 1.08rem; margin: 26px 0 8px; }
+.wikimain img { height: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); margin: 8px 0 16px; }
+.wikimain table { border-collapse: collapse; width: 100%; margin: 12px 0 20px; font-size: .93rem; display: block; overflow-x: auto; }
+.wikimain th, .wikimain td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.wikimain th { color: var(--ink-2); font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+.wikimain td table, .wikimain table table { display: table; }
+.wikimain pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; line-height: 1.5; }
+.wikimain :not(pre) > code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; }
+.wikimain blockquote { margin: 0 0 20px; padding: 8px 14px; border-left: 3px solid var(--blue); background: var(--surface); border-radius: 0 8px 8px 0; color: var(--ink-2); }
+.wikimain blockquote p { margin: 0; }
+.wikimain hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0 16px; }
+.wikifoot { border-top: 1px solid var(--line); padding: 22px 0 34px; color: var(--ink-2); font-size: .88rem; }
+.wikifoot p { margin: 0; }
+@media (max-width: 900px) {
+  .wikigrid { grid-template-columns: 1fr; gap: 20px; }
+  .wikiside { position: static; max-height: none; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .wikiside ul { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+  .wiki .nav nav { display: none; }
+}

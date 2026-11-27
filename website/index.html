@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>jellyqda</title>
-<link rel="icon" href="https://raw.githubusercontent.com/thedivingshellyfish/jellyqda/36f8e88521b78088bc088803a0ef59fd0f542320/website/jellyqda-logo.svg" type="image/svg+xml">
+<link rel="icon" href="jellyqda-logo.svg" type="image/svg+xml">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="jellyqda: free, fully offline qualitative content analysis of interviews in R and RStudio. A project is one file, every action lands in the audit trail.">
 <link rel="stylesheet" href="assets/style.css">
@@ -19,13 +19,14 @@
     </a>
     <nav aria-label="Main">
       <a href="#workflow">How it works</a>
+      <a href="#new">New</a>
       <a href="#features">Features</a>
       <a href="#install">Install</a>
       <a href="https://thedivingshellyfish.github.io/jellyqda-assistant">Assistant</a>
       <a href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/">Demo</a>
       <a href="https://thedivingshellyfish.github.io/jellyqda-converter">Converter</a>
       <a href="dev/reference/">R functions</a>
-      <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a>
+      <a href="wiki/">Wiki</a>
     </nav>
     <div class="tools">
       <a class="pillbtn" href="de/" title="Deutsche Version" lang="de">DE</a>
@@ -43,7 +44,7 @@
   <div class="wrap">
     <div class="hero">
       <div>
-        <p class="eyebrow">R package · free · MIT licence · v0.7.0</p>
+        <p class="eyebrow">R package · free · MIT licence · v0.9.2</p>
         <h1>Code your <span class="cm" style="--c:var(--c5)" data-code="Interviews">interviews</span> in R. <span class="cm" style="--c:var(--c3)" data-code="Privacy">Fully offline</span>, every step <span class="cm" style="--c:var(--c1)" data-code="Audit trail">on record</span>.</h1>
         <p class="lede">jellyqda is qualitative content analysis inside RStudio: import transcripts, build a code system, mark text and write memos. A project is one file on your computer, and every action can be undone.</p>
         <div class="install">
@@ -54,7 +55,7 @@
         <div class="ctas">
           <a class="btn primary" href="#install">Get started</a>
           <a class="btn" href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>Try the live demo</a>
-          <a class="btn" href="https://github.com/thedivingshellyfish/jellyqda/wiki">Read the guide</a>
+          <a class="btn" href="wiki/">Read the guide</a>
         </div>
         <p class="small demo-note">The live demo runs online (shinyapps.io) with fictitious sample interviews – please don’t upload real interview data there. jellyqda itself works fully offline.</p>
       </div>
@@ -108,11 +109,46 @@
     </div>
   </section>
 
+  <section id="new">
+    <div class="wrap">
+      <div class="sechead">
+        <h2>New in versions 0.8 and 0.9</h2>
+        <p>Intercoder agreement, graphics, exchange with other QDA software and a report that tells you how long it takes. Tested with up to 150 interviews.</p>
+      </div>
+      <div class="newgrid">
+        <article class="newcard">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/34-intercoder.png" alt="Intercoder tab: kappa per code and disagreements" loading="lazy"></div>
+          <h3>Intercoder agreement</h3>
+          <p>A blind copy for a second coder, then Cohen's kappa, Krippendorff's alpha and Brennan &amp; Prediger per code. Every disagreement listed for the consensus talk – take over a coding with one click.</p>
+          <a href="wiki/Intercoder-agreement.html">Guide: intercoder agreement →</a>
+        </article>
+        <article class="newcard">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/38-grafiken-heatmap.png" alt="Heatmap of code co-occurrence" loading="lazy"></div>
+          <h3>Graphics</h3>
+          <p>Which codes occur together (heatmap), a code network, and document portraits that show where in an interview a theme comes up. Click to read the passages; save as SVG for your thesis.</p>
+          <a href="wiki/Graphics.html">Guide: graphics →</a>
+        </article>
+        <article class="newcard">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/40-grafiken-portraits.png" alt="Document portraits" loading="lazy"></div>
+          <h3>Exchange with other software</h3>
+          <p>Export the whole project as a REFI-QDA file (<code>.qdpx</code>) for MAXQDA, ATLAS.ti, NVivo or QualCoder – and import from them with the converter. Your project is never locked in.</p>
+          <a href="wiki/Evaluation-and-export.html">Guide: export →</a>
+        </article>
+        <article class="newcard">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/42-bericht-fortschritt.png" alt="Report dialog with progress bar" loading="lazy"></div>
+          <h3>Report with progress bar</h3>
+          <p>Choose an overview in seconds or the complete A4 report with every document; a progress bar shows each step, so even large projects never seem stuck.</p>
+          <a href="wiki/Evaluation-and-export.html">Guide: report →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section id="features">
     <div class="wrap">
       <div class="sechead">
         <h2>Made for qualitative research</h2>
-        <p>Every function is explained with screenshots in the <a href="https://github.com/thedivingshellyfish/jellyqda/wiki">wiki</a> and every R function in the <a href="dev/reference/">reference</a>.</p>
+        <p>Every function is explained with screenshots in the <a href="wiki/">wiki</a> and every R function in the <a href="dev/reference/">reference</a>.</p>
       </div>
       <div class="cols">
         <div>
@@ -158,7 +194,9 @@
 
 <span class="f">qda_stats</span>()$overall       <span class="c"># share of material coded</span>
 <span class="f">qda_case_matrix</span>(by = <span class="s">"group"</span>)
-<span class="f">qda_export</span>(<span class="s">"report"</span>)       <span class="c"># A4 HTML report</span></pre>
+<span class="f">qda_export</span>(<span class="s">"report"</span>)       <span class="c"># A4 HTML report</span>
+<span class="f">qda_intercoder</span>(<span class="s">"coder_b.jellyqda"</span>) <span class="c"># kappa, alpha per code</span>
+<span class="f">qda_export_qdpx</span>()              <span class="c"># for MAXQDA, ATLAS.ti, NVivo</span></pre>
     </div>
   </section>
 
@@ -233,7 +271,7 @@ qda_open("my-analysis.jellyqda")</pre></div>
       <p>Free, offline qualitative data analysis for R. Cite it with <code>citation("jellyqda")</code>.</p>
     </div>
     <div><h4>Project</h4><ul><li><a href="https://thedivingshellyfish.shinyapps.io/jellyqda-demo/">Live demo</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda">GitHub</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/releases">Releases</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/CONTRIBUTING.md">Contributing</a></li></ul></div>
-    <div><h4>Docs</h4><ul><li><a href="https://thedivingshellyfish.github.io/jellyqda-converter">Converter</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/wiki">Wiki</a></li><li><a href="dev/reference/">R functions</a></li><li><a href="https://thedivingshellyfish.github.io/jellyqda-assistant">Assistant</a></li><li><a href="dev/news/index.html">Changelog</a></li></ul></div>
+    <div><h4>Docs</h4><ul><li><a href="https://thedivingshellyfish.github.io/jellyqda-converter">Converter</a></li><li><a href="wiki/">Wiki</a></li><li><a href="dev/reference/">R functions</a></li><li><a href="https://thedivingshellyfish.github.io/jellyqda-assistant">Assistant</a></li><li><a href="dev/news/index.html">Changelog</a></li></ul></div>
     <div><h4>Help</h4><ul><li><a href="https://github.com/thedivingshellyfish/jellyqda/issues">Report an issue</a></li><li><a href="https://github.com/thedivingshellyfish/jellyqda/blob/main/LICENSE">MIT licence</a></li></ul></div>
   </div>
 </footer>

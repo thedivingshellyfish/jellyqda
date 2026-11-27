@@ -37,7 +37,9 @@ browser, with an **English and a German** user interface.
 - 🌐 **English and German:** user interface and report in both languages, switchable with one click (**DE/EN**).
 - 🌙 **Dark mode**, easy to read (checked contrast).
 
-> 🆕 **New in version 0.9.1:** report dialog (**overview** in seconds or **complete**) with a
+> 🆕 **New in version 0.9.2:** the [wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/),
+> jellyqda logo in the browser tab, updated website.
+> **0.9.1:** report dialog (**overview** in seconds or **complete**) with a
 > **progress bar**, a hint if nothing moves, and "Working …" for longer steps.
 > **0.9.0:** **graphics** (code co-occurrence heatmap, code network,
 > document portraits), **REFI-QDA export (.qdpx)** for MAXQDA, ATLAS.ti, NVivo and QualCoder,
@@ -53,7 +55,7 @@ browser, with an **English and a German** user interface.
 > re-coding, save button, report in a new tab. All changes: [NEWS.md](NEWS.md).
 
 **Detailed guide with screenshots for every function:**
-[📖 Wiki](docs/wiki/Home.md) (folder `docs/wiki/`; German: [`docs/wiki/de/`](docs/wiki/de/Home.md))
+[📖 Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/) · [in the repository](docs/wiki/Home.md) (folder `docs/wiki/`; German: [`docs/wiki/de/`](docs/wiki/de/Home.md))
 
 ---
 
@@ -374,7 +376,7 @@ jellyqda/
 ├── tests/testthat/                    # tests (testthat 3), one file per topic
 ├── data-raw/                          # scripts that generate inst/extdata/ and the demo transcripts
 ├── demo/                              # fictional demo transcripts + demo scripts (README there)
-├── dev/                               # developer tools: stress test (+ results)
+├── dev/                               # developer tools: stress test (+ results), web wiki builder (dev/wiki/)
 └── docs/                              # screenshots + wiki (English; German in de/)
 ```
 

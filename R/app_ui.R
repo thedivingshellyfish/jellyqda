@@ -16,6 +16,7 @@
     shiny::tags$head(
       .jq_i18n_script(lang),  # language + English catalogue for jqT() in js/01-helpers.js
       .jellyqda_assets(),   # CSS + JS from inst/app/www/ (see above)
+      .jq_favicon(),        # jellyqda logo in the browser tab (R/app_helpers.R)
       # Icon registry (invisible): fontawesome::fa() returns SVG graphics, NOT
       # an icon font. HTML written by the server uses
       # <i class="fa-solid fa-NAME"></i>, which without a font would be 0x0

@@ -40,3 +40,15 @@ test_that("every icon used in server-rendered HTML is in the icon registry", {
     expect_true(grepl(sprintf('data-faicon="%s"><svg', n), reg, fixed = TRUE), info = n)
   }
 })
+
+test_that("browser-tab icon: jellyqda logo embedded in app and report (offline)", {
+  skip_if_not_installed("shiny")
+  uri <- jellyqda:::.jq_favicon_uri()
+  expect_match(uri, "^data:image/svg\\+xml;base64,")
+  svg <- rawToChar(jsonlite::base64_dec(sub("^data:image/svg\\+xml;base64,", "", uri)))
+  expect_match(svg, "jellyqda")
+  new_project(); on.exit(qda_close(), add = TRUE)
+  ui <- htmltools::renderTags(jellyqda:::.jellyqda_ui())
+  expect_true(grepl('rel="icon"', paste(ui$head, ui$html), fixed = TRUE))
+  expect_true(grepl('rel="icon"', jellyqda:::.report_html(), fixed = TRUE))
+})
