@@ -95,9 +95,11 @@ The installation script names the right command for your distribution.
 
 ```r
 library(jellyqda)
-qda_open("my-thesis.jellyqda")   # 1. create the project (or open it again later)
-qda_app()                        # 2. start the app: it opens in the browser
-                                 #    (qda_app(lang = "en") = English interface)
+# 1. create the project (or open it again later)
+qda_open("my-thesis.jellyqda")   
+# 2. start the app: it opens in the browser
+qda_app()                       
+# (qda_app(lang = "en") = English interface)
 ```
 
 3. In the app, import your transcripts under **Documents** on the left (or
