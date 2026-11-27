@@ -10,7 +10,9 @@
 #' Zips the `.jellyqda` project file (and the `originals/` directory, if
 #' present) into a timestamped `.zip`. The default backup directory is
 #' `jellyqda-backups/` **outside** the project folder, so a backup survives a
-#' broken project directory. Old backups are rotated: only the newest `keep`
+#' broken project directory (a project lying directly in R's temporary folder,
+#' as in the examples, keeps them inside its folder instead, so nothing is left
+#' behind there). Old backups are rotated: only the newest `keep`
 #' snapshots are kept.
 #'
 #' An automatic snapshot is also taken after every `auto_snapshot` logged
@@ -29,7 +31,7 @@
 #' zip_file <- qda_backup(quiet = TRUE)
 #' basename(zip_file)
 #' # own backup folder and number of backups to keep:
-#' qda_backup(path = file.path(tempdir(), "my-backups"), keep = 20, quiet = TRUE)
+#' qda_backup(path = file.path(tempfile(), "my-backups"), keep = 20, quiet = TRUE)
 #' qda_close()
 qda_backup <- function(path = NULL, keep = 10, quiet = FALSE, auto = FALSE) {
   qda_con()

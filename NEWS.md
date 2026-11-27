@@ -1,3 +1,21 @@
+# jellyqda 0.9.2
+
+  * **Wiki on the website:** the guide from `docs/wiki/` is built as HTML
+    pages in the style of the website (sidebar, light/dark, English and
+    German) at <https://thedivingshellyfish.github.io/jellyqda/wiki/>, with
+    every push to `main` (`dev/wiki/build_wiki.sh`, pandoc). The wiki source
+    stays in `docs/wiki/`; links between pages and screenshots are rewritten
+    automatically.
+  * **Website:** new section "New in 0.8 and 0.9" (intercoder, graphics,
+    REFI-QDA export, report dialog) in English and German; version and links
+    to the new web wiki updated; the site icon is loaded from the site itself.
+  * **Browser-tab icon:** the app and the report show the jellyqda logo
+    (embedded, works offline).
+  * **CRAN:** a project lying directly in R's temporary folder (examples,
+    tests) keeps its backups inside its folder, so nothing is left behind in
+    the temporary folder ("detritus" note of `R CMD check`); the
+    `qda_backup()` example no longer writes there either.
+
 # jellyqda 0.9.1
 
 ## New features

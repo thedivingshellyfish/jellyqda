@@ -23,7 +23,9 @@ Invisibly, the path of the written zip file.
 Zips the \code{.jellyqda} project file (and the \verb{originals/} directory, if
 present) into a timestamped \code{.zip}. The default backup directory is
 \verb{jellyqda-backups/} \strong{outside} the project folder, so a backup survives a
-broken project directory. Old backups are rotated: only the newest \code{keep}
+broken project directory (a project lying directly in R's temporary folder,
+as in the examples, keeps them inside its folder instead, so nothing is left
+behind there). Old backups are rotated: only the newest \code{keep}
 snapshots are kept.
 }
 \details{
@@ -36,6 +38,6 @@ qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))
 zip_file <- qda_backup(quiet = TRUE)
 basename(zip_file)
 # own backup folder and number of backups to keep:
-qda_backup(path = file.path(tempdir(), "my-backups"), keep = 20, quiet = TRUE)
+qda_backup(path = file.path(tempfile(), "my-backups"), keep = 20, quiet = TRUE)
 qda_close()
 }

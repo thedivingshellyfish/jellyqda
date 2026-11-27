@@ -53,6 +53,13 @@ default_backup_dir <- function() {
   # if the parent is not writable (e.g. project directly in $HOME), fall back
   # to a backups folder next to the project file
   pdir <- dirname(project_path())
+  # a project in R's session temp folder (examples, tests), or one folder
+  # below it: keep the backups inside the project folder -- "outside" would
+  # be the system temp folder, where nothing may be left behind (CRAN)
+  td <- normalizePath(tempdir(), mustWork = FALSE)
+  if (normalizePath(pdir, mustWork = FALSE) == td || normalizePath(dirname(pdir), mustWork = FALSE) == td) {
+    return(file.path(pdir, "jellyqda-backups"))
+  }
   outside <- normalizePath(file.path(pdir, "..", "jellyqda-backups"), mustWork = FALSE)
   if (.writable_dir(outside)) return(outside)
   file.path(pdir, "jellyqda-backups")

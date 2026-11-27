@@ -38,7 +38,9 @@ Browser.
 - 🌙 **Dark Mode**, gut lesbar (geprüfter Kontrast).
 - 🌐 **Deutsch und Englisch:** Oberfläche und Bericht in beiden Sprachen, umschaltbar per Klick (**DE/EN**).
 
-> 🆕 **Neu in Version 0.9.1:** Bericht-Dialog (**Übersicht** in Sekunden oder **vollständig**)
+> 🆕 **Neu in Version 0.9.2:** das [Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/de/),
+> jellyqda-Logo im Browser-Tab, aktualisierte Website.
+> **0.9.1:** Bericht-Dialog (**Übersicht** in Sekunden oder **vollständig**)
 > mit **Fortschrittsbalken**, Hinweis bei Stillstand und „Wird verarbeitet …“ bei längeren Schritten.
 > **0.9.0:** **Grafiken** (Heatmap der Code-Überschneidungen, Code-Netzwerk,
 > Dokument-Portraits), **REFI-QDA-Export (.qdpx)** für MAXQDA, ATLAS.ti, NVivo und QualCoder
@@ -56,7 +58,7 @@ Browser.
 > Bericht im neuen Tab. Alle Änderungen: [NEWS.md](NEWS.md).
 
 **Ausführliche Anleitung mit Screenshots zu allen Funktionen:**
-[📖 Wiki](docs/wiki/de/Home.md) (Ordner `docs/wiki/de/`)
+[📖 Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/de/) · [im Repository](docs/wiki/de/Home.md) (Ordner `docs/wiki/de/`)
 
 ---
 
@@ -379,7 +381,7 @@ jellyqda/
 ├── tests/testthat/                    # Tests (testthat 3)
 ├── data-raw/                          # Skripte, die inst/extdata/ und die Demo-Transkripte erzeugen
 ├── demo/                              # fiktive Demo-Transkripte + Demo-Skripte (README dort)
-├── dev/                               # Werkzeuge für Entwickler*innen: Stresstest (+ Ergebnisse)
+├── dev/                               # Werkzeuge für Entwickler*innen: Stresstest (+ Ergebnisse), Web-Wiki (dev/wiki/)
 └── docs/                              # Screenshots + Wiki (englisch; deutsch in de/)
 ```
 

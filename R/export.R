@@ -397,6 +397,7 @@ qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
   paste0(
     "<!DOCTYPE html><html lang=\"", .lang(), "\"><head><meta charset=\"utf-8\">",
     "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+    if (nzchar(fav <- .jq_favicon_uri())) sprintf("<link rel=\"icon\" type=\"image/svg+xml\" href=\"%s\">", fav) else "",
     .t("<title>Bericht \u00b7 "), esc(proj), "</title><style>", css, "</style></head><body>\n",
     .t('<div class="bar"><span>A4-Druckansicht \u00b7 Strg+P druckt oder speichert als PDF (keine Hintergrundgrafiken n\u00f6tig)</span>'),
     .t('<button type="button" onclick="window.print()">Drucken / PDF</button></div>\n'),

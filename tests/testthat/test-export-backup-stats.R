@@ -103,3 +103,12 @@ test_that("auto-snapshot fires after n actions", {
   zips <- list.files(default_backup_dir(), pattern = "\\.zip$", full.names = TRUE)
   expect_gte(length(zips), 1)
 })
+
+test_that("a project directly in R's temp folder keeps its backups inside (nothing left in tempdir)", {
+  p <- file.path(tempfile("qda-tmpproj-"), "x.jellyqda")
+  qda_open(p); on.exit(qda_close(), add = TRUE)
+  before <- list.files(tempdir())
+  z <- qda_backup(quiet = TRUE)
+  expect_equal(normalizePath(dirname(dirname(z))), normalizePath(dirname(p)))
+  expect_false("jellyqda-backups" %in% setdiff(list.files(tempdir()), before))
+})

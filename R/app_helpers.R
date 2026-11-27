@@ -24,6 +24,22 @@
   x
 }
 
+# --- Browser-tab icon (app and report) ------------------------------------------
+# The jellyqda logo (inst/app/www/jellyqda-logo.svg, same as on the website)
+# embedded as a data URI: no extra request, works offline.
+#' @noRd
+.jq_favicon_uri <- function() {
+  f <- system.file("app", "www", "jellyqda-logo.svg", package = "jellyqda")
+  if (!nzchar(f) || !file.exists(f)) return("")
+  paste0("data:image/svg+xml;base64,", jsonlite::base64_enc(readBin(f, "raw", file.info(f)$size)))
+}
+#' @noRd
+.jq_favicon <- function() {
+  uri <- .jq_favicon_uri()
+  if (!nzchar(uri)) return(NULL)
+  shiny::tags$link(rel = "icon", type = "image/svg+xml", href = uri)
+}
+
 # --- Report as HTTP response (report tab, see report_url in the server) -----
 #' @noRd
 .report_response <- function() {

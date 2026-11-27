@@ -1,6 +1,8 @@
 # Build & deploy the project website:
 #   /            -> custom landing page (website/index.html)
 #   /dev/        -> pkgdown site (API docs, articles, news)
+#   /wiki/       -> the wiki from docs/wiki/ as HTML (German: /wiki/de/),
+#                   built with pandoc by dev/wiki/build_wiki.sh
 # Screenshots from docs/screenshots/ are copied to /img/ for the landing page.
 #
 # One-time setup after merging: Settings -> Pages -> Source: "GitHub Actions"
@@ -60,6 +62,9 @@ jobs:
           cp -r _docs_offline/screenshots/. site/img/
           mkdir -p site/dev
           mv docs/* site/dev/
+
+      - name: Build the wiki (docs/wiki -> /wiki/)
+        run: bash dev/wiki/build_wiki.sh _docs_offline/wiki site/wiki
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
