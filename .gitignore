@@ -20,3 +20,4 @@ revdep/
 # Website
 ^website$
 ^_pkgdown\.yml$
+tests/testthat/_snaps/
