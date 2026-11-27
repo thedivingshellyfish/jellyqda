@@ -22,13 +22,14 @@ analyse. Everything runs **locally on your computer**, in RStudio or in the
 browser, with an **English and a German** user interface.
 
 - 🔒 **100 % offline:** no cloud, no uploads, GDPR-friendly. A project is **one file** (`*.jellyqda`).
-- 📄 **Import** of `.txt`, `.md`, `.docx` and `.pdf`. The text is "frozen" on import, so codings never drift.
+- 📄 **Import** of `.txt`, `.md`, `.docx` and `.pdf`, plus open answers from **surveys** (CSV, Excel). The text is "frozen" on import, so codings never drift.
 - 🌳 **Code tree with codes and subcodes:** collapsible, each code family in one colour, connected by a coloured "thread". Rename by double click, delete with confirmation.
 - 🏷️ **Coding with the mouse:** mark text, click a code, done. Subcodes unfold in the coding bar; re-code with one click. Overlapping codings are shown clearly.
 - ✂️ **Segments** by paragraphs or **speaker turns** (`[00:01:12] P: …`), freely adjustable.
 - 📝 **Memos** of four kinds: passage, document, code (definition, coding rule), project; plus comments on codings.
 - 🔬 **Deductive and inductive:** coding guideline (definition, anchor example, coding rule), in-vivo codes, merging codes, coding all search hits at once, **summary after Mayring** (paraphrase → generalisation → reduction).
 - 👥 **Intercoder agreement:** a blind copy for a second coder, then **Cohen's kappa**, **Krippendorff's alpha**, Brennan & Prediger and percent agreement per code, plus the list of disagreements for the consensus discussion.
+- 🔎 **Queries:** passages with codes combined (AND / OR / NOT), optionally by group (e.g. only nurses); save the hits as a new code.
 - 🕸️ **Graphics:** code co-occurrence (heatmap), code network and document portraits; click a cell, line or block to read the passages. Plain SVG: in the app, the RStudio Viewer, the report, or saved for your thesis.
 - 🔁 **REFI-QDA export (.qdpx)** for MAXQDA, ATLAS.ti, NVivo, QualCoder: your project is never locked in.
 - 📊 **Analysis:** codings per code, full-text search, code matrix with **case comparison**, word frequencies, keyword in context, summary grid, export (CSV, Excel, Word).
@@ -37,7 +38,9 @@ browser, with an **English and a German** user interface.
 - 🌐 **English and German:** user interface and report in both languages, switchable with one click (**DE/EN**).
 - 🌙 **Dark mode**, easy to read (checked contrast).
 
-> 🆕 **New in version 0.9.2:** the [wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/),
+> 🆕 **New in version 0.9.3:** **queries** (codes combined with AND / OR / NOT, by group) and
+> **survey import** (open answers from CSV / Excel, one document per respondent).
+> **0.9.2:** the [wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/),
 > jellyqda logo in the browser tab, updated website.
 > **0.9.1:** report dialog (**overview** in seconds or **complete**) with a
 > **progress bar**, a hint if nothing moves, and "Working …" for longer steps.
@@ -351,6 +354,7 @@ jellyqda/
 ├── R/                                 # R code, one file per topic:
 │   ├── open.R / schema.R / utils.R    #   open projects, database schema, helpers
 │   ├── import.R / sources.R           #   import + freezing, documents + variables
+│   ├── import_survey.R                #   survey import (CSV / Excel)
 │   ├── segments.R                     #   segments (rules, split, merge)
 │   ├── codes.R / coding.R / memos.R   #   code system, codings, memos (4 kinds)
 │   ├── render.R / view.R              #   text with marks as HTML (app, report, viewer)
@@ -361,6 +365,7 @@ jellyqda/
 │   ├── report_intercoder.R            #   report section "Intercoder agreement"
 │   ├── units.R                        #   units of analysis (shared by intercoder, co-occurrence, portraits)
 │   ├── cooccurrence.R / portrait.R    #   data of the graphics
+│   ├── query.R                        #   queries: codes with AND / OR / NOT
 │   ├── plot_svg.R + plot_*.R          #   graphics as SVG (heatmap, network, portraits)
 │   ├── report_visuals.R               #   report sections with the graphics
 │   ├── export_qdpx.R                  #   REFI-QDA export (.qdpx)

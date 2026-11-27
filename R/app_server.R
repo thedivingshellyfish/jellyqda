@@ -110,6 +110,8 @@
   .srv_intercoder(input, output, session, rv, shared)
   .srv_visuals(input, output, session, rv, shared)
   .srv_report(input, output, session, rv, shared)
+  .srv_query(input, output, session, rv, shared)
+  .srv_survey(input, output, session, rv, shared)
   .srv_code_matrix(input, output, session, rv, shared)
   .srv_summary_grid(input, output, session, rv, shared)
   .srv_layout(input, output, session, rv, shared)

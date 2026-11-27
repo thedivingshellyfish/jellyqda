@@ -124,6 +124,31 @@ code).
 The report shows the table as a section of its own; paraphrases also appear
 in the margin column next to the interview.
 
+## Query: codes combined (AND / OR / NOT)
+
+*New in version 0.9.3.* **Analysis → tab Query** finds passages by a
+combination of codes, for example *"Workload AND Leadership in the same
+speaker turn, but NOT Family"*:
+
+| Field | Meaning |
+|---|---|
+| **All of these codes (AND)** | every one of them must be in the passage |
+| **At least one (OR)** | one of them is enough |
+| **None of these codes (NOT)** | passages with one of them are left out |
+| **Only documents with** | e.g. `role = nurse`; several values of one variable = OR, different variables = AND |
+| **Together means** | in the same **segment** (default) or in the same **document** |
+| **Subcodes count too** | "Motivation" also finds passages coded with "Motivation › Meaning" |
+
+The hits are listed with the codes found; **Show** jumps to the passage.
+**Save hits as a code** codes all hits with a new or existing code (one
+Ctrl+Z undoes it) – handy to collect material for a new category.
+**Table for Excel (CSV)** downloads all hits.
+
+<img src="../screenshots/44-abfrage.png" alt="Query tab: AND / OR / NOT with hits" width="900">
+
+In R: `qda_query(all = c("Workload", "Leadership"), none = "Family", vars = list(role = "nurse"))`
+and `qda_query_to_code(hits, "New code")`.
+
 ## Intercoder agreement
 
 Two people code independently, jellyqda computes Cohen's kappa and

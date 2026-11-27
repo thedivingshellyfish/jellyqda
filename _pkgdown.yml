@@ -29,6 +29,8 @@ reference:
     - qda_close
     - qda_project
     - qda_import
+    - qda_survey_columns
+    - qda_import_survey
     - qda_sources
     - qda_source_set_var
     - qda_source_del_var
@@ -87,6 +89,8 @@ reference:
   contents:
     - qda_matrix
     - qda_case_matrix
+    - qda_query
+    - qda_query_to_code
     - qda_words
     - qda_kwic
     - qda_stats

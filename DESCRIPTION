@@ -1,7 +1,7 @@
 Package: jellyqda
 Type: Package
 Title: RStudio-Native, Fully Offline Coding of Interview Transcripts
-Version: 0.9.2
+Version: 0.9.3
 Authors@R: person("Shelly", email = "jellyqda@systemli.org", role = c("aut", "cre"))
 Description: Qualitative data analysis of interview transcripts and field
     notes on your own computer, completely offline. Supports deductive and
@@ -46,6 +46,7 @@ Suggests:
     bslib,
     fontawesome,
     knitr,
+    readxl,
     rmarkdown,
     rstudioapi,
     shiny,

@@ -1,3 +1,31 @@
+# jellyqda 0.9.3
+
+## New features
+
+  * **Code queries (AND / OR / NOT).** New tab **Abfrage / Query** in the
+    analysis window and `qda_query()`: passages that contain all of some
+    codes, at least one of others and none of a third group, in the same
+    segment or document, optionally only in documents with certain variable
+    values ("Workload AND Leadership, but NOT Family, only nurses"). Subcodes
+    count with their code (can be switched off). Hits are listed with
+    "Show", can be **saved as a code** (`qda_query_to_code()`, one undo step)
+    and downloaded as CSV.
+  * **Survey import.** Open answers from online surveys (SoSci Survey,
+    LimeSurvey, Qualtrics, Google Forms ...) as CSV or Excel: button
+    **Fragebogen importieren / Import a survey** in the documents panel,
+    `qda_survey_columns()` and `qda_import_survey()`. One document per
+    respondent, every open answer a segment, chosen columns as document
+    variables, optionally pre-coded by question. The dialog suggests the
+    column roles and shows a preview. Re-importing skips respondents already
+    there. Excel needs the suggested package 'readxl'; CSV works without.
+    Fictional example: `inst/extdata/survey_demo.csv`
+    (`data-raw/make_survey_demo.R`).
+
+## Other
+
+  * The old German copies in the wiki folder (`docs/wiki/Analysieren.md`
+    ...) are removed; the German wiki lives in `docs/wiki/de/`.
+
 # jellyqda 0.9.2
 
   * **Wiki on the website:** the guide from `docs/wiki/` is built as HTML

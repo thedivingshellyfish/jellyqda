@@ -54,6 +54,7 @@
                    shiny::strong(.t("Generalisierung")), .t(" = auf das Abstraktionsniveau der Analyse gehoben \u00b7 "),
                    shiny::strong(.t("Reduktion")), .t(" = der Code. Gespeichert wird beim Verlassen eines Feldes.")),
           shiny::uiOutput("mayring_table")),
+        .query_tab_ui(),  # code query (R/app_server_query.R)
         .ic_tab_ui())))   # intercoder agreement (R/app_server_intercoder.R)
   })
   # reopening the window shows the tab used last (e.g. after "show" in a list)

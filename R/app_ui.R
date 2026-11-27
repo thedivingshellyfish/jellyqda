@@ -117,6 +117,9 @@ shiny::div(class = "panelhead", draggable = "true", fa("folder-tree"), shiny::sp
             shiny::p(class = "jq-hint", style = "padding:.2rem;margin:.2rem 0",
                      .t("oder Dateien hierher ziehen")),
             shiny::actionButton("import_btn", .t("Importieren"), icon = .jq_ico("plus"), class = "btn-sm btn-primary"),
+            # open answers of an online survey (CSV / Excel), R/app_server_survey.R
+            shiny::actionButton("survey_btn", .t("Fragebogen importieren \u2026"), icon = .jq_ico("table-list"),
+                                class = "btn-sm btn-outline-secondary", style = "margin-top:.35rem"),
             shiny::hr(),
             shiny::selectInput("var_doc", .t("Variablen f\u00fcr Dokument"), choices = character()),
             shiny::div(style = "display:flex; gap:.3rem;",

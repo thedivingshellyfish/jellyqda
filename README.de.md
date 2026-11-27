@@ -23,13 +23,14 @@ wertest aus. Alles läuft **lokal auf deinem Rechner**, in RStudio oder im
 Browser.
 
 - 🔒 **100 % offline:** keine Cloud, keine Uploads, DSGVO-freundlich. Ein Projekt ist **eine Datei** (`*.jellyqda`).
-- 📄 **Import** von `.txt`, `.md`, `.docx` und `.pdf`. Der Text wird beim Import „eingefroren“, Codings verrutschen nie.
+- 📄 **Import** von `.txt`, `.md`, `.docx` und `.pdf`, dazu offene Antworten aus **Fragebögen** (CSV, Excel). Der Text wird beim Import „eingefroren“, Codings verrutschen nie.
 - 🌳 **Codebaum mit Codes und Subcodes:** ein- und ausklappbar, jede Code-Familie in einer Farbe, verbunden durch einen farbigen „Faden“. Umbenennen per Doppelklick, Löschen mit Rückfrage.
 - 🏷️ **Kodieren mit der Maus:** Text markieren, Code anklicken, fertig. Subcodes klappen in der Kodier-Leiste aus; Umkodieren mit einem Klick. Überlappende Codings werden übersichtlich angezeigt.
 - ✂️ **Segmente** nach Absätzen oder **Sprecherwechseln** (`[00:01:12] P: …`), frei anpassbar.
 - 📝 **Memos** in vier Arten: Textstelle, Dokument, Code (Definition, Kodierregel), Projekt.
 - 🔬 **Deduktiv und induktiv:** Kodierleitfaden (Definition, Ankerbeispiel, Kodierregel), In-vivo-Codes, Codes zusammenführen, alle Suchtreffer auf einmal codieren, **Zusammenfassung nach Mayring** (Paraphrase → Generalisierung → Reduktion).
 - 👥 **Intercoder-Übereinstimmung:** Blind-Kopie für eine zweite Person, dann **Cohens Kappa**, **Krippendorffs Alpha**, Brennan & Prediger und prozentuale Übereinstimmung je Code, dazu die Liste der Abweichungen für die Konsens-Diskussion.
+- 🔎 **Abfragen:** Stellen mit kombinierten Codes (UND / ODER / NICHT), auf Wunsch nach Gruppen (z. B. nur Pflegekräfte); Treffer als neuen Code speichern.
 - 🕸️ **Grafiken:** Code-Überschneidungen (Heatmap), Code-Netzwerk und Dokument-Portraits; Zelle, Linie oder Block anklicken führt zu den Textstellen. Einfaches SVG: in der App, im RStudio-Viewer, im Bericht oder gespeichert für die Arbeit.
 - 🔁 **REFI-QDA-Export (.qdpx)** für MAXQDA, ATLAS.ti, NVivo, QualCoder: Ihr Projekt ist nie eingesperrt.
 - 📊 **Auswerten:** Codings je Code, Volltextsuche, Code-Matrix mit **Fallvergleich**, Worthäufigkeiten, Stichwort im Kontext, Summary Grid, Export (CSV, Excel, Word).
@@ -38,7 +39,9 @@ Browser.
 - 🌙 **Dark Mode**, gut lesbar (geprüfter Kontrast).
 - 🌐 **Deutsch und Englisch:** Oberfläche und Bericht in beiden Sprachen, umschaltbar per Klick (**DE/EN**).
 
-> 🆕 **Neu in Version 0.9.2:** das [Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/de/),
+> 🆕 **Neu in Version 0.9.3:** **Abfragen** (Codes kombiniert mit UND / ODER / NICHT, nach Gruppen) und
+> **Fragebogen-Import** (offene Antworten aus CSV / Excel, ein Dokument je Person).
+> **0.9.2:** das [Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/de/),
 > jellyqda-Logo im Browser-Tab, aktualisierte Website.
 > **0.9.1:** Bericht-Dialog (**Übersicht** in Sekunden oder **vollständig**)
 > mit **Fortschrittsbalken**, Hinweis bei Stillstand und „Wird verarbeitet …“ bei längeren Schritten.
@@ -356,6 +359,7 @@ jellyqda/
 ├── R/                                 # R-Code, eine Datei pro Thema:
 │   ├── open.R / schema.R / utils.R    #   Projekt öffnen, DB-Schema, Hilfsfunktionen
 │   ├── import.R / sources.R           #   Import + Einfrieren, Dokumente + Variablen
+│   ├── import_survey.R                #   Fragebogen-Import (CSV / Excel)
 │   ├── segments.R                     #   Segmente (Regeln, teilen, zusammenführen)
 │   ├── codes.R / coding.R / memos.R   #   Codesystem, Codings, Memos (4 Arten)
 │   ├── render.R / view.R              #   Text mit Markierungen als HTML (App, Bericht, Viewer)
@@ -366,6 +370,7 @@ jellyqda/
 │   ├── report_intercoder.R            #   Bericht-Abschnitt „Intercoder-Übereinstimmung“
 │   ├── units.R                        #   Analyseeinheiten (für Intercoder, Überschneidungen, Portraits)
 │   ├── cooccurrence.R / portrait.R    #   Daten der Grafiken
+│   ├── query.R                        #   Abfragen: Codes mit UND / ODER / NICHT
 │   ├── plot_svg.R + plot_*.R          #   Grafiken als SVG (Heatmap, Netzwerk, Portraits)
 │   ├── report_visuals.R               #   Bericht-Abschnitte mit den Grafiken
 │   ├── export_qdpx.R                  #   REFI-QDA-Export (.qdpx)
