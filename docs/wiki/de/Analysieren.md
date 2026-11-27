@@ -125,6 +125,32 @@ Code).
 Im Bericht erscheint die Tabelle als eigener Abschnitt; Paraphrasen stehen
 auch in der Randspalte neben dem Interview.
 
+## Abfrage: Codes kombiniert (UND / ODER / NICHT)
+
+*Neu in Version 0.9.3.* **Analyse → Reiter Abfrage** findet Textstellen über
+eine Kombination von Codes, zum Beispiel *„Belastung UND Führung im selben
+Sprecherwechsel, aber NICHT Familie“*:
+
+| Feld | Bedeutung |
+|---|---|
+| **Alle diese Codes (UND)** | jeder davon muss in der Stelle vorkommen |
+| **Mindestens einer (ODER)** | einer davon genügt |
+| **Keiner dieser Codes (NICHT)** | Stellen mit einem davon fallen heraus |
+| **Nur Dokumente mit** | z. B. `Rolle = Pflege`; mehrere Werte einer Variable = ODER, verschiedene Variablen = UND |
+| **Gemeinsam heißt** | im selben **Segment** (Standard) oder im selben **Dokument** |
+| **Subcodes zählen mit** | „Motivation“ findet auch Stellen mit „Motivation › Sinn“ |
+
+Die Treffer stehen mit den gefundenen Codes in einer Liste; **Zeigen** springt
+zur Stelle. **Treffer als Code speichern** codiert alle Treffer mit einem neuen
+oder vorhandenen Code (ein Strg+Z macht es rückgängig) – praktisch, um Material
+für eine neue Kategorie zu sammeln. **Tabelle für Excel (CSV)** lädt alle
+Treffer herunter.
+
+<img src="../../screenshots/de/44-abfrage.png" alt="Reiter Abfrage: UND / ODER / NICHT mit Treffern" width="900">
+
+In R: `qda_query(all = c("Belastung", "Führung"), none = "Familie", vars = list(Rolle = "Pflege"))`
+und `qda_query_to_code(treffer, "Neuer Code")`.
+
 ## Intercoder-Übereinstimmung
 
 Zwei Personen kodieren unabhängig, jellyqda berechnet Cohens Kappa und

@@ -35,6 +35,37 @@ qda_import(c("interview_01.docx", "interview_02.txt"), segments = "speaker")
   to the project file.
 - Importing the same file a second time is detected and skipped.
 
+## Survey: open answers from an online survey
+
+*New in version 0.9.3.* Open answers from SoSci Survey, LimeSurvey,
+Qualtrics, Google Forms … saved as **CSV** or **Excel**: **Documents panel →
+Import a survey …**
+
+1. Choose the file. jellyqda suggests the role of every column: the
+   **respondent id**, the **open questions** (become text) and **variables**
+   (few different values, e.g. age group, field of study). Time stamps and
+   similar columns are left out. Check and change the suggestion if needed.
+2. **Pre-code the answers by question** (on by default): every answer gets a
+   code for its question, all below one code "Questions".
+3. The **preview** shows how the first document will look; then **Import**.
+
+Every respondent becomes **one document** (e.g. `survey_DEMO_07`), every open
+answer **one segment** (the question as the first line, the answer below), the
+chosen columns become **document variables**. Empty answers are left out;
+respondents without any answer are skipped; importing the same file again
+imports nobody twice. The survey file is kept in `originals/`.
+
+<img src="../screenshots/45-fragebogen-import.png" alt="Dialog: import a survey" width="700">
+
+Then everything works as with interviews: code the answers, compare groups
+with the case comparison, or ask **Query** for "answers to question 2 that
+mention workload, only from nursing students".
+
+In R: `qda_survey_columns("survey.csv")` and
+`qda_import_survey("survey.csv", code_questions = TRUE)`. Excel files need the
+package `readxl` (`install.packages("readxl")`); CSV works always. A fictional
+example: `system.file("extdata", "survey_demo.csv", package = "jellyqda")`.
+
 ## Variables (case attributes)
 
 You can give every document attributes such as *age*, *role* or *duration*.

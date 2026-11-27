@@ -18,11 +18,11 @@ explains every function step by step with screenshots.
 
 | Topic | What it is about |
 |---|---|
-| [Importing documents](Importing-documents.md) | load transcripts (txt, md, docx, pdf), variables such as age or role |
+| [Importing documents](Importing-documents.md) | load transcripts (txt, md, docx, pdf), open answers from surveys (CSV, Excel), variables such as age or role |
 | [Coding](Coding.md) | build the code system with codes and subcodes, mark text, assign codes, overlaps |
 | [Segments](Segments.md) | paragraphs or speaker turns, splitting and merging segments |
 | [Memos](Memos.md) | passage, document, code and project memos, comments |
-| [Analysis](Analysis.md) | coding guideline, in vivo, merging codes, coding search hits, case comparison, word frequencies, keyword in context, Mayring |
+| [Analysis](Analysis.md) | coding guideline, in vivo, merging codes, coding search hits, case comparison, word frequencies, keyword in context, Mayring, queries (AND / OR / NOT) |
 | [Intercoder agreement](Intercoder-agreement.md) | blind copy for a second coder, Cohen's kappa, Krippendorff's alpha, disagreements and consensus |
 | [Graphics](Graphics.md) | code co-occurrence (heatmap), code network, document portraits |
 | [Evaluation & export](Evaluation-and-export.md) | codings per code, search, code matrix, summary grid, export, A4 report |

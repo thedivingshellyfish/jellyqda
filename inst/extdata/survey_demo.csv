@@ -1,0 +1,15 @@
+respondent,submitted,age_group,field_of_study,semester,Why did you choose your field of study?,What causes you stress during your studies?,What would help you most?,Satisfaction with your studies (1-5)
+DEMO_01,2027-01-10 09:58,18-21,Computer science,1,"I always liked solving puzzles, and computer science felt like that.",Feeling that everyone else understands the material faster than me.,"Recorded lectures, so I can catch up after work.",2
+DEMO_02,2027-01-10 10:57,18-21,Environmental science,8,I volunteered in a hospital and knew this was my place.,Feeling that everyone else understands the material faster than me.,More time between exams.,5
+DEMO_03,2027-01-10 11:55,22-25,Nursing,2,I volunteered in a hospital and knew this was my place.,Group work where not everyone does their part.,More time between exams.,1
+DEMO_04,2027-01-10 12:54,26+,Computer science,7,A teacher at school encouraged me. Without her I would not be here.,"Deadlines for three projects at once at the end of the semester.
+And:
+Feeling that everyone else understands the material faster than me.","Recorded lectures, so I can catch up after work.",4
+DEMO_05,2027-01-10 13:53,26+,Nursing,1,My parents are nurses; I wanted to do something with people as well.,Not knowing whether I will find a job afterwards.,Financial support that does not depend on my parents' income.,3
+DEMO_06,2027-01-10 14:51,26+,Nursing,2,I like being outdoors; field work was the deciding point.,Feeling that everyone else understands the material faster than me.,,4
+DEMO_07,2027-01-10 15:50,22-25,Nursing,5,"I want to work on climate questions, and this field gives me the tools.",Deadlines for three projects at once at the end of the semester.,Quiet places to study on campus.,2
+DEMO_08,2027-01-10 16:48,22-25,Environmental science,8,I volunteered in a hospital and knew this was my place.,"Exams all in the same two weeks, and no time to recover in between.",Clear criteria for group work grades.,2
+DEMO_09,2027-01-10 17:47,22-25,Nursing,6,My parents are nurses; I wanted to do something with people as well.,Feeling that everyone else understands the material faster than me.,,3
+DEMO_10,2027-01-10 18:46,22-25,Computer science,2,I volunteered in a hospital and knew this was my place.,Finding an affordable room; I commute two hours a day.,"Recorded lectures, so I can catch up after work.",2
+DEMO_11,2027-01-10 19:44,18-21,Computer science,1,,,,2
+DEMO_12,2027-01-10 20:43,18-21,Computer science,4,"I want to work on climate questions, and this field gives me the tools.","Night shifts during the practical phase, then lectures in the morning.",A contact person who actually answers emails.,3

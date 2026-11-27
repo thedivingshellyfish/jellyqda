@@ -74,6 +74,9 @@ analyses. All functions return **tibbles**. Detailed help for every function:
 | `qda_case_matrix(by)` | case comparison: codes × values of a variable |
 | `qda_words(source, code, n)` | word frequencies |
 | `qda_kwic(pattern, width)` | keyword in context |
+| `qda_query(all, any, none, vars)` | passages by a combination of codes (AND / OR / NOT), optionally by document variables |
+| `qda_query_to_code(hits, code)` | code the hits of a query |
+| `qda_survey_columns(file)` / `qda_import_survey(file)` | import open answers from a survey (CSV / Excel) |
 | `qda_cooccurrence(unit, level)` | code co-occurrence: pairs of codes that occur together |
 | `qda_cooccurrence_passages(code_a, code_b)` | the passages where two codes occur together |
 | `qda_portrait(source, level)` | document portrait: which codes in which segment |

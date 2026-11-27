@@ -119,3 +119,16 @@ h6.ich { margin:1rem 0 .2rem; font-weight:700; }
 [data-bs-theme="dark"] .icwarn { background:var(--jq-amberbg); border-color:var(--jq-border); color:var(--jq-gold); }
 [data-bs-theme="dark"] .icwho.a { background:#1d3550; color:#a9cdf5; }
 [data-bs-theme="dark"] .icwho.b { background:#43233c; color:#f0b9e3; }
+
+/* Code query (analysis window, since 0.9.3) */
+.qgrid { display:grid; grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr)); gap:.2rem .9rem; margin-top:.6rem; }
+.qgrid .form-group { margin-bottom:.4rem; }
+.qchips { margin-top:.25rem; }
+.qchip { display:inline-block; font:600 .68rem/1.4 system-ui, sans-serif; color:#1d4f86; background:#e6f0fa; border-radius:1rem; padding:.05rem .5rem; margin:.1rem .2rem 0 0; }
+.qsave { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-top:.7rem; }
+.qsave .form-group { margin:0; min-width:16rem; }
+[data-bs-theme="dark"] .qchip { background:#1d3550; color:#a9cdf5; }
+
+/* Survey import dialog (since 0.9.3) */
+.svprev pre { max-height:14rem; overflow:auto; background:#f4f6f9; border:1px solid #dde4ee; border-radius:.45rem; padding:.5rem .6rem; font-size:.78rem; white-space:pre-wrap; }
+[data-bs-theme="dark"] .svprev pre { background:var(--jq-raised); border-color:var(--jq-border); color:var(--jq-text); }

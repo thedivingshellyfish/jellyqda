@@ -57,6 +57,9 @@ jeder Funktion: `?qda_code` usw. Eine kommentierte Vorlage liegt in
 | `qda_words(source, code, n)` | Worthäufigkeiten |
 | `qda_kwic(pattern, width)` | Stichwort im Kontext |
 | `qda_case_matrix(by)` | Fallvergleich: Codes × Werte einer Variable |
+| `qda_query(all, any, none, vars)` | Stellen über eine Kombination von Codes (UND / ODER / NICHT), optional nach Dokument-Variablen |
+| `qda_query_to_code(treffer, code)` | Treffer einer Abfrage codieren |
+| `qda_survey_columns(datei)` / `qda_import_survey(datei)` | offene Antworten aus einem Fragebogen importieren (CSV / Excel) |
 | `qda_cooccurrence(unit, level)` | Code-Überschneidungen: Code-Paare, die gemeinsam vorkommen |
 | `qda_cooccurrence_passages(code_a, code_b)` | die Stellen, an denen zwei Codes gemeinsam vorkommen |
 | `qda_portrait(source, level)` | Dokument-Portrait: welche Codes in welchem Segment |
