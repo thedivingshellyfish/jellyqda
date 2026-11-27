@@ -98,9 +98,11 @@ Das Installationsskript nennt den passenden Befehl für deine Distribution.
 
 ```r
 library(jellyqda)
-qda_open("meine-arbeit.jellyqda")   # 1. Projekt anlegen (oder später wieder öffnen)
-qda_app()                           # 2. App starten: öffnet sich im Browser
-                                    #    (qda_app(lang = "de") = deutsche Oberfläche)
+# 1. Projekt anlegen (oder später wieder öffnen)
+qda_open("meine-arbeit.jellyqda")   
+# 2. App starten: öffnet sich im Browser
+qda_app()                           
+# (qda_app(lang = "de") = deutsche Oberfläche)
 ```
 
 3. In der App links bei **Dokumente** deine Transkripte importieren (oder
