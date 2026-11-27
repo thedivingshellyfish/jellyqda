@@ -202,7 +202,7 @@ local({
   step(4, tx("Installation pruefen", "Check the installation"))
   ns <- asNamespace("jellyqda")
   checks <- c(
-    nzchar(system.file("app", "www", "jellyqda.js", package = "jellyqda")),
+    nzchar(system.file("app", "www", "js", "01-helpers.js", package = "jellyqda")),
     exists("qda_redo", envir = ns),
     exists("qda_segments_set", envir = ns),
     "kind" %in% names(formals(get("qda_memos", envir = ns))),

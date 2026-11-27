@@ -1,0 +1,105 @@
+/* jellyqda app -- stylesheet, part 2 of 9: Document browser
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   2. Document browser
+   -------------------------------------------------------------------------- */
+
+.browser .panelbody { display:flex; flex-direction:column; overflow:hidden; }
+.docarea { overflow:auto; flex:1; min-height:0; padding:.4rem .2rem; }
+
+/* #doc contains exactly the frozen text. white-space:pre-wrap matters so
+   that line breaks are kept and the character offsets in the browser match
+   the text in the database 1:1.
+   --jqzoom is set by the A-/A+ buttons. */
+#doc { font-family:Georgia,'Times New Roman',serif; font-size:calc(.95rem * var(--jqzoom, 1)); line-height:1.6;
+       white-space:pre-wrap; word-break:break-word; }
+
+/* One segment (= paragraph). Normal text cursor in the text area, to make
+   clear: text is marked here, not clicked. */
+.segtext { position:relative; padding-left:4.6em; margin-bottom:.15em; cursor:text; }
+
+/* "Seg N" badge: a CSS pseudo-element (no real DOM text!), so that it does
+   not distort the character offsets. A click on it marks the whole
+   paragraph (see JS section "segment badge"). It sits in the left padding
+   (padding-left) of .segtext. */
+.segtext::before { content:'Seg ' attr(data-seg); position:absolute; left:0; top:.2em;
+                   font-family:monospace; font-size:.72rem; background:#eef1f4;
+                   border:1px solid #d4dae0; border-radius:.35rem; padding:.1em .4em; color:#5a6672;
+                   cursor:pointer; }
+.segtext:hover::before { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+
+/* Doppelt codierte Passage (gleicher Bereich mehrfach codiert): pinker Rahmen */
+#doc mark.dup, mark.dup { outline:2px dashed #d81b60; outline-offset:1px; }
+
+/* progress bar (share of coded text) in the document list: its own row
+   below name + format (otherwise 0 px wide in the flex layout) */
+.docrow { flex-wrap:wrap; }
+.docrow .pbar { flex-basis:100%; }
+/* icons from the icon registry (js/14-icons.js) */
+/* fa() SVGs bring an inline "margin:auto" -- in the flex layout this would
+   swallow the free space (text moves to the right) -> override */
+.jq-ico { height:.85em; width:auto; vertical-align:-.1em; fill:currentColor;
+          margin-left:0 !important; margin-right:.25em !important; }
+.memoicon .jq-ico { height:.8em; }
+
+/* progress bar (share of coded text) in the document list */
+.pbar { display:block; height:4px; background:#e2e7ec; border-radius:2px; margin-top:.15rem; overflow:hidden; }
+.pbar > span { display:block; height:100%; background:#2c6fbb; }
+
+/* document variables as "chips" above the text */
+.docvars { font-size:.7rem; color:#6b7683; margin:.1rem 0 .3rem 0; }
+.docvars .chip { background:#eef1f4; border:1px solid #d4dae0; border-radius:.6rem;
+                 padding:.05rem .45rem; margin-right:.25rem; white-space:nowrap; }
+
+/* zoom buttons A- / A+ in the header of the document browser */
+.zoombtns { display:flex; gap:.2rem; margin-left:.3rem; }
+.zoombtns button { border:1px solid #d6dbe1; background:#fff; border-radius:.3rem;
+                   font-size:.68rem; padding:0 .35rem; cursor:pointer; line-height:1.5; }
+
+/* files are dragged over the documents panel */
+.dropfiles { outline:2px dashed #2c6fbb; outline-offset:-3px; }
+
+/* Codings in the text: background colour = code colour (set inline in R).
+   No padding: a coding may be split into several <mark>s at overlap
+   boundaries, gaps would then appear in the middle of a word. */
+#doc mark { padding:0; border-radius:.15em; cursor:pointer; }
+
+/* Overlap (2+ codings): light grey, at the bottom a 3px stripe in the colours
+   of the codes involved (linear-gradient inline from R), number at the start. */
+#doc mark.ovl { background-color:#dde1e6; background-size:100% 3px;
+                background-position:left bottom; background-repeat:no-repeat; }
+#doc mark.ovl:hover { background-color:#cfd5dc; }
+/* The number is a pseudo-element: visible, but no text in the DOM
+   -> does not change the character offsets. */
+#doc mark.ovl.ovl-start::before { content:attr(data-n); display:inline-block;
+  font:700 .62rem/1.25 system-ui, sans-serif; color:#fff; background:#5a6672;
+  border-radius:.7rem; padding:0 .32rem; margin-right:.18rem; vertical-align:.18em;
+  user-select:none; }
+#doc mark.ovl.ovl-start:hover::before { background:#2c6fbb; }
+
+/* popover with the codings of an overlap (hangs on <body>) */
+#jq-popover { display:none; position:fixed; z-index:2000; width:22rem; max-width:calc(100vw - 16px);
+              max-height:60vh; overflow:auto; background:#fff; border:1px solid #c9d1da;
+              border-radius:.55rem; box-shadow:0 6px 24px rgba(0,0,0,.18); font-size:.78rem; }
+#jq-popover .jqp-head { display:flex; align-items:center; padding:.35rem .6rem; font-weight:700;
+                        color:#2c6fbb; border-bottom:1px solid #e3e8ee; }
+#jq-popover .jqp-close { margin-left:auto; border:none; background:none; font-size:1.1rem;
+                         line-height:1; cursor:pointer; color:#6b7683; }
+#jq-popover .jqp-row { display:flex; gap:.45rem; align-items:flex-start; padding:.4rem .6rem;
+                       border-bottom:1px solid #f0f2f5; }
+#jq-popover .jqp-row:last-child { border-bottom:none; }
+#jq-popover .swatch { margin-top:.15rem; }
+#jq-popover .jqp-main { flex:1; min-width:0; }
+#jq-popover .jqp-pos { color:#6b7683; font-family:monospace; font-size:.7rem; }
+#jq-popover .jqp-text { color:#444; font-family:Georgia,serif; margin-top:.1rem; }
+#jq-popover .jqp-memo { color:#7a6414; font-style:italic; margin-top:.1rem; }
+#jq-popover .jqp-btns { display:flex; flex-direction:column; gap:.2rem; }
+#jq-popover .jqp-btns .mini { margin-left:0; }
+#jq-popover .jqp-show { color:#2c6fbb; }
+
+/* Memo-Markierungen: Unterstreichung statt Hintergrund */
+#doc mark.memomark { background:transparent !important; border-bottom:3px solid #b58900;
+                     border-radius:0; }
+#doc mark.memomark.sel { border-bottom:5px solid #d81b60; background:rgba(216,27,96,.14) !important; }

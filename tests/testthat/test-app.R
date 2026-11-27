@@ -226,7 +226,7 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_equal(qda_memos()$text_[qda_memos()$id == mid], "bearbeitet")
     session$setInputs(cancel_edit = 1L)  # no error
 
-    # title + text sent directly with the save click (as jellyqda.js does)
+    # title + text sent directly with the save click (as js/05-memos.js does)
     session$setInputs(edit_memo_entry = key)
     session$setInputs(save_memo_entry = list(key = key, text = "mit Titel", title = "T1"))
     m1 <- qda_memos()[qda_memos()$id == mid, ]

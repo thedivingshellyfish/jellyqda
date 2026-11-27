@@ -104,7 +104,7 @@
             esc(style), esc(cods$label[j]))
   }
   # data-cids: the codings of this place (space separated) -> popover in
-  # jellyqda.js; title: plain fallback where no JS runs (report, qda_view)
+  # js/12-overlap-popover.js; title: plain fallback where no JS runs (report, qda_view)
   ovl_open <- function(js, first) {
     k <- length(js)
     stops <- paste(sprintf("%s %.2f%% %.2f%%", cods$color[js], (seq_len(k) - 1) * 100 / k,

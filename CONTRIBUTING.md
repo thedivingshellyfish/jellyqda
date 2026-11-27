@@ -21,9 +21,10 @@ R CMD build . && R CMD check --as-cran jellyqda_*.tar.gz   # package check
   `tests/testthat/`.
 - Never commit project data (`*.jellyqda`, `originals/`, backups, exports) —
   `.gitignore` protects you, but double-check `git status` before pushing.
-- The interactive app: UI and server in `R/app.R`, look in
-  `inst/app/www/jellyqda.css`, browser logic in `inst/app/www/jellyqda.js` --
-  see the README section "Customising the look and the texts".
+- The interactive app: entry point in `R/app.R`, UI in `R/app_ui.R`, server
+  in `R/app_server.R` + `R/app_server_*.R` (one file per topic), look in
+  `inst/app/www/css/`, browser logic in `inst/app/www/js/` (overview:
+  `inst/app/www/README.md`) -- see the README section "Customising the look and the texts".
 - Examples must run in a temporary folder (`file.path(tempfile(), "x.jellyqda")`)
   so that `R CMD check --as-cran` stays clean.
 

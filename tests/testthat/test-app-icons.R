@@ -1,5 +1,5 @@
 # Server-rendered HTML uses <i class="fa-solid fa-NAME"></i>. The app loads
-# no Font Awesome web font (fontawesome::fa() returns SVG), so jellyqda.js
+# no Font Awesome web font (fontawesome::fa() returns SVG), so js/14-icons.js
 # swaps each <i> for the SVG of the same name from the hidden icon registry
 # (#jq-icons). An icon that is missing there would be invisible (0x0 px) --
 # as the memo icon in the code tree was before this test existed.

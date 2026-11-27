@@ -314,10 +314,11 @@ jellyqda/
 │   ├── summary.R / stats.R            #   Summary Grid, Statistik, Matrix
 │   ├── analysis.R                     #   Leitfaden, Zusammenführen, Auto-Codieren, Mayring, Wörter, KWIC, Fallvergleich
 │   ├── export.R / backup.R            #   Export + HTML-Bericht, ZIP-Backups
-│   ├── app.R                          #   Shiny-App qda_app(): UI + Server
+│   ├── app.R / app_ui.R / app_helpers.R #   Shiny-App qda_app(): Einstieg, UI, Hilfsfunktionen
+│   ├── app_server.R + app_server_*.R  #   Server der App, eine Datei je Thema (Dokumente, Codes, Memos ...)
 │   ├── i18n.R / i18n_catalog.R        #   Sprache (Deutsch/Englisch) + englische Übersetzungen
 │   └── addins.R                       #   RStudio-Addins (Backup, Statistik)
-├── inst/app/www/jellyqda.css|js       # Aussehen + Browser-Logik der App (kommentiert)
+├── inst/app/www/css/ + js/           # Aussehen + Browser-Logik der App, nummerierte Dateien (Übersicht: README.md dort)
 ├── inst/extdata/                      # Beispieldaten (fiktiv)
 ├── inst/examples/                     # kommentierte Vorlagen (deutsch + englisch)
 ├── vignettes/                         # Einführung (englisch)
@@ -343,10 +344,10 @@ falscher Stelle gespeichert.
 
 | Was | Wo |
 |---|---|
-| Farben, Schriften, Abstände, Dark Mode | `inst/app/www/jellyqda.css` (Abschnitte 1–7; Dark-Mode-Farbpalette als CSS-Variablen) |
-| Verhalten im Browser (Markieren, Klicks, Tastenkürzel, Popover, Layout) | `inst/app/www/jellyqda.js` (Abschnitte 1–14) |
-| Hauptfarbe + Schriftgröße | `bslib::bs_theme(primary = "#2c6fbb", font_scale = 0.82)` in `.jellyqda_ui()` (`R/app.R`) |
-| Beschriftungen | deutsch in `R/app.R` als `.t("…")`, englisch in `R/i18n_catalog.R` (ein Test prüft, dass jede Beschriftung übersetzt ist) |
+| Farben, Schriften, Abstände, Dark Mode | `inst/app/www/css/` (Dateien 01–09; Dark-Mode-Farbpalette als CSS-Variablen in `07-dark-mode.css`) |
+| Verhalten im Browser (Markieren, Klicks, Tastenkürzel, Popover, Layout) | `inst/app/www/js/` (Dateien 01–17, Übersicht in `inst/app/www/README.md`) |
+| Hauptfarbe + Schriftgröße | `bslib::bs_theme(primary = "#2c6fbb", font_scale = 0.82)` in `.jellyqda_ui()` (`R/app_ui.R`) |
+| Beschriftungen | deutsch im Code als `.t("…")` (`R/app_*.R`, `R/export.R`), englisch in `R/i18n_catalog.R` (ein Test prüft, dass jede Beschriftung übersetzt ist) |
 | Icons im vom Server erzeugten HTML | `<i class="fa-solid fa-NAME">`, Name in `.jq_icon_names()` eintragen (ein Test prüft das) |
 | Code-Farben | in der App beim Anlegen oder `qda_code_add(color = "#...")` |
 

@@ -10,7 +10,7 @@ set_lang <- function(lang) {
 pkg_root <- function() {
   # source package (devtools::test / R CMD check) or installed package
   for (p in c(test_path("..", ".."), system.file(package = "jellyqda"))) {
-    if (dir.exists(file.path(p, "R")) || file.exists(file.path(p, "app", "www", "jellyqda.js"))) return(p)
+    if (dir.exists(file.path(p, "R")) || dir.exists(file.path(p, "app", "www", "js"))) return(p)
   }
   NULL
 }
@@ -35,9 +35,11 @@ test_that("every .t() text in the R code has an English translation", {
   expect_equal(missing, character())
 })
 
-test_that("every jqT()/jqF() text in jellyqda.js has an English translation", {
-  js <- system.file("app", "www", "jellyqda.js", package = "jellyqda")
-  src <- paste(readLines(js, encoding = "UTF-8", warn = FALSE), collapse = "\n")
+test_that("every jqT()/jqF() text in the browser code (app/www/js) has an English translation", {
+  js <- list.files(system.file("app", "www", "js", package = "jellyqda"),
+                   pattern = "\\.js$", full.names = TRUE)
+  expect_true(length(js) > 0)
+  src <- paste(unlist(lapply(js, readLines, encoding = "UTF-8", warn = FALSE)), collapse = "\n")
   m <- regmatches(src, gregexpr("jq[TF]\\('((?:[^'\\\\]|\\\\.)*)'", src, perl = TRUE))[[1]]
   lits <- sub("^jq[TF]\\('", "", sub("'$", "", m))
   keys <- vapply(lits, function(x) jsonlite::fromJSON(paste0('["', gsub('"', '\\\\"', x), '"]')), character(1))

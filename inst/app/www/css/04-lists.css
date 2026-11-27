@@ -1,0 +1,105 @@
+/* jellyqda app -- stylesheet, part 4 of 9: Lists: codes, documents, segments, memos
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   4. Lists: codes, documents, segments, memos
+   -------------------------------------------------------------------------- */
+
+/* common row style for all lists */
+.coderow, .docrow, .segrow, .memorow { display:flex; gap:.45rem; align-items:center;
+  background:#fff; border:1px solid #e3e8ee; border-radius:.45rem; padding:.35rem .55rem; margin-bottom:.35rem; }
+.coderow, .docrow, .segrow { cursor:pointer; }
+.coderow:hover, .docrow:hover, .segrow:hover { background:#eef4fb; }
+.coderow.sel { border-color:#2c6fbb; background:#eef4fb; }
+
+/* colour swatch + label in the code tree */
+/* inline-block: a square in table cells too (matrix, summary grid), not
+   just a thin line */
+.swatch { display:inline-block; vertical-align:-.15em; width:1rem; height:1rem; border-radius:.3rem;
+          flex:none; border:1px solid rgba(0,0,0,.25); }
+.codelabel { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* small buttons (delete, edit ...) inside a row */
+.mini { margin-left:.25rem; border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+        font-size:.62rem; line-height:1.2; padding:.1rem .3rem; white-space:nowrap;
+        cursor:pointer; color:#b03a2e; flex:none; }
+
+.docrow .fmt, .coderow .fmt { margin-left:auto; font-size:.68rem; color:#56616d; flex:none; }
+.segrow .snippet, .memorow .snippet, .snippet { font-size:.76rem; color:#333; }
+.segrow .memo, .memorow .memo { display:block; font-size:.78rem; color:#7a6414; font-style:italic; }
+
+/* Memos: mehrzeilig (ueberschreibt display:flex von oben) */
+.memorow { display:block; white-space:pre-wrap; }
+.memogroup { font-size:.68rem; font-weight:700; color:#7a6414; margin:.4rem 0 .2rem 0;
+             text-transform:uppercase; letter-spacing:.04em; }
+.memorow.memomark-row { cursor:pointer; border-left:3px solid #b58900; }
+.memorow.memomark-row:hover { background:#fff8e1; }
+.memorow.editing { border-color:#2c6fbb; }
+.memorow.editing textarea { border:1px solid #b9d2ec; border-radius:.35rem; padding:.2rem .4rem;
+                            font-size:.78rem; margin-bottom:.2rem; }
+.mini.ok { color:#1e7e34; }
+
+/* --- Memo panel ---------------------------------------------------------
+   One card per memo; left border colour = kind. Colours for dark mode in
+   section 7. */
+.memopanel { display:flex; flex-direction:column; gap:.4rem; }
+/* the memo panel gets twice the height in its column -- but not when it is
+   collapsed (an empty area would remain otherwise) */
+.panel.memos { flex:2; }
+/* the code system with its tree (codes + subcodes) needs more height than documents/matrix */
+.panel.codes { flex:1.7; }
+.panel.codes.collapsed { flex:0 0 auto; }
+.panel.memos.collapsed { flex:0 0 auto; }
+.memotoolbar { display:flex; flex-wrap:wrap; gap:.25rem; }
+.newmemo { border:1px solid #c9d1da; background:#fff; color:#2c6fbb; border-radius:.4rem;
+           font-size:.72rem; padding:.18rem .45rem; cursor:pointer; }
+.newmemo:hover:not([disabled]) { background:#eef4fb; }
+.newmemo[disabled] { color:#5f6b78; border-style:dashed; cursor:not-allowed; }
+.newmemo svg { height:.75em; margin-right:.15rem; }
+.memochips { display:flex; flex-wrap:wrap; gap:.2rem; }
+.memochip { border:1px solid #d6dbe1; background:#fff; color:#3f4a56; border-radius:1rem;
+            font-size:.68rem; padding:.05rem .5rem; cursor:pointer; }
+.memochip .n { color:#6b7683; font-weight:600; }
+.memochip.active { background:#2c6fbb; border-color:#2c6fbb; color:#fff; }
+.memochip.active .n { color:#fff; }
+.memosearch { display:flex; flex-direction:column; gap:0; }
+.memosearch .form-group, .memosearch .shiny-input-container { margin-bottom:.1rem; width:100%; }
+.memosearch .checkbox { font-size:.74rem; margin:0; }
+.memocard { background:#fff; border:1px solid #e3e8ee; border-left:4px solid #8a94a0;
+            border-radius:.45rem; padding:.4rem .55rem; font-size:.78rem; }
+.memocard.kind-passage  { border-left-color:#b58900; }
+.memocard.kind-document { border-left-color:#2c6fbb; }
+.memocard.kind-code     { border-left-color:#7b4fb0; }
+.memocard.kind-project  { border-left-color:#1e7e34; }
+.memocard.kind-comment  { border-left-color:#8a94a0; }
+.memocard.focus { box-shadow:0 0 0 2px #2c6fbb; }
+.memocard.new { background:#fffdf3; }
+.memocard .mc-head { display:flex; align-items:center; gap:.3rem; font-size:.68rem;
+                     color:#5a6672; text-transform:uppercase; letter-spacing:.03em; font-weight:700; }
+.memocard .mc-date { margin-left:auto; font-weight:400; text-transform:none; letter-spacing:0; }
+.memocard .mc-title { font-weight:700; margin-top:.15rem; color:#222; }
+.memocard .mc-ref { color:#2c6fbb; font-size:.72rem; margin-top:.1rem; cursor:pointer;
+                    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.memocard .mc-ref:hover { text-decoration:underline; }
+.memocard .mc-text { white-space:pre-wrap; margin-top:.2rem; color:#222; }
+.memocard .mc-btns { display:flex; gap:.25rem; justify-content:flex-end; margin-top:.3rem; }
+.memocard .mc-btns .mini { margin-left:0; color:#2c6fbb; }
+.memocard .mc-btns .mini.danger { color:#b03a2e; }
+.memocard .mc-btns .mini.ok { color:#1e7e34; }
+.memocard textarea, .memocard .mc-titlein { font-size:.78rem; margin-top:.3rem; }
+/* memo icon in the code tree / in the document list */
+.memoicon { color:#b58900; cursor:pointer; flex:none; font-size:.75rem; }
+.memoicon:hover { color:#7a6414; }
+
+/* grey hint text when a panel is empty */
+/* Hint texts in empty panels ("No memos yet." ...).
+   Deliberately NOT called "placeholder": Bootstrap 5 has a class
+   .placeholder for grey loading bars (background = text colour) -- with it
+   all hints were just grey areas without readable text. */
+.jq-hint { color:#5f6b78; font-style:italic; padding:1rem; text-align:center; }
+
+/* memo of the clicked coding (right column, top) */
+.memodetail { background:#fff8e1; border:1px solid #e0c96a; border-radius:.5rem;
+             padding:.45rem .6rem; margin-bottom:.45rem; font-size:.8rem; white-space:pre-wrap; }
+.memodetail .who { font-size:.75rem; color:#7a6414; font-weight:700; display:block; margin-bottom:.2rem; }

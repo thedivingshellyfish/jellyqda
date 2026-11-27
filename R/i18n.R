@@ -2,7 +2,7 @@
 #
 # The UI texts are written in German in the code and wrapped in .t("...");
 # R/i18n_catalog.R holds their English translations. .t() returns the text
-# in the current language. The browser code (jellyqda.js) uses jqT('...')
+# in the current language. The browser code (inst/app/www/js/) uses jqT('...')
 # with the same catalogue, sent to the page by .jq_i18n_script().
 #
 # Current language, in this order:
@@ -77,7 +77,7 @@ qda_language <- function(lang = NULL) {
   .valid_lang(sub(".*lang=", "", m))
 }
 
-#' <script> that tells jellyqda.js the language and, for English, the
+#' <script> that tells the browser code (inst/app/www/js/) the language and, for English, the
 #' catalogue used by jqT().
 #' @noRd
 .jq_i18n_script <- function(lang = .lang()) {

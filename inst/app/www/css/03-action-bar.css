@@ -1,0 +1,36 @@
+/* jellyqda app -- stylesheet, part 3 of 9: Action bar and coding bar
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   3. Action bar and coding bar
+   -------------------------------------------------------------------------- */
+
+/* yellow bar above the text, appears as soon as text is marked:
+   "Marked: characters X-Y" + one button per code + memo */
+.actionbar { flex:none; display:flex; gap:.4rem; align-items:center; background:#fff8e1;
+             border:1px solid #e0c96a; padding:.45rem .7rem; border-radius:.5rem;
+             margin-bottom:.5rem; flex-wrap:wrap; }
+.actionbar .selinfo { font-family:monospace; font-size:.76rem; color:#7a6414; margin-right:.4rem; }
+.codebtn { border:none; color:#1a1a1a; border-radius:.4rem; padding:.25rem .55rem;
+           font-size:.76rem; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+.codebtn:hover { filter:brightness(1.12); }
+#memo_only_btn { border:1px solid #b58900; background:#fff; border-radius:.4rem;
+                 padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* "As segment" in the action bar */
+.segdefbtn { border:1px solid #5a6672; background:#fff; border-radius:.4rem;
+             padding:.25rem .55rem; font-size:.76rem; cursor:pointer; }
+
+/* segment bar: appears after a click into the text (without a selection) */
+.segbar { flex:none; display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+          background:#f1f3f6; border:1px solid #d4dae0; border-radius:.5rem;
+          padding:.35rem .7rem; margin-bottom:.5rem; }
+.segbar .seginfo { font-family:monospace; font-size:.74rem; color:#5a6672; margin-right:.3rem; }
+.segbar .mini { color:#2c6fbb; font-size:.7rem; padding:.15rem .45rem; }
+.segbar .mini[disabled] { opacity:.4; cursor:default; }
+.segbar .segclose { margin-left:auto; color:#6b7683; }
+
+/* blue bar: details of the clicked coding + delete button */
+.clickedbar { flex:none; display:flex; gap:.6rem; align-items:center; background:#eef4fb;
+              border:1px solid #b9d2ec; border-radius:.5rem; padding:.4rem .7rem; margin-bottom:.5rem; }

@@ -310,10 +310,11 @@ jellyqda/
 │   ├── summary.R / stats.R            #   summary grid, statistics, matrix
 │   ├── analysis.R                     #   guideline, merging, auto-coding, Mayring, words, KWIC, case comparison
 │   ├── export.R / backup.R            #   export + HTML report, ZIP backups
-│   ├── app.R                          #   shiny app qda_app(): UI + server
+│   ├── app.R / app_ui.R / app_helpers.R #   shiny app qda_app(): entry point, UI, helpers
+│   ├── app_server.R + app_server_*.R  #   app server, one file per topic (documents, codes, memos ...)
 │   ├── i18n.R / i18n_catalog.R        #   language (English/German) + English translations
 │   └── addins.R                       #   RStudio addins (backup, statistics)
-├── inst/app/www/jellyqda.css|js       # look + browser logic of the app (commented)
+├── inst/app/www/css/ + js/           # look + browser logic of the app, numbered files (overview: README.md there)
 ├── inst/extdata/                      # example data (fictional)
 ├── inst/examples/                     # commented templates (English + German)
 ├── vignettes/                         # introduction
@@ -338,10 +339,10 @@ otherwise marks would be stored at the wrong place.
 
 | What | Where |
 |---|---|
-| colours, fonts, spacing, dark mode | `inst/app/www/jellyqda.css` (sections 1–9; dark mode palette as CSS variables) |
-| behaviour in the browser (marking, clicks, shortcuts, popover, layout) | `inst/app/www/jellyqda.js` (sections 1–17) |
-| main colour + font size | `bslib::bs_theme(primary = "#2c6fbb", font_scale = 0.82)` in `.jellyqda_ui()` (`R/app.R`) |
-| labels | German in the code as `.t("…")` (`R/app.R`, `R/export.R`), English in `R/i18n_catalog.R`; a test checks that every label is translated |
+| colours, fonts, spacing, dark mode | `inst/app/www/css/` (files 01–09; dark mode palette as CSS variables in `07-dark-mode.css`) |
+| behaviour in the browser (marking, clicks, shortcuts, popover, layout) | `inst/app/www/js/` (files 01–17, overview in `inst/app/www/README.md`) |
+| main colour + font size | `bslib::bs_theme(primary = "#2c6fbb", font_scale = 0.82)` in `.jellyqda_ui()` (`R/app_ui.R`) |
+| labels | German in the code as `.t("…")` (`R/app_*.R`, `R/export.R`), English in `R/i18n_catalog.R`; a test checks that every label is translated |
 | icons in server-generated HTML | `<i class="fa-solid fa-NAME">`, add the name to `.jq_icon_names()` (a test checks this) |
 | code colours | in the app when creating codes, or `qda_code_add(color = "#...")` |
 

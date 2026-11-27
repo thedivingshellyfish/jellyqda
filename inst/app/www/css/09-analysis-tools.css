@@ -1,0 +1,82 @@
+/* jellyqda app -- stylesheet, part 9 of 9: Analysis tools (since 0.6.0): coding fields, auto-coding, case
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   9. Analysis tools (since 0.6.0): coding fields, auto-coding, case
+      comparison, analysis window (word frequencies, keyword in context, Mayring)
+   -------------------------------------------------------------------------- */
+
+/* coding bar: comment + Mayring fields */
+.clickedbar .cbfields { flex-basis:100%; display:grid; grid-template-columns:auto minmax(0,1fr); gap:.3rem .5rem;
+                        align-items:center; font-size:.76rem; }
+.clickedbar .cbfields > label { margin:0; color:#56616d; font-weight:600; }
+.clickedbar .cbfields input { height:auto; padding:.2rem .45rem; font-size:.78rem; }
+.clickedbar .cbmayring { grid-column:1 / -1; }
+.clickedbar .cbmayring summary { cursor:pointer; color:#2c6fbb; font-weight:600; font-size:.74rem; }
+.clickedbar .cbmayring label { display:block; margin:.25rem 0 .1rem; color:#56616d; font-weight:600; }
+.clickedbar .cbmayring input { width:100%; }
+.clickedbar .cbbtns { flex-basis:100%; display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; }
+.clickedbar .cbbtns .btn { padding:.15rem .55rem; font-size:.76rem; }
+.clickedbar .cbbtns svg { height:.85em; width:auto; fill:currentColor; margin:0 .2em 0 0 !important; vertical-align:-.1em; }
+.invivobtn { border-style:dashed !important; }
+
+/* Suche: alle Treffer codieren */
+.autocode { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; font-size:.76rem;
+            background:#eef4fb; border:1px solid #b9d2ec; border-radius:.45rem; padding:.35rem .5rem; margin:.3rem 0 .5rem; }
+.autocode select { width:auto; max-width:14rem; padding-top:.1rem; padding-bottom:.1rem; font-size:.76rem; }
+.autocode .btn { padding:.1rem .55rem; font-size:.76rem; }
+
+/* Codebaum: Zusammenfuehren-Auswahl */
+.cmerge select { font-size:.76rem; }
+
+/* Code-Matrix: Spalten-Auswahl (Dokumente / Fallvergleich) */
+.mxby { display:flex; gap:.4rem; align-items:center; margin-bottom:.4rem; font-size:.74rem; flex-wrap:wrap; }
+.mxby label { margin:0; font-weight:600; color:#56616d; }
+.mxby select { width:auto; max-width:100%; font-size:.74rem; padding-top:.1rem; padding-bottom:.1rem; }
+td.mxcell.nolink { cursor:default; }
+.mxnote { margin-top:.3rem; }
+
+/* Analyse-Fenster */
+.anfilters { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin:.7rem 0 .3rem; }
+.anfilters .form-group { margin-bottom:0; min-width:12rem; }
+.anfilters .shiny-download-link { margin-bottom:.1rem; }
+.antable { width:100%; border-collapse:collapse; font-size:.8rem; }
+.antable th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#56616d;
+              border-bottom:1px solid #c9d1da; padding:.3rem .4rem; }
+.antable td { border-bottom:1px solid #e3e8ee; padding:.3rem .4rem; vertical-align:top; }
+.antable td.num { text-align:right; font-variant-numeric:tabular-nums; width:4.5rem; }
+.antable.words { max-width:44rem; }
+.antable .wbar { width:40%; }
+.antable .wbar span { display:block; height:.55rem; border-radius:.2rem; background:#2c6fbb; margin-top:.35rem; }
+.linkword { border:0; background:none; padding:0; color:#2c6fbb; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.antable.kwic td { font-family:Georgia, serif; }
+.antable.kwic td.kref { font-family:system-ui, sans-serif; font-size:.72rem; width:11rem; color:#56616d; }
+.antable.kwic td.kl { text-align:right; color:#444; width:40%; }
+.antable.kwic td.km { font-weight:700; white-space:nowrap; color:#1d2630; background:#fff3c4; }
+.antable.kwic td.kr { color:#444; width:40%; }
+.antable.kwic tr { cursor:pointer; }
+.antable.kwic tr:hover td { background:#eef4fb; }
+.antable.mayring td.mref { font-size:.72rem; width:10rem; }
+.antable.mayring td.mtext { font-family:Georgia, serif; font-size:.8rem; width:30%; }
+.antable.mayring td.mcode { font-size:.74rem; width:11rem; }
+.antable.mayring textarea { font-size:.78rem; min-width:12rem; transition:box-shadow .3s; }
+.antable.mayring textarea.saved { box-shadow:0 0 0 2px #1f7a4d; }
+
+[data-bs-theme="dark"] .clickedbar .cbfields > label, [data-bs-theme="dark"] .clickedbar .cbmayring label { color:var(--jq-muted); }
+[data-bs-theme="dark"] .clickedbar .cbmayring summary { color:var(--jq-blue); }
+[data-bs-theme="dark"] .autocode { background:var(--jq-raised); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .mxby label { color:var(--jq-muted); }
+[data-bs-theme="dark"] .antable th { color:var(--jq-muted); border-color:var(--jq-border); }
+[data-bs-theme="dark"] .antable td { border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .antable .wbar span { background:var(--jq-blue); }
+[data-bs-theme="dark"] .linkword { color:var(--jq-blue); }
+[data-bs-theme="dark"] .antable.kwic td.kl, [data-bs-theme="dark"] .antable.kwic td.kr { color:var(--jq-text); }
+[data-bs-theme="dark"] .antable.kwic td.km { background:var(--jq-amberbg); color:var(--jq-gold); }
+[data-bs-theme="dark"] .antable.kwic tr:hover td { background:var(--jq-hover); }
+[data-bs-theme="dark"] .antable.kwic td.kref { color:var(--jq-muted); }
+
+/* Language switch (EN/DE) in the toolbar */
+.symbolbar .langbtn { font:700 .68rem/1 system-ui, sans-serif; text-decoration:none; color:#2c6fbb;
+                      display:inline-flex; align-items:center; justify-content:center; min-width:1.9rem; }
+[data-bs-theme="dark"] .symbolbar .langbtn { color:var(--jq-blue); }

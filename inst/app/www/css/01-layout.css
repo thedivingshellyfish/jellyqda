@@ -1,0 +1,51 @@
+/* jellyqda app -- stylesheet, part 1 of 9: Basic layout
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   1. Basic layout
+   -------------------------------------------------------------------------- */
+
+body { background:#f4f6f8; }
+
+/* Top bar: statistics line, buttons (undo, save, export ...) and toolbar */
+.topbar { display:flex; gap:.6rem; align-items:center; background:#fff;
+          padding:.5rem .9rem; border-radius:.6rem; margin-bottom:.6rem;
+          box-shadow:0 1px 3px rgba(0,0,0,.08); flex-wrap:wrap; }
+.topbar .stats { font-weight:600; color:#2c6fbb; margin-right:auto; font-size:.82rem; }
+.btnsection { display:flex; gap:.4rem; align-items:center; }
+/* Undo/redo without an entry: greyed out (stays clickable, the server then
+   reports "Nothing left to undo") */
+.btnsection .jq-disabled { opacity:.6; }
+.actionbar #memo_field { width:19rem; max-width:100%; margin-bottom:0; }
+
+/* Grid: left column | handle | middle | handle | right column.
+   The column widths are changed by JS and remembered in localStorage. */
+.appgrid { display:grid; gap:0; height:calc(100vh - 118px);
+           grid-template-columns:300px 6px minmax(0,1fr) 6px 300px; }
+
+/* drag handles to change the column width */
+.colhandle { cursor:col-resize; background:#e2e7ec; border-radius:3px; width:8px; }
+.colhandle:hover { background:#2c6fbb; }
+
+/* Pane = one column, contains one or more panels (movable by drag & drop) */
+.pane { display:flex; flex-direction:column; min-height:0; min-width:0; gap:.6rem;
+        padding:0 .3rem; overflow:hidden; }
+.pane.droptarget { outline:2px dashed #2c6fbb; outline-offset:-2px; border-radius:.6rem; }
+
+/* Panel = tile with a header (.panelhead) and content (.panelbody) */
+.panel { background:#fff; border-radius:.6rem; box-shadow:0 1px 3px rgba(0,0,0,.08);
+         display:flex; flex-direction:column; min-height:0; flex:1; }
+.panel.dragging { opacity:.45; }
+.panelhead { padding:.35rem .7rem; border-bottom:1px solid #e3e8ee; font-weight:700;
+             display:flex; gap:.45rem; align-items:center; color:#2c6fbb; flex:none;
+             cursor:grab; user-select:none; font-size:.82rem; }
+.panelhead .hlabel { margin-left:auto; }
+
+/* collapsed panels: only the header is visible */
+.panel.collapsed { flex:0 0 auto; }
+.panel.collapsed .panelbody { display:none; }
+.toggler { cursor:pointer; color:#8a94a0; }
+.panel.collapsed .toggler i { transform:rotate(-90deg); }
+.panelhead:active { cursor:grabbing; }
+.panelbody { padding:.5rem .7rem; overflow:auto; flex:1; min-height:0; }

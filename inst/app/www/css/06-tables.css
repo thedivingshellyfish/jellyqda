@@ -1,0 +1,26 @@
+/* jellyqda app -- stylesheet, part 6 of 9: Tables: code matrix (.mxcell) and summary grid (.sumcell)
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   6. Tables: code matrix (.mxcell) and summary grid (.sumcell)
+   -------------------------------------------------------------------------- */
+
+table.mx { border-collapse:collapse; width:100%; font-size:.74rem; }
+table.mx th, table.mx td { border:1px solid #e3e8ee; padding:.18rem .35rem; text-align:center; }
+table.mx th { background:#f4f6f8; position:sticky; top:0; }
+table.mx td.rowlab { text-align:left; font-weight:600; cursor:pointer; white-space:nowrap; }
+table.mx td.rowlab:hover { background:#eef4fb; }
+/* Heatmap-Zellen (blauer Hintergrund inline): fast schwarze, fette Zahl */
+td.mxcell { cursor:pointer; min-width:2.2rem; color:#0b1622; font-weight:700; }
+td.mxcell:hover { outline:2px solid #2c6fbb; }
+td.sumcell { cursor:pointer; min-width:2.2rem; background:#fbfcfe; }
+td.sumcell:hover { outline:2px solid #b58900; }
+td.sumcell.has { background:#fff8e1; }   /* cell already has a summary */
+tr.sumrow td { font-weight:700; background:#f4f6f8; }
+.sumdetail-segs { max-height:10rem; overflow:auto; margin-bottom:.4rem; }
+
+
+/* small grey side information (instead of a fixed colour in the HTML, so
+   that dark mode can recolour it) */
+.jq-sub { font-size:.78rem; color:#5f6b78; margin:0 0 .4rem 0; }

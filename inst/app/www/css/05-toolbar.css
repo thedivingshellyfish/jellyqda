@@ -1,0 +1,17 @@
+/* jellyqda app -- stylesheet, part 5 of 9: Toolbar (show/hide panels, dark mode, help, language, quit)
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* --------------------------------------------------------------------------
+   5. Toolbar (show/hide panels, dark mode, help, language, quit)
+   -------------------------------------------------------------------------- */
+
+.symbolbar { display:flex; gap:.3rem; align-items:center; padding-left:.4rem;
+             border-left:1px solid #e3e8ee; }
+.symbolbar .symgroup { display:flex; gap:.2rem; align-items:center; }
+.symbolbar .symsep { width:1px; height:1.1rem; background:#d6dbe1; }
+.symbolbar .symbtn { border:1px solid #d6dbe1; background:#fff; border-radius:.35rem;
+                    padding:.1rem .35rem; cursor:pointer; color:#2c6fbb; font-size:.8rem; }
+.symbolbar .symbtn:hover { background:#eef4fb; }
+.symbolbar .symbtn.active { background:#2c6fbb; color:#fff; border-color:#2c6fbb; }
+.symbolbar .closeapp { color:#b03a2e; border-color:#e0b4ae; }
