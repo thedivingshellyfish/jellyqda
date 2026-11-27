@@ -227,7 +227,7 @@
     res <- tryCatch(
       qda_code_move(input$reparent_code$code, input$reparent_code$parent),
       error = function(e) {
-        shiny::showNotification(paste(.t("Umhaengen nicht moeglich:"), conditionMessage(e)), type = "warning")
+        shiny::showNotification(paste(.t("Umh\u00e4ngen nicht m\u00f6glich:"), conditionMessage(e)), type = "warning")
         NULL
       })
     if (!is.null(res)) {

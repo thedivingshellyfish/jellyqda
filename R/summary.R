@@ -40,7 +40,7 @@ qda_summary_set <- function(code, source, text_) {
   log_event("summary_set", list(code_id = cod$id, source_id = src$id,
                                 text = as.character(text_)),
             changes = list(.chg("summaries", before, .snap("summaries", sum_id()))),
-            desc = sprintf(.t("Summary geaendert: '%s' x %s"), cod$label, src$name))
+            desc = sprintf(.t("Summary ge\u00e4ndert: '%s' x %s"), cod$label, src$name))
   invisible(tibble::tibble(code_id = cod$id, source_id = src$id,
                            text_ = as.character(text_), updated_at = .now()))
 }

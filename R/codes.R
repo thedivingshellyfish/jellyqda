@@ -174,7 +174,7 @@ qda_code_delete <- function(code) {
                            .chg("codings", before$codings, .snap("codings", integer())),
                            .chg("summaries", before$summaries, .snap("summaries", integer())),
                            .chg("memos", before$memos, .snap("memos", integer()))),
-            desc = sprintf(.t("Code geloescht: '%s' (mit %d Unter-Codes und %d Codings)"),
+            desc = sprintf(.t("Code gel\u00f6scht: '%s' (mit %d Unter-Codes und %d Codings)"),
                            row$label, length(ids) - 1L, n_cod))
   invisible(tibble::tibble(codes_deleted = length(ids), codings_deleted = n_cod))
 }
@@ -258,6 +258,6 @@ qda_code_set_color <- function(code, color, family = TRUE) {
                               paste(ids, collapse = ",")), params = list(color))
   log_event("code_update", list(code_id = row$id, old_color = row$color, new_color = color),
             changes = list(.chg("codes", before, .snap("codes", ids))),
-            desc = sprintf(.t("Farbe von Code '%s' geaendert"), row$label))
+            desc = sprintf(.t("Farbe von Code '%s' ge\u00e4ndert"), row$label))
   invisible(tibble::tibble(id = row$id, label = row$label, color = color))
 }

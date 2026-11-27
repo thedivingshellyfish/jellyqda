@@ -21,7 +21,7 @@ test_that("code_delete is undoable incl. sub-codes, codings and summaries", {
   expect_equal(nrow(qda_codes()), 0)
   expect_equal(nrow(qda_codings()), 0)
   expect_equal(nrow(qda_summaries()), 0)
-  expect_match(qda_history()$undo, "Code geloescht")
+  expect_match(qda_history()$undo, "Code gel\u00f6scht")
   qda_undo()
   expect_identical(project_state(), before)
   qda_redo()
@@ -79,7 +79,7 @@ test_that("undo/redo survive closing and reopening the project", {
   qda_close()
   qda_open(p, auto_snapshot = Inf)
   on.exit(qda_close(), add = TRUE)
-  expect_match(qda_history()$redo, "Coding hinzugefuegt")
+  expect_match(qda_history()$redo, "Coding hinzugef\u00fcgt")
   qda_redo()
   expect_equal(nrow(qda_codings()), 1)
 })
@@ -98,7 +98,7 @@ test_that("events from older versions (no snapshot) still use the old undo", {
   r <- qda_undo()
   expect_equal(r$undone, "coding_add")
   expect_equal(nrow(qda_codings()), 0)
-  expect_error(qda_redo(), "aelteren jellyqda-Version")
+  expect_error(qda_redo(), "jellyqda-Version")   # no umlaut: locale-independent
   # old-style code_delete has no data -> skipped, never blocks the stack
   jellyqda:::log_event("code_delete", list(code_id = 99, label = "weg"))
   expect_match(qda_history()$undo, "Code angelegt")

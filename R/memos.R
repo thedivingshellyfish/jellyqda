@@ -159,7 +159,7 @@ qda_memo_delete <- function(memo) {
   DBI::dbExecute(con, "DELETE FROM memos WHERE id = ?", params = list(id))
   log_event("memo_delete", list(memo_id = id, text = row$text_[1], created_at = row$created_at[1]),
             changes = list(.chg("memos", before, .snap("memos", integer()))),
-            desc = sprintf(.t("%s-Memo #%d geloescht"), .t(.MEMO_KINDS[[row$kind[1]]]), id))
+            desc = sprintf(.t("%s-Memo #%d gel\u00f6scht"), .t(.MEMO_KINDS[[row$kind[1]]]), id))
   invisible(NULL)
 }
 
@@ -190,7 +190,7 @@ qda_memo_update <- function(memo, text_ = NULL, title = NULL) {
   log_event("memo_update", list(memo_id = id, text = as.character(text_ %||% row$text_),
                                 old_text = row$text_[1]),
             changes = list(.chg("memos", before, .snap("memos", id))),
-            desc = sprintf(.t("%s-Memo #%d geaendert"), .t(.MEMO_KINDS[[row$kind[1]]]), id))
+            desc = sprintf(.t("%s-Memo #%d ge\u00e4ndert"), .t(.MEMO_KINDS[[row$kind[1]]]), id))
   invisible(qda_memos()[qda_memos()$id == id, , drop = FALSE])
 }
 

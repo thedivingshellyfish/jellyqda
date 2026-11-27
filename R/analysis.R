@@ -56,7 +56,7 @@ qda_code_guide <- function(code, definition = NULL, anchor = NULL, rule = NULL,
                  params = list(new_def, new_anchor, new_rule, row$id))
   log_event("code_update", list(code_id = row$id, guide = TRUE),
             changes = list(.chg("codes", before, .snap("codes", row$id))),
-            desc = sprintf(.t("Kodierleitfaden von '%s' geaendert"), row$label))
+            desc = sprintf(.t("Kodierleitfaden von '%s' ge\u00e4ndert"), row$label))
   invisible(tibble::tibble(id = row$id, label = row$label, definition = new_def,
                            anchor = new_anchor, coding_rule = new_rule))
 }
@@ -144,7 +144,7 @@ qda_code_merge <- function(from, into) {
                            .chg("codings", before$codings, .snap("codings", cod_ids)),
                            .chg("memos", before$memos, .snap("memos", memo_ids)),
                            .chg("summaries", before$summaries, .snap("summaries", sum_ids))),
-            desc = sprintf(.t("Codes zusammengefuehrt: '%s' -> '%s' (%d Codings)"),
+            desc = sprintf(.t("Codes zusammengef\u00fchrt: '%s' -> '%s' (%d Codings)"),
                            a$label, b$label, length(cod_ids)))
   invisible(tibble::tibble(into = b$id, codings_moved = length(cod_ids)))
 }
@@ -279,7 +279,7 @@ qda_coding_set_summary <- function(coding, paraphrase = NULL, generalization = N
                  params = list(p, g, row$id))
   log_event("coding_update", list(coding_id = row$id, summary = TRUE),
             changes = list(.chg("codings", before, .snap("codings", row$id))),
-            desc = sprintf(.t("Paraphrase/Generalisierung von Coding #%d geaendert"), row$id))
+            desc = sprintf(.t("Paraphrase/Generalisierung von Coding #%d ge\u00e4ndert"), row$id))
   invisible(tibble::tibble(id = row$id, paraphrase = p, generalization = g))
 }
 

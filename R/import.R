@@ -16,6 +16,11 @@
 #' file. Files whose content hash was already imported are skipped, so text is
 #' extracted exactly once per file.
 #'
+#' A *different* file with a name that is already taken (e.g.
+#' `a/interview.txt` and `b/interview.txt`) is imported under a unique name
+#' such as `interview (2).txt`, so no original is ever overwritten and every
+#' source can still be addressed by its name.
+#'
 #' PDFs without a usable text layer are imported with a warning (the original
 #' remains the source of truth; consider manual OCR, e.g. tesseract).
 #'
@@ -84,11 +89,18 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL,
         "'%s': PDF has no usable text layer (only %d chars extracted). Original kept in originals/; consider manual OCR (tesseract) and re-import.",
         nm, nchar(text, type = "chars")), call. = FALSE)
     }
+    # a different file with the same name (e.g. a/interview.txt and
+    # b/interview.txt) gets a unique name "interview (2).txt": otherwise its
+    # original would overwrite the first one in originals/ and the name would
+    # no longer identify the source
+    odir <- file.path(project_dir(), "originals")
+    taken <- DBI::dbGetQuery(con, "SELECT name FROM sources")$name
+    if (isTRUE(copy_originals)) taken <- c(taken, list.files(odir))
+    nm <- .unique_name(nm, taken)
     orig_rel <- NA_character_
     if (isTRUE(copy_originals)) {
-      odir <- file.path(project_dir(), "originals")
       dir.create(odir, recursive = TRUE, showWarnings = FALSE)
-      if (file.copy(f, file.path(odir, nm), overwrite = TRUE)) {
+      if (file.copy(f, file.path(odir, nm), overwrite = FALSE)) {
         orig_rel <- file.path("originals", nm)
       }
     }
@@ -124,6 +136,22 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL,
     for (id in out$id[!is.na(out$id)]) qda_segments_set(id, segments)
   }
   out
+}
+
+#' `name`, or "stem (2).ext", "stem (3).ext", ... if `name` is in `taken`
+#' (compared case-insensitively, as on Windows and macOS file systems).
+#' @noRd
+.unique_name <- function(name, taken) {
+  taken <- tolower(taken)
+  if (!tolower(name) %in% taken) return(name)
+  ext <- tools::file_ext(name)
+  stem <- if (nzchar(ext)) substr(name, 1, nchar(name) - nchar(ext) - 1) else name
+  i <- 2L
+  repeat {
+    cand <- paste0(stem, " (", i, ")", if (nzchar(ext)) paste0(".", ext) else "")
+    if (!tolower(cand) %in% taken) return(cand)
+    i <- i + 1L
+  }
 }
 
 #' Read a txt/md file as raw bytes, detect the encoding, convert to UTF-8.

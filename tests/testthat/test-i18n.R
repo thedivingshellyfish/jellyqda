@@ -105,3 +105,45 @@ test_that("English UI, app outputs and report", {
   expect_true(grepl("^Code created", utils::tail(qda_events()$details, 1)) ||
                 any(grepl("Code created", qda_events()$details, fixed = TRUE)))
 })
+
+test_that("German UI texts use real umlauts, not ae/oe/ue spellings", {
+  # e.g. "geaendert" instead of "ge\u00e4ndert" would show up like that in
+  # the German interface, because German is the source language (.t() returns
+  # it unchanged)
+  ascii <- c("geaendert", "geloescht", "hinzugefuegt", "zusammengefuehrt", "fuer",
+             "ueber", "loeschen", "moeglich", "noetig", "auswaehlen", "gewaehlt",
+             "geoeffnet", "enthaelt", "duerfen", "koennen", "muessen", "rueckgaengig",
+             "zurueck", "aelter", "groesser", "Tastenkuerzel", "Ungueltig", "Absaetze",
+             "Umhaengen", "waehlen", "oeffnen", "aendern", "Aenderung")
+  rx <- paste0("(^|[^A-Za-z])(", paste(ascii, collapse = "|"), ")")
+  keys <- names(jellyqda:::.I18N_EN)
+  bad <- keys[grepl(rx, keys, ignore.case = TRUE)]
+  expect_equal(bad, character(0))
+})
+
+test_that("browser code counts characters like R (code points, not UTF-16)", {
+  # an emoji is 1 character in R but 2 UTF-16 code units in JavaScript; the
+  # offsets sent by the browser must use jqCpLen() (inst/app/www/js/01-helpers.js)
+  expect_equal(nchar("Hallo \U0001F600 Welt", type = "chars"), 12L)
+  js <- paste(readLines(system.file("app", "www", "js", "01-helpers.js", package = "jellyqda"),
+                        encoding = "UTF-8", warn = FALSE), collapse = "\n")
+  expect_true(grepl("return jqCpLen(r.toString());", js, fixed = TRUE))
+  expect_false(grepl("return r.toString().length;", js, fixed = TRUE))
+  expect_true(grepl("jqCpLen(n.nodeValue)", js, fixed = TRUE))
+})
+
+test_that("documents with emoji: rendered text and offsets stay exact", {
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  f <- tempfile(fileext = ".txt")
+  writeLines(enc2utf8("Vorher \U0001F600\U0001F44D Text\n\nZweiter Absatz mit Ziel."), f, useBytes = TRUE)
+  qda_import(f)
+  txt <- jellyqda:::.resolve_source(1)$frozen_text
+  st <- regexpr("Ziel", txt, fixed = TRUE)
+  st <- nchar(substr(txt, 1, st - 1L), type = "chars") + 1L   # 1-based, in chars
+  qda_code_add("Z")
+  qda_code(1, "Z", start = st, end = st + 3L)
+  expect_equal(qda_codings()$text, "Ziel")
+  html <- jellyqda:::.render_doc_html(1)
+  expect_identical(gsub("<[^>]*>", "", html), htmltools::htmlEscape(txt))
+})
