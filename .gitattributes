@@ -1,0 +1,82 @@
+# ---------------------------------------------------------------
+# Default: Git automatically detects text files and saves them with LF
+# ---------------------------------------------------------------
+* text=auto eol=lf
+
+# ---------------------------------------------------------------
+# R-Packet-Source
+# ---------------------------------------------------------------
+*.R        text eol=lf diff=r
+*.r        text eol=lf diff=r
+*.Rmd      text eol=lf
+*.Rd       text eol=lf
+*.Rproj    text eol=lf
+*.dcf      text eol=lf
+DESCRIPTION text eol=lf
+NAMESPACE   text eol=lf
+LICENSE     text eol=lf
+.Rbuildignore text eol=lf
+inst/CITATION text eol=lf
+
+# Web / App / Docu
+*.md       text eol=lf diff=markdown
+*.html     text eol=lf diff=html
+*.css      text eol=lf diff=css
+*.js       text eol=lf
+*.svg      text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+
+# Windows-Script need CRLF
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.ps1      text eol=crlf
+
+# ---------------------------------------------------------------
+# Test and demo transcripts: Bytes must be preserved exactly.
+# Segment offsets (see test-freeze-offsets / test-render-offsets)
+# would shift if Git used CRLF on Windows.
+# interview_latin1.txt is intentionally in ISO-8859-1 and must not
+# be modified.
+# ---------------------------------------------------------------
+inst/extdata/*.txt  text eol=lf
+inst/extdata/*.md   text eol=lf
+inst/extdata/interview_latin1.txt -text -diff
+demo/*.txt          text eol=lf
+
+# ---------------------------------------------------------------
+# Binarydata
+# ---------------------------------------------------------------
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
+*.docx     binary
+*.xlsx     binary
+*.rds      binary
+*.rda      binary
+*.RData    binary
+*.zip      binary
+*.tar.gz   binary
+
+# ---------------------------------------------------------------
+# GitHub Linguist: Do not count generated and vendor files as code
+# ---------------------------------------------------------------
+man/*.Rd          linguist-generated
+NAMESPACE         linguist-generated
+docs/**           linguist-documentation
+website/**        linguist-documentation
+*.html            linguist-documentation
+
+# ---------------------------------------------------------------
+# Keep out of “git archive” (release tarballs)
+# ---------------------------------------------------------------
+.github/          export-ignore
+website/          export-ignore
+docs/             export-ignore
+_pkgdown.yml      export-ignore
+cran-comments.md  export-ignore
+.gitattributes    export-ignore
+.gitignore        export-ignore
