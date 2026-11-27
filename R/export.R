@@ -15,11 +15,16 @@
 #' * `"audit"`: the full events audit trail -- CSV
 #' * `"report"`: a standalone HTML report -- all documents with colored coding
 #'   marks, the codebook, all memos and project statistics
-#' * `"all"`: all of the above
+#' * `"qdpx"`: the whole project in the REFI-QDA exchange format for MAXQDA,
+#'   ATLAS.ti, NVivo, QualCoder ... (see [qda_export_qdpx()])
+#' * `"all"`: all of the above except `"qdpx"`
 #'
 #' @param what One or more of `"all"`, `"segments"`, `"codings"`, `"codebook"`,
-#'   `"audit"`, `"report"`.
+#'   `"audit"`, `"report"`, `"qdpx"`.
 #' @param path Output directory (created if missing).
+#' @param report_documents Logical; include every document with its marks in
+#'   the report (`TRUE`, default). `FALSE` writes the overview only, which is
+#'   much faster and smaller for large projects.
 #' @return Invisibly, a tibble of written files: `file`, `what`, `rows`.
 #' @export
 #' @examples
@@ -32,9 +37,9 @@
 #' basename(out$file)
 #' qda_export("audit")   # for the methods section
 #' qda_close()
-qda_export <- function(what = "all", path = NULL) {
+qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
   con <- qda_con()
-  what <- match.arg(what, c("all", "segments", "codings", "codebook", "audit", "report"),
+  what <- match.arg(what, c("all", "segments", "codings", "codebook", "audit", "report", "qdpx"),
                     several.ok = TRUE)
   if ("all" %in% what) what <- c("segments", "codings", "codebook", "audit", "report")
   dir <- path %||% file.path(project_dir(), "exports")
@@ -103,8 +108,13 @@ qda_export <- function(what = "all", path = NULL) {
   }
   if ("report" %in% what) {
     f <- file.path(dir, paste0("report_", ts, ".html"))
-    writeLines(.report_html(), f, useBytes = TRUE)
+    # (the app sets .jellyqda_env$progress for a progress bar, R/app_server_analysis.R)
+    writeLines(.report_html(documents = report_documents, progress = .jellyqda_env$progress), f, useBytes = TRUE)
     add(f, "report", 1L)
+  }
+  if ("qdpx" %in% what) {   # R/export_qdpx.R
+    f <- qda_export_qdpx(file.path(dir, paste0(sub("\\.jellyqda$", "", basename(project_path())), "_", ts, ".qdpx")))
+    add(f, "qdpx", nrow(qda_sources()))
   }
   files <- vapply(written, function(w) w$file, character(1))
   log_event("export", list(what = what, files = files))
@@ -119,7 +129,11 @@ qda_export <- function(what = "all", path = NULL) {
 # codebook (coding guideline), memos, coded passages, Mayring summary,
 # documents with marks and margin column. UI language: .t() (R/i18n.R).
 #' @noRd
-.report_html <- function() {
+.report_html <- function(documents = TRUE, progress = NULL) {
+  # progress(value 0..1, detail): optional callback for a progress bar (the
+  # app shows it in the report dialog, R/app_server_report.R)
+  step <- function(v, detail) if (is.function(progress)) progress(v, detail)
+  step(0.02, .t("Codesystem und H\u00e4ufigkeiten"))
   con <- qda_con()
   esc <- htmltools::htmlEscape
   st <- qda_stats()$overall
@@ -150,6 +164,7 @@ qda_export <- function(what = "all", path = NULL) {
     ".kpis{display:flex;flex-wrap:wrap;gap:6px 26px;margin:14px 0 4px;font-size:9pt;color:var(--muted)}",
     ".kpis b{display:block;font-size:15pt;color:var(--ink);font-variant-numeric:tabular-nums}",
     "table{border-collapse:collapse;width:100%;font-size:9pt;font-variant-numeric:tabular-nums}",
+    ".rsvg{margin:6px 0 12px;break-inside:avoid}.rsvg svg{max-width:100%;height:auto}",
     "th{overflow-wrap:anywhere;font-weight:600;color:var(--muted);font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;text-align:right;padding:4px 5px;border-bottom:1px solid var(--ink);vertical-align:bottom}",
     "td{padding:4px 5px;border-bottom:1px solid var(--rule);text-align:right;vertical-align:top}",
     "th:first-child,td:first-child{text-align:left}",
@@ -357,7 +372,11 @@ qda_export <- function(what = "all", path = NULL) {
   # coding (code, comment, paraphrase) and passage memo, connected by a thread
   # in the colour of the code family. Cards are placed next to the segment in
   # which a coding starts -- so the reference stays clear across page breaks.
-  src_html <- if (n_src == 0) .t("<p class=\"meta\">Keine Dokumente.</p>") else paste(vapply(seq_len(n_src), function(i) {
+  step(0.12, .t("Grafiken und Intercoder"))
+  # documents = FALSE ("overview"): the documents section is left out -- in
+  # large projects it is by far the biggest and slowest part
+  src_html <- if (!isTRUE(documents)) "" else if (n_src == 0) .t("<p class=\"meta\">Keine Dokumente.</p>") else paste(vapply(seq_len(n_src), function(i) {
+    step(0.15 + 0.83 * (i - 1) / n_src, sprintf(.t("Dokument %d von %d: %s"), i, n_src, srcs$name[i]))
     m <- jsonlite::fromJSON(srcs$meta_json[i])
     vars_i <- if (!is.null(m$variables) && length(m$variables) > 0) {
       paste0('<div class="meta">', esc(paste(names(m$variables), unlist(m$variables), sep = " = ", collapse = " \u00b7 ")), "</div>")
@@ -368,6 +387,10 @@ qda_export <- function(what = "all", path = NULL) {
            vars_i, .report_doc_html(srcs$id[i], codes, cods[cods$source_id == srcs$id[i], , drop = FALSE],
                                      cnum, memos), "</section>")
   }, character(1)), collapse = "\n")
+
+  ic_html <- .ic_report_html(esc, path_lab)   # last intercoder check (R/report_intercoder.R)
+  cooc_html <- .viz_report_cooc()             # graphics (R/report_visuals.R)
+  portrait_html <- .viz_report_portraits()
 
   sec <- 0L
   h2 <- function(title, style = "") { sec <<- sec + 1L; sprintf('<h2%s>%d %s</h2>', style, sec, title) }
@@ -391,10 +414,15 @@ qda_export <- function(what = "all", path = NULL) {
     h2("Memos"), memo_html, "\n",
     h2(.t("Codierte Textstellen")), quote_html, "\n",
     if (nzchar(mayring_html)) paste0(h2(.t("Zusammenfassende Inhaltsanalyse (Mayring)")), mayring_html, "\n"),
-    h2(.t("Dokumente mit Markierungen"), ' style="break-before:page"'),
-    .t('<p class="meta">Im Text: Unterstreichung in der Farbe der Code-Familie (gestrichelt mit Etikett = Subcode, '),
-    .t('gepunktet = mehrere Codings), davor die Nummer des Codings. Rechts am Rand: Code, Kommentar und Memos '),
-    .t('zu den Codings, die in diesem Abschnitt beginnen.</p>'), src_html, "\n",
+    if (nzchar(cooc_html)) paste0(h2(.t("Code-\u00dcberschneidungen")), cooc_html, "\n"),
+    if (nzchar(portrait_html)) paste0(h2(.t("Dokument-Portraits")), portrait_html, "\n"),
+    if (nzchar(ic_html)) paste0(h2(.t("Intercoder-\u00dcbereinstimmung")), ic_html, "\n"),
+    if (isTRUE(documents)) paste0(
+      h2(.t("Dokumente mit Markierungen"), ' style="break-before:page"'),
+      .t('<p class="meta">Im Text: Unterstreichung in der Farbe der Code-Familie (gestrichelt mit Etikett = Subcode, '),
+      .t('gepunktet = mehrere Codings), davor die Nummer des Codings. Rechts am Rand: Code, Kommentar und Memos '),
+      .t('zu den Codings, die in diesem Abschnitt beginnen.</p>'), src_html, "\n")
+    else sprintf(.t('<p class="meta">\u00dcbersicht ohne die %d Dokumente mit Markierungen. Den vollst\u00e4ndigen Bericht erstellen Sie \u00fcber \u201eBericht\u201c \u2192 \u201eVollst\u00e4ndig\u201c oder qda_export(\"report\").</p>'), n_src),
     "</article></body></html>"
   )
 }

@@ -11,6 +11,8 @@
 - [Segmente](Segmente.md)
 - [Memos](Memos.md)
 - [Analysieren](Analysieren.md)
+- [Intercoder-Übereinstimmung](Intercoder-Uebereinstimmung.md)
+- [Grafiken](Grafiken.md)
 - [Auswerten & Export](Auswerten-und-Export.md)
 - [Rückgängig & Datensicherheit](Rueckgaengig-und-Datensicherheit.md)
 

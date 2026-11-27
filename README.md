@@ -28,13 +28,24 @@ browser, with an **English and a German** user interface.
 - ✂️ **Segments** by paragraphs or **speaker turns** (`[00:01:12] P: …`), freely adjustable.
 - 📝 **Memos** of four kinds: passage, document, code (definition, coding rule), project; plus comments on codings.
 - 🔬 **Deductive and inductive:** coding guideline (definition, anchor example, coding rule), in-vivo codes, merging codes, coding all search hits at once, **summary after Mayring** (paraphrase → generalisation → reduction).
+- 👥 **Intercoder agreement:** a blind copy for a second coder, then **Cohen's kappa**, **Krippendorff's alpha**, Brennan & Prediger and percent agreement per code, plus the list of disagreements for the consensus discussion.
+- 🕸️ **Graphics:** code co-occurrence (heatmap), code network and document portraits; click a cell, line or block to read the passages. Plain SVG: in the app, the RStudio Viewer, the report, or saved for your thesis.
+- 🔁 **REFI-QDA export (.qdpx)** for MAXQDA, ATLAS.ti, NVivo, QualCoder: your project is never locked in.
 - 📊 **Analysis:** codings per code, full-text search, code matrix with **case comparison**, word frequencies, keyword in context, summary grid, export (CSV, Excel, Word).
 - 🖨️ **Report** in its own browser tab, print-ready on **A4** (no background colours), with frequencies in percent and a **margin column** next to every interview showing which codings, comments and memos are where.
 - ↩️ **Undo/redo** for everything (Ctrl+Z / Ctrl+Y) and a complete **audit trail** for your methods section.
 - 🌐 **English and German:** user interface and report in both languages, switchable with one click (**DE/EN**).
 - 🌙 **Dark mode**, easy to read (checked contrast).
 
-> 🆕 **New in version 0.7.0:** user interface and report in **English and German**
+> 🆕 **New in version 0.9.1:** report dialog (**overview** in seconds or **complete**) with a
+> **progress bar**, a hint if nothing moves, and "Working …" for longer steps.
+> **0.9.0:** **graphics** (code co-occurrence heatmap, code network,
+> document portraits), **REFI-QDA export (.qdpx)** for MAXQDA, ATLAS.ti, NVivo and QualCoder,
+> and a stress test with up to 150 interviews.
+> **0.8.0:** **intercoder agreement** (Cohen's kappa, Krippendorff's
+> alpha): blind copy for a second coder, comparison per code, disagreements with
+> "show" and "take over" for consensus coding, section in the report.
+> **0.7.0:** user interface and report in **English and German**
 > (switch **DE/EN**), package ready for CRAN (runnable examples, vignette).
 > **0.6.0:** report with margin column, comment field, in-vivo codes, merging codes,
 > coding search hits, coding guideline, case comparison, word frequencies, keyword in
@@ -112,8 +123,9 @@ R console. Every action is saved **immediately** anyway.
 
 > 💡 **Try it without your own data:**
 > `qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))`
-> or the fictional transcripts in the [`demo/`](demo/) folder (with time stamps, ideal for
-> segments by speaker turns).
+> (a short, fictional English example interview) or the fictional demo transcripts in the
+> [`demo/`](demo/) folder (10 to 120 minutes, with time stamps, ideal for segments by speaker
+> turns). All example and demo files are invented, see [`demo/README.md`](demo/README.md).
 
 ---
 
@@ -172,6 +184,31 @@ all search hits**, **case comparison** in the code matrix and the **Analysis**
 window with word frequencies, keyword in context and the Mayring table.
 Guide: [Wiki: Analysis](docs/wiki/Analysis.md).
 
+**Intercoder agreement** (tab **Intercoder** in the analysis window): hand a
+**blind copy** of the project to a second person, let them code
+independently, then load their file. jellyqda shows **Cohen's kappa**,
+**Krippendorff's alpha**, Brennan & Prediger and percent agreement, overall and
+per code, and lists every disagreement: **Show** jumps to the passage, **Take
+over** copies the other coding into your project (Ctrl+Z undoes it). The other
+file is only read. Guide: [Wiki: Intercoder agreement](docs/wiki/Intercoder-agreement.md).
+
+<img src="docs/screenshots/34-intercoder.png" alt="Intercoder agreement: kappa per code and disagreements" width="900">
+
+**Graphics** (toolbar button **Graphics**): **code co-occurrence** as a heatmap
+(which codes occur together, and how often), a **code network** and
+**document portraits** (one strip per interview: where do the themes come
+up?). Click a cell or a line to list the passages, click a portrait block to
+jump to the text; **Save as SVG** for your thesis. Guide:
+[Wiki: Graphics](docs/wiki/Graphics.md).
+
+<table>
+<tr>
+<td width="55%" valign="top"><img src="docs/screenshots/38-grafiken-heatmap.png" alt="Code co-occurrence heatmap" width="480"></td>
+<td width="45%" valign="top"><img src="docs/screenshots/39-grafiken-netzwerk.png" alt="Code network" width="400"></td>
+</tr>
+</table>
+<img src="docs/screenshots/40-grafiken-portraits.png" alt="Document portraits" width="900">
+
 <table>
 <tr>
 <td width="50%" valign="top"><img src="docs/screenshots/26-kodierleitfaden.png" alt="Coding guideline" width="420"></td>
@@ -190,7 +227,8 @@ undo/redo, **Report** (opens a new tab), **Analysis**, the **Export** menu
 
 <img src="docs/screenshots/23-symbolleiste-export.png" alt="Toolbar with the export menu" width="920">
 
-**Report:** opens in a new tab and is made for printing on A4 (Ctrl+P, also
+**Report:** a dialog lets you choose **overview** (seconds, without the documents) or
+**complete**, shows a **progress bar** and the expected time; the report opens in a new tab and is made for printing on A4 (Ctrl+P, also
 as PDF): code system with frequencies per document and **share in percent**,
 case comparison, codebook with coding guideline, memos, coded passages,
 Mayring table and all documents with marks. Next to every interview there is
@@ -284,6 +322,12 @@ qda_memo_add("Only code explicit statements", code = "SME", title = "Coding rule
 qda_segments("SME")      # all passages of a code (table)
 qda_matrix()             # codes × documents
 qda_stats()              # progress: how much is coded?
+qda_intercoder_copy("coder_b.jellyqda")           # blind copy for a second coder
+qda_intercoder("coder_b.jellyqda")                # kappa, alpha, agreement per code
+qda_intercoder_diff("coder_b.jellyqda")           # disagreements for the consensus talk
+qda_cooccurrence()                                # which codes occur together
+qda_plot_network(file = "network.svg")            # graphics as SVG (also: _cooccurrence, _portrait)
+qda_export_qdpx()                                 # REFI-QDA file for MAXQDA, ATLAS.ti, NVivo, QualCoder
 qda_language("en")       # language of app and report ("en" or "de")
 qda_export("all")        # CSV/Excel/Word/HTML into exports/
 qda_backup()
@@ -310,17 +354,27 @@ jellyqda/
 │   ├── render.R / view.R              #   text with marks as HTML (app, report, viewer)
 │   ├── history.R / undo.R / events.R  #   undo/redo, audit trail
 │   ├── summary.R / stats.R            #   summary grid, statistics, matrix
-│   ├── analysis.R                     #   guideline, merging, auto-coding, Mayring, words, KWIC, case comparison
+│   ├── analysis.R / stopwords.R       #   guideline, merging, auto-coding, Mayring, words, KWIC, case comparison; stop words (EN/DE)
+│   ├── intercoder*.R                  #   intercoder agreement, one file per function (overview: intercoder_stats.R)
+│   ├── report_intercoder.R            #   report section "Intercoder agreement"
+│   ├── units.R                        #   units of analysis (shared by intercoder, co-occurrence, portraits)
+│   ├── cooccurrence.R / portrait.R    #   data of the graphics
+│   ├── plot_svg.R + plot_*.R          #   graphics as SVG (heatmap, network, portraits)
+│   ├── report_visuals.R               #   report sections with the graphics
+│   ├── export_qdpx.R                  #   REFI-QDA export (.qdpx)
 │   ├── export.R / backup.R            #   export + HTML report, ZIP backups
 │   ├── app.R / app_ui.R / app_helpers.R #   shiny app qda_app(): entry point, UI, helpers
 │   ├── app_server.R + app_server_*.R  #   app server, one file per topic (documents, codes, memos ...)
 │   ├── i18n.R / i18n_catalog.R        #   language (English/German) + English translations
 │   └── addins.R                       #   RStudio addins (backup, statistics)
 ├── inst/app/www/css/ + js/           # look + browser logic of the app, numbered files (overview: README.md there)
-├── inst/extdata/                      # example data (fictional)
+├── inst/extdata/                      # short example files (fictional, English; README there)
 ├── inst/examples/                     # commented templates (English + German)
 ├── vignettes/                         # introduction
-├── tests/testthat/                    # tests (testthat 3)
+├── tests/testthat/                    # tests (testthat 3), one file per topic
+├── data-raw/                          # scripts that generate inst/extdata/ and the demo transcripts
+├── demo/                              # fictional demo transcripts + demo scripts (README there)
+├── dev/                               # developer tools: stress test (+ results)
 └── docs/                              # screenshots + wiki (English; German in de/)
 ```
 

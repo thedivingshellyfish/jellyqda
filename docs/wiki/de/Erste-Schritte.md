@@ -67,4 +67,4 @@ zusätzlich einen Sicherungspunkt an.
 - Vertippt? **Strg+Z**, siehe [Rückgängig](Rueckgaengig-und-Datensicherheit.md)
 
 > 💡 **Zum Üben:** `qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))`
-> oder die fiktiven Transkripte aus dem Ordner `demo/` des Repositorys.
+> oder die fiktiven Demo-Transkripte aus dem Ordner `demo/` des Repositorys (alle erfunden, siehe `demo/README.md`).

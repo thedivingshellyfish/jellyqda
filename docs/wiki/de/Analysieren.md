@@ -100,7 +100,7 @@ Ein Klick auf ein Wort öffnet es im **Stichwort im Kontext**.
 Reiter **Stichwort im Kontext** (auch „KWIC“): jedes Vorkommen eines Wortes
 oder einer Phrase mit dem Text links und rechts davon, über alle Interviews.
 So sieht man schnell, in welchen Zusammenhängen ein Begriff verwendet wird.
-**Nur ganze Wörter** findet „Projekt“ nicht in „Projektleiterin“.
+**Nur ganze Wörter** findet „Projekt“ nicht in „Projektleitung“.
 
 <img src="../../screenshots/de/31-stichwort-im-kontext.png" alt="Stichwort im Kontext" width="900">
 
@@ -124,6 +124,12 @@ Code).
 
 Im Bericht erscheint die Tabelle als eigener Abschnitt; Paraphrasen stehen
 auch in der Randspalte neben dem Interview.
+
+## Intercoder-Übereinstimmung
+
+Zwei Personen kodieren unabhängig, jellyqda berechnet Cohens Kappa und
+Krippendorffs Alpha: Reiter **Intercoder** im Analyse-Fenster, siehe
+[Intercoder-Übereinstimmung](Intercoder-Uebereinstimmung.md).
 
 ## Per R-Skript
 

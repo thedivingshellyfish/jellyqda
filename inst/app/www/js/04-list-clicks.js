@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 4 of 17: Clicks in lists (documents, codes, codings, variables, search)
+/* jellyqda app -- browser logic, part 4 of 19: Clicks in lists (documents, codes, codings, variables, search)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

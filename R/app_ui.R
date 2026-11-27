@@ -43,13 +43,17 @@
         shiny::actionButton("redo_btn", NULL, icon = .jq_ico("rotate-right"),
                             class = "btn-sm btn-outline-secondary jq-iconbtn", title = .t("Wiederholen (Strg+Y)")),
         shiny::span(class = "symsep"),
-        # Report: link with target="_blank" -> own browser tab (the server
-        # creates the report anew on every request, see report_url)
+        # Report: button -> dialog (overview / complete) with progress bar;
+        # the report opens in its own tab (R/app_server_report.R)
         shiny::uiOutput("report_link", inline = TRUE),
         # Analysis: word frequencies, keyword in context, Mayring table
         shiny::actionButton("analysis_btn", .t("Analyse"), icon = .jq_ico("magnifying-glass-chart"),
                             class = "btn-sm btn-outline-secondary",
-                            title = .t("Worth\u00e4ufigkeiten, Stichwort im Kontext, Zusammenfassung nach Mayring")),
+                            title = .t("Worth\u00e4ufigkeiten, Stichwort im Kontext, Zusammenfassung nach Mayring, Intercoder-\u00dcbereinstimmung")),
+        # Graphics: code co-occurrence, code network, document portraits
+        shiny::actionButton("visuals_btn", .t("Grafiken"), icon = .jq_ico("diagram-project"),
+                            class = "btn-sm btn-outline-secondary",
+                            title = .t("Code-\u00dcberschneidungen, Code-Netzwerk, Dokument-Portraits")),
         # Export menu (<details>: opens without extra JavaScript)
         shiny::tags$details(class = "jq-menu",
           shiny::tags$summary(class = "btn btn-sm btn-outline-secondary",
@@ -59,6 +63,8 @@
                                 icon = .jq_ico("file-export"), class = "btn-sm jq-menuitem"),
             shiny::actionButton("export_codebook_btn", .t("Codebuch mit Hierarchie (Word + CSV)"),
                                 icon = .jq_ico("file-word"), class = "btn-sm jq-menuitem"),
+            shiny::actionButton("export_qdpx_btn", .t("REFI-QDA (.qdpx) f\u00fcr MAXQDA, ATLAS.ti, NVivo, QualCoder"),
+                                icon = .jq_ico("box-archive"), class = "btn-sm jq-menuitem"),
             shiny::actionButton("export_report_btn", .t("Bericht als HTML-Datei speichern"),
                                 icon = .jq_ico("chart-column"), class = "btn-sm jq-menuitem"),
             shiny::tags$hr(),

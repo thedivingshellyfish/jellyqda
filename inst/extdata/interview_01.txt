@@ -1,11 +1,13 @@
-Interviewerin: Guten Tag, danke, dass Sie sich Zeit nehmen. Koennen Sie sich kurz vorstellen?
+DEMO FILE - fictional interview written for jellyqda. All persons, companies and events are invented.
 
-Befragte: Ja, gerne. Ich bin 34 Jahre alt und arbeite seit fuenf Jahren als Projektleiterin in einem kleinen Softwareunternehmen.
+Interviewer: Good morning, and thank you for taking the time. Could you briefly introduce yourself?
 
-Interviewerin: Wie sind Sie zu diesem Beruf gekommen?
+Respondent: Sure. I am 34 years old and I have been working as a project lead in a small software company for five years.
 
-Befragte: Nach dem Studium der Wirtschaftsinformatik habe ich zuerst zwei Jahre in einem Konzern gearbeitet, aber das war mir zu anonym. Im KMU kann ich wirklich etwas bewegen.
+Interviewer: How did you get into this job?
 
-Interviewerin: Was motiviert Sie bei der Arbeit?
+Respondent: After studying business informatics I first worked for two years in a large corporation, but it felt too anonymous. In a small company I can really make a difference. A colleague from university told me about the opening.
 
-Befragte: Vor allem die direkte Zusammenarbeit mit den Kunden. Und dass wir agile Methoden ernst nehmen, nicht nur auf dem Papier.
+Interviewer: What motivates you at work?
+
+Respondent: Above all the direct contact with our customers. And that we take agile methods seriously, not just on paper. My family sometimes jokes that I talk more about the project than about our holidays.

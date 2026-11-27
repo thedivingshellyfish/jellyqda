@@ -1,3 +1,123 @@
+# jellyqda 0.9.1
+
+## New features
+
+  * **Report dialog.** The **Report** button opens a dialog with two
+    choices and the expected time for this project: **overview** (code
+    system, graphics, codebook, memos, coded passages, intercoder -- without
+    the documents; a few seconds even with 150 interviews) or **complete**
+    (with every document, A4). From 50 documents on the overview is
+    preselected.
+  * **Progress bar** while the report is built ("Document 87 of 150 ..."),
+    in the dialog and for "Save report as HTML file" / "Export everything".
+    The report opens in a tab the browser opened right away, so popup
+    blockers do not interfere.
+  * **If nothing moves for a minute** the dialog offers "keep waiting" or
+    "back" (the result is then discarded).
+  * **"Working ..."** at the bottom of the window whenever a step takes
+    longer than 0.8 s.
+  * `qda_export("report", report_documents = FALSE)` writes the overview.
+
+## Performance
+
+  * Report portraits are drawn compactly (no tooltips, neighbouring
+    segments with the same codes merged): with 150 interviews the overview
+    report shrinks from 8.5 to 4.2 MB, the portraits from 5.3 to 0.95 MB.
+
+# jellyqda 0.9.0
+
+## New features
+
+  * **Graphics** (toolbar button **Grafiken / Graphics**, three tabs):
+      * **Code co-occurrence** as a heatmap: which codes occur together, and
+        how often (`qda_cooccurrence()`, `qda_plot_cooccurrence()`).
+        "Together" means in the same segment (default), in the same
+        document, or overlapping codings; every code or code families;
+        count or Jaccard index. A click on a cell lists the passages
+        (`qda_cooccurrence_passages()`).
+      * **Code network**: codes as circles (size = frequency, colour = code
+        family), lines for co-occurrence (width = how often); layout as a
+        circle in code-tree order or by connections (`qda_plot_network()`).
+      * **Document portraits**: one strip per document from start to end,
+        every segment a block in the colours of its codes -- where in the
+        interviews do the themes come up? (`qda_portrait()`,
+        `qda_plot_portrait()`). A click jumps to the passage.
+    All graphics are plain SVG made by R: no new dependencies, offline, in
+    the RStudio Viewer, the app (light and dark mode) and the report; every
+    mark has a tooltip; "Save as SVG" in the app or `file =` in R.
+  * **Report:** new sections "Code co-occurrence" (heatmap + network) and
+    "Document portraits".
+  * **REFI-QDA export (.qdpx)** for MAXQDA, ATLAS.ti, NVivo, QualCoder and
+    other programs: `qda_export_qdpx()`, `qda_export("qdpx")`, export menu in
+    the app. Code system with colours and coding guideline, documents,
+    codings with comments and Mayring fields, all memos, document variables.
+    Validated against the REFI-QDA project schema (QDA-XML 1.0).
+
+## Performance
+
+  * Stress test with 15, 50 and 150 fictional interviews (`dev/stress_test.R`,
+    results in `dev/stress-test-results.md`).
+  * Units of analysis are found with `findInterval()` (R/units.R, shared by
+    intercoder agreement, co-occurrence and portraits).
+
+## Code organisation
+
+  * New files, one per topic: `units.R`, `cooccurrence.R`, `portrait.R`,
+    `plot_svg.R`, `plot_cooccurrence.R`, `plot_network.R`,
+    `plot_portrait.R`, `app_server_visuals.R`, `report_visuals.R`,
+    `export_qdpx.R`; `css/10-visuals.css`, `js/18-visuals.js`;
+    `data-raw/transcript_generator.R`; tests per topic.
+  * New demo `demo/jellyqda-visuals-demo.R`.
+
+# jellyqda 0.8.0
+
+## New features
+
+  * **Intercoder agreement.** Two people code the same material
+    independently, each in their own project file; jellyqda compares them.
+    New tab **Intercoder** in the analysis window and four functions:
+      * `qda_intercoder_copy()`: blind copy of the project for the second
+        coder -- same documents, segments, code system and coding guideline
+        (code memos), but no codings, summaries, other memos or audit trail.
+      * `qda_intercoder()`: percent agreement, **Cohen's kappa** (with the
+        rating after Landis & Koch), **Brennan & Prediger's kappa** and
+        **Krippendorff's alpha** (nominal), per code and overall (pooled, plus
+        the mean kappa). Units of analysis are the segments (e.g. speaker
+        turns) or whole documents; categories are every code and subcode or
+        code families. A unit counts as coded when a coding touches it
+        (`min_overlap`), so both coders need not mark the same words.
+        Documents are matched by their text, codes by their path.
+      * `qda_intercoder_diff()`: every unit where only one coder coded --
+        the material for the consensus discussion. In the app: **Show** jumps
+        to the passage.
+      * `qda_intercoder_adopt()`: take over the other coder's coding(s) of a
+        unit (consensus coding); one undo step. In the app: **Take over**.
+  * The other project file is opened read-only and never changed.
+  * Every comparison is recorded in the audit trail; the report gets a
+    section **Intercoder agreement** with the last independent comparison
+    (values after taking over codings are not recorded on purpose).
+  * The analysis window remembers its last tab.
+  * New demo `demo/jellyqda-intercoder-demo.R`: three fictional interviews,
+    two coders, comparison and consensus. New wiki page "Intercoder
+    agreement" (English and German).
+
+## Example data and demos
+
+  * **New English example files**, clearly marked as fictional: every file
+    in `inst/extdata/` and `demo/` starts with a "DEMO FILE - fictional"
+    line, and both folders have a README. The short examples in
+    `inst/extdata/` keep their names (`interview_01.txt` ...); the demo
+    transcripts are now `demo/demo_interview_10min.txt` ... `120min.txt`
+    (an invented study "Working in small software companies") and replace
+    the German nonsense-word dummies. Generated by `data-raw/make_extdata.R`
+    and the new `data-raw/make_demo_transcripts.R`.
+  * `qda_words()` also leaves out **English stop words and fillers**
+    ("the", "and", "um", "you know" ...). The lists moved to their own file
+    `R/stopwords.R`.
+  * Code organisation: the intercoder functions live in one file each
+    (`R/intercoder*.R`, overview in `R/intercoder_stats.R`), the report
+    section in `R/report_intercoder.R`; tests in `test-intercoder*.R`.
+
 # jellyqda 0.7.0
 
 ## New features

@@ -45,8 +45,8 @@ is then checked by hand.
 qda_open(file.path(tempfile(), "example.jellyqda"))
 qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))
 qda_code_add("Project")
-qda_autocode("Projekt", code = "Project")                      # the matches
-qda_autocode("Projekt", code = "Project", scope = "segment")   # whole segments
+qda_autocode("project", code = "Project")                      # the matches
+qda_autocode("project", code = "Project", scope = "segment")   # whole segments
 qda_codings()[, c("code", "start", "end")]
 qda_close()
 }

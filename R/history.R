@@ -164,14 +164,27 @@
 #' (and clears the redo stack, as in every editor); 'undo' moves the event
 #' to the redo stack; 'redo' moves it back.
 #' @return list(undo = data.frame, redo = data.frame), each with columns
-#'   id, action, details (JSON) -- last element = next to undo / redo.
+#'   id, action, details (JSON) -- last element = next to undo / redo; only
+#'   the last element carries its details (the others may be NA).
 #' @noRd
 .history_state <- function() {
+  # Incremental: events are only ever appended, so the stacks of the last
+  # call are kept (per open project, .jellyqda_env$hist; reset by
+  # qda_open/qda_close) and only the new events are walked. In a project with
+  # thousands of actions, re-walking everything cost time on every action.
+  h <- .jellyqda_env$hist
+  if (is.null(h)) h <- list(max_id = 0L, undo = integer(), redo = integer(), action = character())
+  # details (with before/after snapshots) can be large: read them only for
+  # undo/redo events (to know which event they refer to) and, at the end,
+  # for the last entry of each stack; has_snap is computed in SQL
   ev <- DBI::dbGetQuery(qda_con(), sprintf(
-    "SELECT id, action, details FROM events
-     WHERE action IN ('undo', 'redo', 'memo_migrate') OR action IN (%s) ORDER BY id",
-    paste0("'", .UNDOABLE, "'", collapse = ",")))
-  undo <- integer(); redo <- integer()
+    "SELECT id, action,
+            CASE WHEN action IN ('undo', 'redo') THEN details ELSE NULL END AS details,
+            instr(details, '\"changes\"') > 0 AS has_snap
+     FROM events
+     WHERE id > %d AND (action IN ('undo', 'redo', 'memo_migrate') OR action IN (%s)) ORDER BY id",
+    as.integer(h$max_id), paste0("'", .UNDOABLE, "'", collapse = ",")))
+  undo <- h$undo; redo <- h$redo
   for (i in seq_len(nrow(ev))) {
     a <- ev$action[i]
     # the one-time memo migration is a barrier: nothing before it can be
@@ -184,7 +197,7 @@
       if (a == "undo") { undo <- setdiff(undo, id); redo <- c(redo, id) }
       else             { redo <- setdiff(redo, id); undo <- c(undo, id) }
     } else {
-      has_snap <- grepl("\"changes\"", ev$details[i], fixed = TRUE)
+      has_snap <- isTRUE(as.logical(ev$has_snap[i]))
       # legacy events without snapshot that the old logic cannot undo are
       # skipped, so they never block the undo stack
       if (has_snap || a %in% .LEGACY_UNDOABLE) {
@@ -192,9 +205,19 @@
       }
     }
   }
+  action <- h$action
+  keep <- ev$action != "undo" & ev$action != "redo" & ev$action != "memo_migrate"
+  if (any(keep)) action[as.character(ev$id[keep])] <- ev$action[keep]
+  .jellyqda_env$hist <- list(max_id = max(c(h$max_id, ev$id)), undo = undo, redo = redo, action = action)
   pick <- function(ids) {
-    if (length(ids) == 0) return(ev[0, , drop = FALSE])
-    ev[match(ids, ev$id), , drop = FALSE]
+    if (length(ids) == 0) return(data.frame(id = integer(), action = character(), details = character()))
+    out <- data.frame(id = as.integer(ids), action = unname(action[as.character(ids)]),
+                      details = NA_character_, stringsAsFactors = FALSE)
+    # full details only for the last entry (the next one to undo / redo)
+    n <- nrow(out)
+    out$details[n] <- DBI::dbGetQuery(qda_con(), "SELECT details FROM events WHERE id = ?",
+                                      params = list(out$id[n]))$details
+    out
   }
   list(undo = pick(undo), redo = pick(redo))
 }

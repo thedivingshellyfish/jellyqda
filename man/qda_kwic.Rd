@@ -34,7 +34,7 @@ Every occurrence of a word or phrase with the text to its left and right
 \examples{
 qda_open(file.path(tempfile(), "example.jellyqda"))
 qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))
-qda_kwic("Projektleiterin", width = 30)
-qda_kwic("Projekt", whole_word = FALSE)
+qda_kwic("colleague", width = 30)
+qda_kwic("inform", whole_word = FALSE)   # also inside words ("informatics")
 qda_close()
 }

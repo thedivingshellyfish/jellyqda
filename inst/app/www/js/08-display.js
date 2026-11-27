@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 8 of 17: Display: show/hide panels, dark mode, zoom, help, quit
+/* jellyqda app -- browser logic, part 8 of 19: Display: show/hide panels, dark mode, zoom, help, quit
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

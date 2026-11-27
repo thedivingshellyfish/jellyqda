@@ -1,11 +1,13 @@
-# Interview 02 -- Feldnotizen-Session
+# Interview 02 -- team session (DEMO FILE, fictional)
 
-**Interviewerin:** Wie erleben Sie die Zusammenarbeit im Team?
+> Demo file written for jellyqda. All persons and events are invented.
 
-**Befragte:** Ehrlich gesagt ziemlich gut. Die regelmaessigen Retrospektiven helfen uns, Probleme frueh zu sehen.
+**Interviewer:** How do you experience the collaboration in your team?
 
-## Abschnitt: Vertrauen
+**Respondent:** Honestly, quite good. Our regular retrospectives help us to spot problems early, and a colleague usually brings coffee.
 
-**Befragte:** Vertrauen ist fuer mich zentral. Wenn ich Fehler machen kann, ohne Angst zu haben, dann lerne ich am meisten.
+## Section: trust
 
-**Interviewerin:** Vielen Dank fuer das Gespraech!
+**Respondent:** Trust is central for me. If I can make mistakes without being afraid, that is when I learn the most.
+
+**Interviewer:** Thank you very much for the conversation!

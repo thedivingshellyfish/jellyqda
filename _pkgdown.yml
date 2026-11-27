@@ -95,7 +95,31 @@ reference:
     - qda_coding_set_summary
     - qda_view
     - qda_export
+    - qda_export_qdpx
     - qda_events
+
+- title: Grafiken
+  desc: >
+    Code-Überschneidungen (Heatmap), Code-Netzwerk und Dokument-Portraits
+    als SVG, dazu die Daten dahinter.
+  contents:
+    - qda_cooccurrence
+    - qda_cooccurrence_passages
+    - qda_portrait
+    - qda_plot_cooccurrence
+    - qda_plot_network
+    - qda_plot_portrait
+
+- title: Intercoder-Übereinstimmung
+  desc: >
+    Zwei Personen kodieren unabhängig (Blind-Kopie), jellyqda vergleicht:
+    prozentuale Übereinstimmung, Cohens Kappa, Brennan & Prediger,
+    Krippendorffs Alpha; Abweichungen für die Konsens-Kodierung.
+  contents:
+    - qda_intercoder_copy
+    - qda_intercoder
+    - qda_intercoder_diff
+    - qda_intercoder_adopt
 
 - title: Rückgängig, Verlauf und Sicherung
   desc: >

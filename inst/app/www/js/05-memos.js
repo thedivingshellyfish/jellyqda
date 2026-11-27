@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 5 of 17: Memos (basic functions; the memo panel itself: section 13)
+/* jellyqda app -- browser logic, part 5 of 19: Memos (basic functions; the memo panel itself: section 13)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

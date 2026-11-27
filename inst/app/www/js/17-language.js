@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 17 of 17: Language (EN/DE)
+/* jellyqda app -- browser logic, part 17 of 19: Language (EN/DE)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

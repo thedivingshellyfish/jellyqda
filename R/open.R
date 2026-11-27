@@ -37,6 +37,8 @@ qda_open <- function(path, auto_snapshot = 25) {
   create_schema(con)
   .jellyqda_env$con <- con
   .jellyqda_env$path <- path
+  .jellyqda_env$texts <- NULL       # text cache (utils.R: .texts)
+  .jellyqda_env$hist <- NULL        # undo/redo stacks (history.R)
   .jellyqda_env$auto_snapshot <- auto_snapshot
   .jellyqda_env$auto_busy <- FALSE
   log_event(if (is_new) "project_create" else "project_open",
@@ -63,6 +65,8 @@ qda_close <- function() {
   DBI::dbDisconnect(.jellyqda_env$con)
   .jellyqda_env$con <- NULL
   .jellyqda_env$path <- NULL
+  .jellyqda_env$texts <- NULL
+  .jellyqda_env$hist <- NULL
   invisible(NULL)
 }
 

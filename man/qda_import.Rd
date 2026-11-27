@@ -35,13 +35,13 @@ stores the text permanently in the \code{sources} table (\code{frozen_text}). Th
 original file is copied unchanged into \verb{originals/} next to the project
 file. Files whose content hash was already imported are skipped, so text is
 extracted exactly once per file.
-
-A \emph{different} file with a name that is already taken (e.g.
-\code{a/interview.txt} and \code{b/interview.txt}) is imported under a unique name
-such as \code{interview (2).txt}, so no original is ever overwritten and every
-source can still be addressed by its name.
 }
 \details{
+A \emph{different} file with a name that is already taken (e.g.
+\code{a/interview.txt} and \code{b/interview.txt}) is imported under a unique name
+such as \verb{interview (2).txt}, so no original is ever overwritten and every
+source can still be addressed by its name.
+
 PDFs without a usable text layer are imported with a warning (the original
 remains the source of truth; consider manual OCR, e.g. tesseract).
 }

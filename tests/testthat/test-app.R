@@ -189,7 +189,7 @@ test_that("qda_app server wiring works (shiny::testServer)", {
     expect_true(grepl('class="actionbar"', ab2, fixed = TRUE))
 
     # project-wide search finds a hit and goto_pos jumps
-    session$setInputs(search_q = "Projektleiterin", search_btn = 1L)
+    session$setInputs(search_q = "project lead", search_btn = 1L)
     sr <- as_html(output$search_results)
     expect_true(grepl("data-gotopos", sr, fixed = TRUE))
     session$setInputs(goto_pos = list(src = 1L, pos = 10L))

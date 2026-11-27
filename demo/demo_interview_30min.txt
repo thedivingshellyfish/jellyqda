@@ -1,0 +1,134 @@
+DEMO TRANSCRIPT - FICTIONAL. Written for jellyqda (tests and demos).
+All persons, companies, places and events are invented; any resemblance is coincidental.
+Study:        Working in small software companies (fictional demo study)
+Interview:    DEMO_INT_030
+Pseudonym:    P02 "Bea" (fictional), UX designer, part-time
+Duration:     00:30 h (approx.)
+Format:       full transcript, time stamp at every speaker turn
+Speakers:     I = interviewer, P = participant
+------------------------------------------------------------
+
+[00:00:00] I: Thank you for taking part. As agreed, I will record the conversation. Shall we start?
+[00:00:09] P: Yes, sure, go ahead.
+[00:00:14] I: How did you end up in your current job?
+[00:00:22] P: I still remember the job interview, it was in the kitchen because there was no meeting room. My first job was in a call centre, which taught me a lot about patience. Yeah.
+[00:00:39] P: In a small company I could take on responsibility much earlier than my friends in big firms. Here I can see what difference my work makes. After two years I was offered the role of team lead. I learned most things on the job, not at university. After my studies I worked for a large corporation for two years, and it felt anonymous. Well, I never planned a career in software, it just happened.
+[00:01:11] P: In a small company I could take on responsibility much earlier than my friends in big firms. I learned most things on the job, not at university. My first job was in a call centre, which taught me a lot about patience. After my studies I worked for a large corporation for two years, and it felt anonymous.
+[00:01:37] I: Can you remember a moment when you were proud of your work?
+[00:01:44] P: So, mentoring new colleagues gives me a lot of energy. I enjoy learning something new almost every week. (laughs)
+[00:01:55] P: What matters most to me is that people actually use what we build. Well, I like solving tricky problems, it feels good when something finally works. Honestly, the money is not the main reason, otherwise I would have stayed in the corporation. Mentoring new colleagues gives me a lot of energy. I think.
+[00:02:20] I: What happened then?
+[00:02:27] I: How do you work together in the team?
+[00:02:33] P: I mean, trust is the most important thing in our team. Remote work made it harder to notice when someone was struggling.
+[00:02:45] P: We have lunch together on Fridays, that helps a lot. In our retrospectives we speak openly about mistakes. I mean, I can ask anyone for help, including the founders. New colleagues get a buddy for the first month. We are a close team, people help each other without being asked. Sometimes the discussions are loud, but nobody holds a grudge. That was quite something.
+[00:03:14] I: How did that feel?
+[00:03:21] I: How do you deal with pressure?
+[00:03:27] P: The workload comes in waves, quiet weeks and very busy weeks. You know, in a small company there is no one else who can take over. When several projects start at once I sleep badly. I switch off my work phone at six, I had to learn that. Working part-time helps me, but the meetings do not get fewer.
+[00:03:53] I: And how did your colleagues react?
+[00:03:58] I: Can you tell me about a difficult customer situation?
+[00:04:06] P: Some customers expect us to answer within minutes. We run user tests with nurses and care staff, that grounds me.
+[00:04:16] I: How did that feel?
+[00:04:21] I: Is there anything you would like to add?
+[00:04:26] P: Maybe I will start my own business one day. So, I hope we can grow without losing our culture. Better pay for support staff would be my first change. I would like to do more mentoring in the future. I would like to stay, as long as the company stays this small. Nothing to add, thank you, it was good to talk about it. That was quite something.
+[00:04:56] I: I see.
+[00:05:01] I: What did you do before you joined the company?
+[00:05:08] P: In a small company I could take on responsibility much earlier than my friends in big firms. I applied to the company because a former colleague recommended it. To be fair, after two years I was offered the role of team lead.
+[00:05:28] I: Could you say a bit more about that?
+[00:05:34] I: What do you enjoy most about your work?
+[00:05:41] P: Honestly, honestly, the money is not the main reason, otherwise I would have stayed in the corporation. I am proud of the release last spring, we finished it as a team. I mean, the freedom to decide how I work is important to me. I enjoy learning something new almost every week. What matters most to me is that people actually use what we build. Mentoring new colleagues gives me a lot of energy. That was quite something.
+[00:06:14] I: Was there ever a conflict in the team?
+[00:06:21] P: I can ask anyone for help, including the founders. Trust is the most important thing in our team. In our retrospectives we speak openly about mistakes. We have lunch together on Fridays, that helps a lot. We celebrate small successes, for example with cake. (laughs)
+[00:06:44] I: Can you give me an example?
+[00:06:51] I: How do you experience the workload?
+[00:06:58] P: I once got close to burning out, after that I changed a lot. Clear priorities help me more than overtime. Before a release I often work late into the evening. I mean, working part-time helps me, but the meetings do not get fewer. I mean, when several projects start at once I sleep badly. I think.
+[00:07:24] I: And how did your colleagues react?
+[00:07:31] I: Can you tell me about a difficult customer situation?
+[00:07:38] P: Customer contact mostly goes through the project lead, so I rarely see the users. Some customers expect us to answer within minutes. I like visiting customers on site, you see things you never see in the office. Most feature ideas come directly from support tickets. Hm, when users struggle with our software, it hurts a bit, but it helps us improve. That was quite something.
+[00:08:07] I: What would you change in the company if you could?
+[00:08:12] P: I would like to do more mentoring in the future. I would like to stay, as long as the company stays this small. Nothing to add, thank you, it was good to talk about it. I would introduce fixed focus times without meetings.
+[00:08:32] P: I hope we can grow without losing our culture. Better pay for support staff would be my first change. Hm, maybe I will start my own business one day. I would introduce fixed focus times without meetings. Nothing to add, thank you, it was good to talk about it. Honestly, I would like to stay, as long as the company stays this small. That was quite something.
+[00:09:04] I: Mhm.
+[00:09:10] I: What did you do before you joined the company?
+[00:09:16] P: The switch was risky, the salary was lower at first. I mean, here I can see what difference my work makes. To be fair, after two years I was offered the role of team lead. I learned most things on the job, not at university. That was quite something.
+[00:09:39] I: I see.
+[00:09:46] I: What do you enjoy most about your work?
+[00:09:51] P: Honestly, the money is not the main reason, otherwise I would have stayed in the corporation. Well, I like solving tricky problems, it feels good when something finally works. I like that my ideas are taken seriously, even as a junior. The freedom to decide how I work is important to me. When a customer writes that our tool saved them an hour a day, that makes my week. On difficult days I think about the users we are working for. I am proud of the release last spring, we finished it as a team.
+[00:10:35] I: I see.
+[00:10:39] P: What matters most to me is that people actually use what we build. I am proud of the release last spring, we finished it as a team. Mentoring new colleagues gives me a lot of energy. Well, I enjoy learning something new almost every week. The freedom to decide how I work is important to me.
+[00:11:06] I: Could you say a bit more about that?
+[00:11:12] P: Honestly, the money is not the main reason, otherwise I would have stayed in the corporation. I like that my ideas are taken seriously, even as a junior. I am proud of the release last spring, we finished it as a team. Well, what matters most to me is that people actually use what we build. When a customer writes that our tool saved them an hour a day, that makes my week.
+[00:11:44] I: How do you work together in the team?
+[00:11:51] P: You know, I can ask anyone for help, including the founders. Hm, there was a conflict about responsibilities last year, it took weeks to settle. Trust is the most important thing in our team. In our retrospectives we speak openly about mistakes. I think.
+[00:12:13] I: Mhm.
+[00:12:17] P: We celebrate small successes, for example with cake. Remote work made it harder to notice when someone was struggling. So, trust is the most important thing in our team. There was a conflict about responsibilities last year, it took weeks to settle. Hm, when two people left at the same time the mood was tense for a while. Um, sometimes the discussions are loud, but nobody holds a grudge. We are a close team, people help each other without being asked. Yeah.
+[00:12:55] I: Mhm.
+[00:13:02] P: New colleagues get a buddy for the first month. When two people left at the same time the mood was tense for a while. (laughs)
+[00:13:14] I: How do you deal with pressure?
+[00:13:19] P: Working part-time helps me, but the meetings do not get fewer. To be fair, before a release I often work late into the evening. I switch off my work phone at six, I had to learn that. I once got close to burning out, after that I changed a lot. Sometimes I still think about tickets at the weekend. In a small company there is no one else who can take over. That was quite something.
+[00:13:52] P: Well, clear priorities help me more than overtime. I mean, sometimes I still think about tickets at the weekend. When several projects start at once I sleep badly. I once got close to burning out, after that I changed a lot. Before a release I often work late into the evening. Working part-time helps me, but the meetings do not get fewer. Our manager tries to protect us from too many meetings.
+(inaudible)
+[00:14:26] I: Can you tell me about a difficult customer situation?
+[00:14:31] P: Some customers expect us to answer within minutes. Once a customer called on a Sunday because the system was down. I talk to customers every week, the direct feedback is valuable even when it is uncomfortable. When users struggle with our software, it hurts a bit, but it helps us improve.
+[00:14:55] I: Is there anything you would like to add?
+[00:15:00] P: I would like to stay, as long as the company stays this small. Maybe I will start my own business one day. I would like to do more mentoring in the future. I would introduce fixed focus times without meetings. You know, nothing to add, thank you, it was good to talk about it. I hope we can grow without losing our culture. Better pay for support staff would be my first change.
+[00:15:32] I: Can you give me an example?
+[00:15:37] I: Why did you choose a small company?
+[00:15:43] P: I applied to the company because a former colleague recommended it. So, here I can see what difference my work makes. Yeah.
+[00:15:54] I: I see.
+[00:15:58] I: What do you enjoy most about your work?
+[00:16:05] P: Hm, I am proud of the release last spring, we finished it as a team. I like that my ideas are taken seriously, even as a junior. Honestly, the money is not the main reason, otherwise I would have stayed in the corporation. Mentoring new colleagues gives me a lot of energy. What matters most to me is that people actually use what we build. Hm, the freedom to decide how I work is important to me. When a customer writes that our tool saved them an hour a day, that makes my week.
+[00:16:48] I: Was there ever a conflict in the team?
+[00:16:54] P: We have lunch together on Fridays, that helps a lot. I can ask anyone for help, including the founders. Honestly, trust is the most important thing in our team. When two people left at the same time the mood was tense for a while. Remote work made it harder to notice when someone was struggling. We are a close team, people help each other without being asked. We celebrate small successes, for example with cake. Yeah.
+[00:17:27] I: Could you say a bit more about that?
+[00:17:32] P: We celebrate small successes, for example with cake. In our retrospectives we speak openly about mistakes. I mean, trust is the most important thing in our team. I think.
+[00:17:48] I: And how did your colleagues react?
+[00:17:55] P: In our retrospectives we speak openly about mistakes. Sometimes the discussions are loud, but nobody holds a grudge. New colleagues get a buddy for the first month. You know, we have lunch together on Fridays, that helps a lot.
+[00:18:13] I: How do you deal with pressure?
+[00:18:17] P: Sometimes I still think about tickets at the weekend. I switch off my work phone at six, I had to learn that. The workload comes in waves, quiet weeks and very busy weeks.
+[00:18:33] I: How much contact do you have with customers?
+[00:18:40] P: Once a customer called on a Sunday because the system was down. Most feature ideas come directly from support tickets. I think.
+[00:18:52] I: What would you change in the company if you could?
+[00:18:59] P: I would introduce fixed focus times without meetings. Nothing to add, thank you, it was good to talk about it. So, I would like to do more mentoring in the future.
+[00:19:13] I: Could you say a bit more about that?
+[00:19:18] P: I mean, maybe I will start my own business one day. I hope we can grow without losing our culture. I mean, I would introduce fixed focus times without meetings. I would like to do more mentoring in the future. Um, I would like to stay, as long as the company stays this small. Better pay for support staff would be my first change.
+[00:19:47] I: And how did your colleagues react?
+[00:19:53] P: I would introduce fixed focus times without meetings. I would like to do more mentoring in the future. Um, nothing to add, thank you, it was good to talk about it. I would like to stay, as long as the company stays this small. I hope we can grow without losing our culture. Maybe I will start my own business one day.
+[00:20:22] I: What did you do before you joined the company?
+[00:20:27] P: I learned most things on the job, not at university. My first job was in a call centre, which taught me a lot about patience. Well, here I can see what difference my work makes. In a small company I could take on responsibility much earlier than my friends in big firms. I applied to the company because a former colleague recommended it. You know, I still remember the job interview, it was in the kitchen because there was no meeting room. (laughs)
+[00:21:05] I: Can you give me an example?
+[00:21:10] I: What motivates you at work?
+[00:21:17] P: On difficult days I think about the users we are working for. Mentoring new colleagues gives me a lot of energy. The freedom to decide how I work is important to me. Hm, I am proud of the release last spring, we finished it as a team.
+[00:21:40] I: How did that feel?
+[00:21:47] P: I like that my ideas are taken seriously, even as a junior. On difficult days I think about the users we are working for. What matters most to me is that people actually use what we build. When a customer writes that our tool saved them an hour a day, that makes my week. I like solving tricky problems, it feels good when something finally works. I am proud of the release last spring, we finished it as a team. To be fair, mentoring new colleagues gives me a lot of energy.
+[00:22:27] I: Can you give me an example?
+[00:22:31] I: How do you work together in the team?
+[00:22:38] P: We celebrate small successes, for example with cake. Sometimes the discussions are loud, but nobody holds a grudge. Remote work made it harder to notice when someone was struggling. When two people left at the same time the mood was tense for a while. In our retrospectives we speak openly about mistakes. (laughs)
+[00:23:02] P: New colleagues get a buddy for the first month. You know, when two people left at the same time the mood was tense for a while. We have lunch together on Fridays, that helps a lot. We celebrate small successes, for example with cake. Remote work made it harder to notice when someone was struggling. There was a conflict about responsibilities last year, it took weeks to settle. I think.
+[00:23:34] I: How do you deal with pressure?
+[00:23:41] P: Clear priorities help me more than overtime. So, when several projects start at once I sleep badly. Working part-time helps me, but the meetings do not get fewer. Sometimes I still think about tickets at the weekend. Yeah.
+[00:24:01] I: I see.
+[00:24:08] I: How much contact do you have with customers?
+[00:24:12] P: I like visiting customers on site, you see things you never see in the office. Most feature ideas come directly from support tickets. Well, customer contact mostly goes through the project lead, so I rarely see the users. I talk to customers every week, the direct feedback is valuable even when it is uncomfortable. Once a customer called on a Sunday because the system was down. Some customers expect us to answer within minutes. Yeah.
+[00:24:47] P: To be fair, I like visiting customers on site, you see things you never see in the office. We run user tests with nurses and care staff, that grounds me. Some customers expect us to answer within minutes. Um, I talk to customers every week, the direct feedback is valuable even when it is uncomfortable. (laughs)
+[00:25:11] I: Can you give me an example?
+[00:25:16] P: You know, most feature ideas come directly from support tickets. Um, some customers expect us to answer within minutes. Once a customer called on a Sunday because the system was down. I like visiting customers on site, you see things you never see in the office.
+[00:25:39] I: What would you change in the company if you could?
+[00:25:45] P: Better pay for support staff would be my first change. I would like to stay, as long as the company stays this small. Maybe I will start my own business one day. Nothing to add, thank you, it was good to talk about it. I would introduce fixed focus times without meetings. I hope we can grow without losing our culture.
+(inaudible)
+[00:26:11] I: Can you give me an example?
+[00:26:15] I: What did you do before you joined the company?
+[00:26:23] P: After my studies I worked for a large corporation for two years, and it felt anonymous. The switch was risky, the salary was lower at first. After two years I was offered the role of team lead. You know, in a small company I could take on responsibility much earlier than my friends in big firms. My first job was in a call centre, which taught me a lot about patience. Here I can see what difference my work makes. I never planned a career in software, it just happened.
+[00:27:04] I: Could you say a bit more about that?
+[00:27:08] I: Can you remember a moment when you were proud of your work?
+[00:27:14] P: Mentoring new colleagues gives me a lot of energy. To be fair, I like that my ideas are taken seriously, even as a junior. On difficult days I think about the users we are working for. To be fair, what matters most to me is that people actually use what we build. I am proud of the release last spring, we finished it as a team. I like solving tricky problems, it feels good when something finally works. I enjoy learning something new almost every week. (laughs)
+(inaudible)
+[00:27:51] P: I mean, I am proud of the release last spring, we finished it as a team. I like solving tricky problems, it feels good when something finally works. Mentoring new colleagues gives me a lot of energy. On difficult days I think about the users we are working for. So, honestly, the money is not the main reason, otherwise I would have stayed in the corporation.
+[00:28:23] I: Could you say a bit more about that?
+[00:28:28] I: How would you describe the climate in your team?
+[00:28:33] P: To be fair, we have lunch together on Fridays, that helps a lot. In our retrospectives we speak openly about mistakes. There was a conflict about responsibilities last year, it took weeks to settle. Trust is the most important thing in our team. I can ask anyone for help, including the founders. We are a close team, people help each other without being asked. That was quite something.
+[00:29:03] I: What happened then?
+[00:29:09] P: We celebrate small successes, for example with cake. Remote work made it harder to notice when someone was struggling. Sometimes the discussions are loud, but nobody holds a grudge. I think.
+[00:29:24] P: In our retrospectives we speak openly about mistakes. Remote work made it harder to notice when someone was struggling. There was a conflict about responsibilities last year, it took weeks to settle. When two people left at the same time the mood was tense for a while. We are a close team, people help each other without being asked. New colleagues get a buddy for the first month. I can ask anyone for help, including the founders. Yeah.
+(inaudible)
+[00:30:00] I: Thank you very much, that was very helpful.
+END OF DEMO TRANSCRIPT

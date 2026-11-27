@@ -191,8 +191,8 @@ qda_code_merge <- function(from, into) {
 #' qda_open(file.path(tempfile(), "example.jellyqda"))
 #' qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))
 #' qda_code_add("Project")
-#' qda_autocode("Projekt", code = "Project")                      # the matches
-#' qda_autocode("Projekt", code = "Project", scope = "segment")   # whole segments
+#' qda_autocode("project", code = "Project")                      # the matches
+#' qda_autocode("project", code = "Project", scope = "segment")   # whole segments
 #' qda_codings()[, c("code", "start", "end")]
 #' qda_close()
 qda_autocode <- function(pattern, code, scope = c("match", "segment"), source = NULL,
@@ -285,32 +285,6 @@ qda_coding_set_summary <- function(coding, paraphrase = NULL, generalization = N
 
 # Word frequencies and keyword in context ----------------------------------------
 
-# German stop words + transcript fillers (+ a few English ones). Kept short
-# and readable on purpose; extend with qda_words(stopwords = c(...)).
-.STOPWORDS_DE <- c(
-  "aber", "alle", "allem", "allen", "aller", "alles", "als", "also", "am", "an", "ander", "andere",
-  "anderen", "auch", "auf", "aus", "bei", "beim", "bin", "bis", "bist", "da", "dabei", "dadurch",
-  "dafuer", "daher", "damit", "dann", "daran", "darauf", "darin", "darueber", "das", "dass",
-  "dazu", "dein", "dem", "den", "denn", "der", "des", "deshalb", "dessen", "die", "dies", "diese",
-  "diesem", "diesen", "dieser", "dieses", "doch", "dort", "du", "durch", "ein", "eine", "einem",
-  "einen", "einer", "eines", "einfach", "einmal", "er", "es", "etwa", "etwas", "euch", "fuer",
-  "ganz", "gar", "gibt", "gehabt", "gewesen", "habe", "haben", "hat", "hatte", "hatten", "hier",
-  "hin", "hinter", "ich", "ihm", "ihn", "ihnen", "ihr", "ihre", "im", "immer", "in", "ins", "ist",
-  "ja", "jede", "jedem", "jeden", "jeder", "jetzt", "kann", "kein", "keine", "koennen", "man",
-  "mal", "mehr", "mein", "meine", "mich", "mir", "mit", "muss", "nach", "nein", "nicht", "nichts",
-  "noch", "nun", "nur", "ob", "oder", "ohne", "schon", "sehr", "sein", "seine", "sich", "sie",
-  "sind", "so", "solche", "sondern", "sonst", "ueber", "um", "und", "uns", "unser", "unter",
-  "viel", "vom", "von", "vor", "war", "waren", "was", "weil", "weiter", "welche", "wenn", "wer",
-  "werde", "werden", "wie", "wieder", "wir", "wird", "wo", "wohl", "wurde", "wurden", "zu", "zum",
-  "zur", "zwar", "zwischen",
-  # umlaut spellings of the words above
-  "f\u00fcr", "dar\u00fcber", "daf\u00fcr", "\u00fcber", "k\u00f6nnen", "m\u00fcssen", "w\u00fcrde", "w\u00e4re",
-  # filler words in transcripts
-  "\u00e4h", "\u00e4hm", "aeh", "aehm", "hm", "hmm", "mhm", "mmh", "mmmh", "naja", "na", "okay", "ok",
-  "genau", "quasi", "irgendwie", "tja", "eben", "halt",
-  # English
-  "the", "and", "that", "this", "with", "for", "you", "are", "was", "not", "but", "have")
-
 #' Word frequencies
 #'
 #' Counts the words of all documents, one document, or only of the passages
@@ -323,7 +297,7 @@ qda_coding_set_summary <- function(coding, paraphrase = NULL, generalization = N
 #'   (and those of its subcodes).
 #' @param n Number of words to return (most frequent first); `Inf` for all.
 #' @param min_chars Minimum word length.
-#' @param stopwords `TRUE` (built-in German list), `FALSE`, or a character
+#' @param stopwords `TRUE` (built-in German and English lists), `FALSE`, or a character
 #'   vector of further words to leave out (added to the built-in list).
 #' @return A tibble: `word`, `n` (occurrences), `sources` (in how many
 #'   documents).
@@ -354,7 +328,7 @@ qda_words <- function(source = NULL, code = NULL, n = 50, min_chars = 3, stopwor
   w <- stringi::stri_extract_all_regex(stringi::stri_trans_tolower(texts), "\\p{L}[\\p{L}\\-']*\\p{L}|\\p{L}")
   df <- data.frame(word = unlist(w), doc = rep(doc, lengths(w)), stringsAsFactors = FALSE)
   df <- df[!is.na(df$word) & nchar(df$word) >= min_chars, , drop = FALSE]
-  stop_list <- if (isFALSE(stopwords)) character() else c(.STOPWORDS_DE, if (is.character(stopwords)) tolower(stopwords))
+  stop_list <- if (isFALSE(stopwords)) character() else c(.STOPWORDS_DE, .STOPWORDS_EN, if (is.character(stopwords)) tolower(stopwords))  # R/stopwords.R
   # compare via ASCII escapes: works without a UTF-8 locale as well
   df <- df[!stringi::stri_escape_unicode(df$word) %in% stringi::stri_escape_unicode(enc2utf8(stop_list)), , drop = FALSE]
   if (nrow(df) == 0) return(empty)
@@ -382,8 +356,8 @@ qda_words <- function(source = NULL, code = NULL, n = 50, min_chars = 3, stopwor
 #' @examples
 #' qda_open(file.path(tempfile(), "example.jellyqda"))
 #' qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))
-#' qda_kwic("Projektleiterin", width = 30)
-#' qda_kwic("Projekt", whole_word = FALSE)
+#' qda_kwic("colleague", width = 30)
+#' qda_kwic("inform", whole_word = FALSE)   # also inside words ("informatics")
 #' qda_close()
 qda_kwic <- function(pattern, source = NULL, width = 50, ignore_case = TRUE, whole_word = TRUE) {
   s <- qda_sources()

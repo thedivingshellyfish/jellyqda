@@ -101,20 +101,70 @@ log_event <- function(action, details = list(), changes = NULL, desc = NULL) {
   x
 }
 
+#' Frozen texts of some sources, from a cache. The text of a source never
+#' changes after import (that is the point of freezing it) and ids are never
+#' reused (AUTOINCREMENT), so each text is read from the database only once
+#' per open project; qda_open()/qda_close() clear the cache. In large
+#' projects the app asked for all texts several times per action before.
+#' @noRd
+.texts <- function(ids) {
+  ids <- as.character(as.integer(ids))
+  cache <- .jellyqda_env$texts
+  if (is.null(cache)) cache <- list()
+  need <- setdiff(unique(ids), names(cache))
+  if (length(need)) {
+    q <- DBI::dbGetQuery(qda_con(), sprintf("SELECT id, frozen_text FROM sources WHERE id IN (%s)",
+                                            paste(need, collapse = ",")))
+    cache[as.character(q$id)] <- as.list(.utf8(q$frozen_text))
+    .jellyqda_env$texts <- cache
+  }
+  out <- cache[ids]
+  vapply(out, function(t) if (is.null(t)) NA_character_ else t, character(1), USE.NAMES = FALSE)
+}
+
+#' Text passages [start, end] of several sources (each text from the cache,
+#' instead of joining the full text to every row: with thousands of codings
+#' that copied hundreds of MB). NA where start is NA.
+#' @noRd
+.passages <- function(source_id, start, end) {
+  out <- rep(NA_character_, length(source_id))
+  ok <- !is.na(source_id) & !is.na(start) & !is.na(end)
+  if (!any(ok)) return(out)
+  ids <- unique(source_id[ok])
+  txt <- .texts(ids)
+  for (k in seq_along(ids)) {
+    r <- which(ok & source_id == ids[k])
+    out[r] <- substring(txt[k], start[r], end[r])
+  }
+  out
+}
+
+#' Variables of all sources from one query: list(id -> named character).
+#' @noRd
+.all_source_vars <- function() {
+  m <- DBI::dbGetQuery(qda_con(), "SELECT id, meta_json FROM sources ORDER BY id")
+  out <- lapply(m$meta_json, function(j) {
+    v <- tryCatch(jsonlite::fromJSON(j)$variables, error = function(e) NULL)
+    if (is.null(v)) character() else { v <- unlist(v); stats::setNames(as.character(v), names(v)) }
+  })
+  stats::setNames(out, as.character(m$id))
+}
+
 #' Resolve a source argument (id or unique name) to its row.
 #' @noRd
 .resolve_source <- function(x) {
   con <- qda_con()
+  # the text comes from the cache (.texts), not with every query
   if (is.numeric(x)) {
-    row <- DBI::dbGetQuery(con, "SELECT * FROM sources WHERE id = ?",
+    row <- DBI::dbGetQuery(con, "SELECT id, name, format, meta_json FROM sources WHERE id = ?",
                           params = list(as.integer(x)))
   } else {
-    row <- DBI::dbGetQuery(con, "SELECT * FROM sources WHERE name = ?",
+    row <- DBI::dbGetQuery(con, "SELECT id, name, format, meta_json FROM sources WHERE name = ?",
                           params = list(as.character(x)))
   }
   if (nrow(row) == 0) stop(sprintf("No source found for '%s'.", x), call. = FALSE)
   if (nrow(row) > 1) stop(sprintf("'%s' matches several sources; use the id.", x), call. = FALSE)
-  row$frozen_text <- .utf8(row$frozen_text)
+  row$frozen_text <- .texts(row$id)
   row
 }
 
@@ -175,18 +225,26 @@ log_event <- function(action, details = list(), changes = NULL, desc = NULL) {
 .union_len <- function(starts, ends) {
   if (length(starts) == 0) return(0L)
   o <- order(starts)
-  s <- starts[o]; e <- ends[o]
-  tot <- 0L; cs <- s[1]; ce <- e[1]
-  if (length(s) > 1) {
-    for (i in 2:length(s)) {
-      if (s[i] <= ce + 1) {
-        ce <- max(ce, e[i])
-      } else {
-        tot <- tot + (ce - cs + 1L); cs <- s[i]; ce <- e[i]
-      }
-    }
-  }
-  tot + (ce - cs + 1L)
+  s <- as.numeric(starts[o]); e <- as.numeric(ends[o])
+  # vectorised: a new block starts where the start lies beyond the furthest
+  # end so far (+1: touching intervals merge, as before)
+  reach <- cummax(e)
+  new_block <- c(TRUE, s[-1] > reach[-length(reach)] + 1)
+  first <- which(new_block)                       # first interval of each block
+  last <- c(first[-1] - 1L, length(s))             # last interval of each block
+  as.integer(sum(reach[last] - s[first] + 1))      # cummax: block end = reach at its last interval
+}
+
+#' Coded characters per source (union of the coding intervals): codings are
+#' split by source once instead of searching all codings for every source.
+#' @noRd
+.coded_chars <- function(source_ids, cod) {
+  if (nrow(cod) == 0) return(integer(length(source_ids)))
+  by <- split(seq_len(nrow(cod)), cod$source_id)
+  vapply(as.character(source_ids), function(k) {
+    r <- by[[k]]
+    if (is.null(r)) 0L else .union_len(cod$start[r], cod$end[r])
+  }, integer(1), USE.NAMES = FALSE)
 }
 
 #' Hierarchical "parent / child" paths for a codes data frame.

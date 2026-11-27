@@ -1,0 +1,15 @@
+DEMO FILE - fictional interview for the jellyqda intercoder demo. All persons, companies and events are invented.
+Interview Mara (fictional), project lead, 34 years
+
+[00:00:05] I: How did you end up in your current job?
+[00:00:12] P: After university I spent two years in a large corporation. Everything was very anonymous there, you were just a number in the HR department.
+[00:01:02] I: And then?
+[00:01:06] P: Then I moved to a small software company with twelve people. There I can really make a difference and decide a lot myself.
+[00:02:10] I: What motivates you at work?
+[00:02:15] P: Above all, that our software is used every day by nurses. I can see what I am doing it for.
+[00:03:01] I: How do you experience the collaboration?
+[00:03:05] P: We are a well-rehearsed team, in the retrospectives people speak openly, also about mistakes.
+[00:04:12] I: Are there downsides as well?
+[00:04:16] P: Before releases I often work late into the evening. That wears me down, and at the weekend I still think about tickets.
+[00:05:20] I: Do you have a lot of contact with customers?
+[00:05:24] P: Yes, every week. The direct feedback matters to me, even when it is uncomfortable.

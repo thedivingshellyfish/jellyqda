@@ -1,0 +1,29 @@
+/* jellyqda app -- stylesheet, part 11 of 11: Report dialog and busy hint (since 0.9.1)
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
+
+/* report dialog: choices, progress bar, stall hint */
+#shiny-modal .shiny-options-group .radio { margin-bottom:.6rem; }
+.jqprog { margin:.6rem 0 .2rem; }
+.jqprog-bar { height:.6rem; background:#e4e8ed; border-radius:.3rem; overflow:hidden; }
+.jqprog-bar span { display:block; height:100%; width:2%; background:#2c6fbb; border-radius:.3rem; transition:width .3s; }
+.jqprog-detail { margin-top:.3rem; min-height:1.2em; font-variant-numeric:tabular-nums; }
+.jqstall { margin-top:.6rem; padding:.5rem .6rem; border:1px solid #f0d9a0; background:#fff6e0; border-radius:.45rem; font-size:.82rem; }
+.jqstall p { margin:0 0 .45rem; }
+.jqstall .btn { margin-right:.4rem; }
+/* our own progress in the dialog replaces Shiny's corner notification */
+body.jq-reporting .shiny-notification.shiny-progress-notification,
+body.jq-reporting .shiny-progress-notification { display:none !important; }
+
+/* busy hint */
+.jq-busy-pill { position:fixed; left:50%; bottom:1rem; transform:translateX(-50%); z-index:2000;
+  background:#2b3440; color:#fff; font-size:.8rem; padding:.3rem .8rem; border-radius:1rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.2); opacity:0; pointer-events:none; transition:opacity .2s; }
+body.jq-busy .jq-busy-pill { opacity:.92; }
+body.jq-reporting .jq-busy-pill { opacity:0; }
+
+[data-bs-theme="dark"] .jqprog-bar { background:#323b45; }
+[data-bs-theme="dark"] .jqprog-bar span { background:#5a9ded; }
+[data-bs-theme="dark"] .jqstall { background:var(--jq-amberbg); border-color:var(--jq-border); color:var(--jq-text); }
+[data-bs-theme="dark"] .jq-busy-pill { background:#e3e7ec; color:#1b2128; }
+@media (prefers-reduced-motion: reduce) { .jqprog-bar span, .jq-busy-pill { transition:none; } }

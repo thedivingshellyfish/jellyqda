@@ -29,13 +29,24 @@ Browser.
 - ✂️ **Segmente** nach Absätzen oder **Sprecherwechseln** (`[00:01:12] P: …`), frei anpassbar.
 - 📝 **Memos** in vier Arten: Textstelle, Dokument, Code (Definition, Kodierregel), Projekt.
 - 🔬 **Deduktiv und induktiv:** Kodierleitfaden (Definition, Ankerbeispiel, Kodierregel), In-vivo-Codes, Codes zusammenführen, alle Suchtreffer auf einmal codieren, **Zusammenfassung nach Mayring** (Paraphrase → Generalisierung → Reduktion).
+- 👥 **Intercoder-Übereinstimmung:** Blind-Kopie für eine zweite Person, dann **Cohens Kappa**, **Krippendorffs Alpha**, Brennan & Prediger und prozentuale Übereinstimmung je Code, dazu die Liste der Abweichungen für die Konsens-Diskussion.
+- 🕸️ **Grafiken:** Code-Überschneidungen (Heatmap), Code-Netzwerk und Dokument-Portraits; Zelle, Linie oder Block anklicken führt zu den Textstellen. Einfaches SVG: in der App, im RStudio-Viewer, im Bericht oder gespeichert für die Arbeit.
+- 🔁 **REFI-QDA-Export (.qdpx)** für MAXQDA, ATLAS.ti, NVivo, QualCoder: Ihr Projekt ist nie eingesperrt.
 - 📊 **Auswerten:** Codings je Code, Volltextsuche, Code-Matrix mit **Fallvergleich**, Worthäufigkeiten, Stichwort im Kontext, Summary Grid, Export (CSV, Excel, Word).
 - 🖨️ **Bericht** im eigenen Browser-Tab, druckfertig auf **A4** (ohne Hintergrundfarben), mit Häufigkeiten in Prozent und einer **Randspalte** neben jedem Interview: welche Codings, Kommentare und Memos an welcher Stelle stehen.
 - ↩️ **Rückgängig/Wiederholen** für alles (Strg+Z / Strg+Y) und ein lückenloses **Protokoll** für den Methodenteil.
 - 🌙 **Dark Mode**, gut lesbar (geprüfter Kontrast).
 - 🌐 **Deutsch und Englisch:** Oberfläche und Bericht in beiden Sprachen, umschaltbar per Klick (**DE/EN**).
 
-> 🆕 **Neu in Version 0.7.0:** Oberfläche und Bericht auf **Deutsch und Englisch**
+> 🆕 **Neu in Version 0.9.1:** Bericht-Dialog (**Übersicht** in Sekunden oder **vollständig**)
+> mit **Fortschrittsbalken**, Hinweis bei Stillstand und „Wird verarbeitet …“ bei längeren Schritten.
+> **0.9.0:** **Grafiken** (Heatmap der Code-Überschneidungen, Code-Netzwerk,
+> Dokument-Portraits), **REFI-QDA-Export (.qdpx)** für MAXQDA, ATLAS.ti, NVivo und QualCoder
+> und ein Stresstest mit bis zu 150 Interviews.
+> **0.8.0:** **Intercoder-Übereinstimmung** (Cohens Kappa, Krippendorffs
+> Alpha): Blind-Kopie für eine zweite Person, Vergleich je Code, Abweichungen mit
+> „Zeigen“ und „Übernehmen“ für die Konsens-Kodierung, Abschnitt im Bericht.
+> **0.7.0:** Oberfläche und Bericht auf **Deutsch und Englisch**
 > (Umschalter **DE/EN**), Paket bereit für CRAN (lauffähige Beispiele, Vignette).
 > **0.6.0:** Bericht mit Randspalte (Codings und Memos neben dem
 > Interview), Kommentarfeld in der Coding-Leiste, In-vivo-Codes, Codes zusammenführen,
@@ -115,8 +126,9 @@ R-Konsole. Gespeichert wird ohnehin **sofort bei jeder Aktion**.
 
 > 💡 **Ausprobieren ohne eigene Daten:**
 > `qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))`
-> oder die fiktiven Transkripte aus dem Ordner [`demo/`](demo/) (mit Zeitmarken, ideal für
-> Segmente nach Sprecherwechsel).
+> (ein kurzes, fiktives englisches Beispielinterview) oder die fiktiven Demo-Transkripte aus
+> dem Ordner [`demo/`](demo/) (10 bis 120 Minuten, mit Zeitmarken, ideal für Segmente nach
+> Sprecherwechsel). Alle Beispiel- und Demo-Dateien sind erfunden, siehe [`demo/README.md`](demo/README.md).
 
 ---
 
@@ -177,6 +189,32 @@ Code), **In vivo** in der Kodier-Leiste, Codes **zusammenführen**
 Code-Matrix und das Fenster **Analyse** mit Worthäufigkeiten, Stichwort im
 Kontext und der Mayring-Tabelle. Anleitung: [Wiki: Analysieren](docs/wiki/de/Analysieren.md).
 
+**Intercoder-Übereinstimmung** (Reiter **Intercoder** im Analyse-Fenster):
+eine **Blind-Kopie** des Projekts an eine zweite Person geben, unabhängig
+kodieren lassen, dann deren Datei laden. jellyqda zeigt **Cohens Kappa**,
+**Krippendorffs Alpha**, Brennan & Prediger und die prozentuale
+Übereinstimmung, insgesamt und je Code, und listet jede Abweichung auf:
+**Zeigen** springt zur Stelle, **Übernehmen** kopiert das andere Coding in Ihr
+Projekt (Strg+Z macht es rückgängig). Die andere Datei wird nur gelesen.
+Anleitung: [Wiki: Intercoder-Übereinstimmung](docs/wiki/de/Intercoder-Uebereinstimmung.md).
+
+<img src="docs/screenshots/de/34-intercoder.png" alt="Intercoder-Übereinstimmung: Kappa je Code und Abweichungen" width="900">
+
+**Grafiken** (Knopf **Grafiken** in der Symbolleiste): **Code-Überschneidungen**
+als Heatmap (welche Codes kommen gemeinsam vor, wie oft), ein
+**Code-Netzwerk** und **Dokument-Portraits** (ein Streifen je Interview: wo
+tauchen die Themen auf?). Zelle oder Linie anklicken listet die Textstellen,
+ein Portrait-Block springt in den Text; **Als SVG speichern** für die Arbeit.
+Anleitung: [Wiki: Grafiken](docs/wiki/de/Grafiken.md).
+
+<table>
+<tr>
+<td width="55%" valign="top"><img src="docs/screenshots/de/38-grafiken-heatmap.png" alt="Heatmap der Code-Überschneidungen" width="480"></td>
+<td width="45%" valign="top"><img src="docs/screenshots/de/39-grafiken-netzwerk.png" alt="Code-Netzwerk" width="400"></td>
+</tr>
+</table>
+<img src="docs/screenshots/de/40-grafiken-portraits.png" alt="Dokument-Portraits" width="900">
+
 <table>
 <tr>
 <td width="50%" valign="top"><img src="docs/screenshots/de/26-kodierleitfaden.png" alt="Kodierleitfaden" width="420"></td>
@@ -195,7 +233,8 @@ Layout zurücksetzen).
 
 <img src="docs/screenshots/de/23-symbolleiste-export.png" alt="Symbolleiste mit Export-Menü" width="920">
 
-**Bericht:** öffnet sich in einem neuen Tab und ist für den Druck auf A4
+**Bericht:** ein Dialog bietet **Übersicht** (Sekunden, ohne Dokumente) oder
+**vollständig**, zeigt die erwartete Dauer und einen **Fortschrittsbalken**; der Bericht öffnet sich in einem neuen Tab und ist für den Druck auf A4
 gemacht (Strg+P, auch als PDF): Codesystem mit Häufigkeiten je Dokument und
 **Anteil in Prozent**, Codebuch, Memos, codierte Textstellen und alle Dokumente
 mit Markierungen. Neben jedem Interview steht eine **Randspalte**: Jedes Coding
@@ -288,6 +327,12 @@ qda_memo_add("Nur explizite Aussagen codieren", code = "KMU", title = "Kodierreg
 qda_segments("KMU")      # alle Textstellen eines Codes (Tabelle)
 qda_matrix()             # Codes × Dokumente
 qda_stats()              # Fortschritt: wie viel ist codiert?
+qda_intercoder_copy("kodierer_b.jellyqda")        # Blind-Kopie für eine zweite Person
+qda_intercoder("kodierer_b.jellyqda")             # Kappa, Alpha, Übereinstimmung je Code
+qda_intercoder_diff("kodierer_b.jellyqda")        # Abweichungen für die Konsens-Diskussion
+qda_cooccurrence()                                # welche Codes kommen gemeinsam vor
+qda_plot_network(file = "netzwerk.svg")           # Grafiken als SVG (auch: _cooccurrence, _portrait)
+qda_export_qdpx()                                 # REFI-QDA-Datei für MAXQDA, ATLAS.ti, NVivo, QualCoder
 qda_export("all")        # CSV/Excel/Word/HTML nach exports/
 qda_backup()
 ```
@@ -314,17 +359,27 @@ jellyqda/
 │   ├── render.R / view.R              #   Text mit Markierungen als HTML (App, Bericht, Viewer)
 │   ├── history.R / undo.R / events.R  #   Rückgängig/Wiederholen, Protokoll
 │   ├── summary.R / stats.R            #   Summary Grid, Statistik, Matrix
-│   ├── analysis.R                     #   Leitfaden, Zusammenführen, Auto-Codieren, Mayring, Wörter, KWIC, Fallvergleich
+│   ├── analysis.R / stopwords.R       #   Leitfaden, Zusammenführen, Auto-Codieren, Mayring, Wörter, KWIC, Fallvergleich; Stoppwörter (EN/DE)
+│   ├── intercoder*.R                  #   Intercoder-Übereinstimmung, eine Datei je Funktion (Überblick: intercoder_stats.R)
+│   ├── report_intercoder.R            #   Bericht-Abschnitt „Intercoder-Übereinstimmung“
+│   ├── units.R                        #   Analyseeinheiten (für Intercoder, Überschneidungen, Portraits)
+│   ├── cooccurrence.R / portrait.R    #   Daten der Grafiken
+│   ├── plot_svg.R + plot_*.R          #   Grafiken als SVG (Heatmap, Netzwerk, Portraits)
+│   ├── report_visuals.R               #   Bericht-Abschnitte mit den Grafiken
+│   ├── export_qdpx.R                  #   REFI-QDA-Export (.qdpx)
 │   ├── export.R / backup.R            #   Export + HTML-Bericht, ZIP-Backups
 │   ├── app.R / app_ui.R / app_helpers.R #   Shiny-App qda_app(): Einstieg, UI, Hilfsfunktionen
 │   ├── app_server.R + app_server_*.R  #   Server der App, eine Datei je Thema (Dokumente, Codes, Memos ...)
 │   ├── i18n.R / i18n_catalog.R        #   Sprache (Deutsch/Englisch) + englische Übersetzungen
 │   └── addins.R                       #   RStudio-Addins (Backup, Statistik)
 ├── inst/app/www/css/ + js/           # Aussehen + Browser-Logik der App, nummerierte Dateien (Übersicht: README.md dort)
-├── inst/extdata/                      # Beispieldaten (fiktiv)
+├── inst/extdata/                      # kurze Beispieldateien (fiktiv, englisch; README dort)
 ├── inst/examples/                     # kommentierte Vorlagen (deutsch + englisch)
 ├── vignettes/                         # Einführung (englisch)
 ├── tests/testthat/                    # Tests (testthat 3)
+├── data-raw/                          # Skripte, die inst/extdata/ und die Demo-Transkripte erzeugen
+├── demo/                              # fiktive Demo-Transkripte + Demo-Skripte (README dort)
+├── dev/                               # Werkzeuge für Entwickler*innen: Stresstest (+ Ergebnisse)
 └── docs/                              # Screenshots + Wiki (englisch; deutsch in de/)
 ```
 

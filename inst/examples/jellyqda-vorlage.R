@@ -104,6 +104,16 @@ qda_events()         # kompletter Audit-Trail als Tabelle (jede Aktion + Zeitste
 # exakten Zeichen-Positionen gespeichert. Esc beendet die App.
 # qda_app()
 
+# --- 5c. Optional: Intercoder-Übereinstimmung (eine zweite Person kodiert) --
+# 1. Blind-Kopie für die zweite Person: gleiche Dokumente, Segmente und Codes,
+#    aber keine Ihrer Codings. Weitergeben (USB-Stick, verschlüsselte Mail ...).
+# qda_intercoder_copy("kodierer_b.jellyqda")
+# 2. Die zweite Person öffnet sie mit qda_open("kodierer_b.jellyqda") und kodiert.
+# 3. Vergleichen (die andere Datei wird nur gelesen): Kappa, Alpha je Code
+# qda_intercoder("kodierer_b.jellyqda")
+# qda_intercoder_diff("kodierer_b.jellyqda")   # Abweichungen -> Konsens
+# In der App: Analyse -> Reiter "Intercoder".
+
 # --- 6. Sitzung beenden ------------------------------------------------------
 qda_close()
 

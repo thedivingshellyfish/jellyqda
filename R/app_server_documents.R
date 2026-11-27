@@ -136,11 +136,9 @@
                              choices = stats::setNames(as.character(s$id), s$name),
                              selected = if (nrow(s) && !is.null(rv$src)) as.character(rv$src) else NULL)
     # variable filter options across all sources
-    opts <- character()
-    for (sid in s$id) {
-      v <- qda_source_vars(sid)
-      if (length(v)) opts <- c(opts, paste0(names(v), "=", v))
-    }
+    av <- .all_source_vars()       # one query for all documents (utils.R)
+    opts <- unlist(lapply(av, function(v) if (length(v)) paste0(names(v), "=", v)), use.names = FALSE)
+    if (is.null(opts)) opts <- character()
     shiny::updateSelectInput(session, "var_filter",
                              choices = c(stats::setNames("", .t("(alle)")), sort(unique(opts))),
                              selected = rv$var_filter %||% "")

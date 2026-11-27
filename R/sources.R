@@ -16,19 +16,22 @@
 #' qda_close()
 qda_sources <- function() {
   con <- qda_con()
-  s <- DBI::dbGetQuery(con, "SELECT id, name, format, frozen_text, meta_json FROM sources ORDER BY id")
-  s$frozen_text <- .utf8(s$frozen_text)
+  s <- DBI::dbGetQuery(con, "SELECT id, name, format, meta_json FROM sources ORDER BY id")
+  s$frozen_text <- .texts(s$id)     # cached (utils.R)
   cod <- DBI::dbGetQuery(con, "SELECT source_id, start, end FROM codings")
+  # segments: stored ones counted in SQL; documents without stored segments
+  # use the automatic blank-line segments of their text (as .segments_for())
+  stored <- DBI::dbGetQuery(con, "SELECT source_id, COUNT(*) AS n FROM segments GROUP BY source_id")
+  n_seg <- stored$n[match(s$id, stored$source_id)]
+  auto <- is.na(n_seg)
+  n_seg[auto] <- vapply(s$frozen_text[auto], function(t) nrow(.segments_of(t)), integer(1), USE.NAMES = FALSE)
   tibble::tibble(
     id = s$id,
     name = s$name,
     format = s$format,
     chars = nchar(s$frozen_text, type = "chars"),
-    segments = vapply(s$id, function(i) nrow(.segments_for(i)), integer(1)),
-    coded_chars = vapply(s$id, function(i) {
-      x <- cod[cod$source_id == i, , drop = FALSE]
-      if (nrow(x) == 0) 0L else .union_len(x$start, x$end)
-    }, integer(1)),
+    segments = as.integer(n_seg),
+    coded_chars = .coded_chars(s$id, cod),
     imported_at = vapply(s$meta_json, function(m) {
       v <- jsonlite::fromJSON(m)$imported_at
       if (is.null(v)) NA_character_ else v
@@ -38,6 +41,17 @@ qda_sources <- function() {
 
 # --- variables (case attributes) per source ---------------------------------
 # Stored inside sources.meta_json$variables as a named list: key = value.
+
+#' id, name and meta_json of a source -- without the (possibly long) text.
+#' @noRd
+.source_meta <- function(x) {
+  con <- qda_con()
+  row <- if (is.numeric(x)) DBI::dbGetQuery(con, "SELECT id, name, meta_json FROM sources WHERE id = ?", params = list(as.integer(x)))
+         else DBI::dbGetQuery(con, "SELECT id, name, meta_json FROM sources WHERE name = ?", params = list(as.character(x)))
+  if (nrow(row) == 0) stop(sprintf("No source found for '%s'.", x), call. = FALSE)
+  if (nrow(row) > 1) stop(sprintf("'%s' matches several sources; use the id.", x), call. = FALSE)
+  row
+}
 
 #' Get the variables (case attributes) of a source
 #'
@@ -51,7 +65,7 @@ qda_sources <- function() {
 #' qda_source_vars(1)
 #' qda_close()
 qda_source_vars <- function(source) {
-  m <- jsonlite::fromJSON(.resolve_source(source)$meta_json)
+  m <- jsonlite::fromJSON(.source_meta(source)$meta_json)
   v <- m$variables
   if (is.null(v)) return(character())
   v <- unlist(v)
@@ -74,7 +88,7 @@ qda_source_vars <- function(source) {
 #' qda_close()
 qda_source_set_var <- function(source, key, value) {
   con <- qda_con()
-  src <- .resolve_source(source)
+  src <- .source_meta(source)   # no need for the text
   m <- jsonlite::fromJSON(src$meta_json)
   if (is.null(m$variables)) m$variables <- list()
   m$variables[[as.character(key)]] <- as.character(value)
@@ -102,7 +116,7 @@ qda_source_set_var <- function(source, key, value) {
 #' qda_close()
 qda_source_del_var <- function(source, key) {
   con <- qda_con()
-  src <- .resolve_source(source)
+  src <- .source_meta(source)   # no need for the text
   m <- jsonlite::fromJSON(src$meta_json)
   if (!is.null(m$variables)) m$variables[[as.character(key)]] <- NULL
   before <- .snap("sources", src$id)

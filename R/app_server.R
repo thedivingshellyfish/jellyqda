@@ -70,18 +70,8 @@
            numeric(1))
   }
 
-  # Report in its own browser tab: an address of this session under which
-  # the server creates the report fresh on every request (registerDataObj).
-  report_url <- tryCatch(
-    session$registerDataObj("jqreport", list(), function(data, req) .report_response()),
-    error = function(e) NULL)
-  output$report_link <- shiny::renderUI({
-    if (is.null(report_url)) return(NULL)
-    shiny::tags$a(id = "report_btn", class = "btn btn-sm btn-outline-secondary", href = report_url,
-                  target = "_blank", rel = "noopener",
-                  title = .t("Bericht in einem neuen Tab \u00f6ffnen (A4, druckbar)"),
-                  fontawesome::fa("chart-column"), .t(" Bericht "), fontawesome::fa("arrow-up-right-from-square"))
-  })
+  # Report: dialog (overview / complete), progress bar, own browser tab --
+  # see R/app_server_report.R
 
   # Store the marked text with a code (coding bar, code tree, search).
   # Exactly rv$sel$start..end is stored -- so rv$sel must not be overwritten
@@ -117,6 +107,9 @@
   .srv_undo_redo(input, output, session, rv, shared)
   .srv_segments(input, output, session, rv, shared)
   .srv_analysis(input, output, session, rv, shared)
+  .srv_intercoder(input, output, session, rv, shared)
+  .srv_visuals(input, output, session, rv, shared)
+  .srv_report(input, output, session, rv, shared)
   .srv_code_matrix(input, output, session, rv, shared)
   .srv_summary_grid(input, output, session, rv, shared)
   .srv_layout(input, output, session, rv, shared)

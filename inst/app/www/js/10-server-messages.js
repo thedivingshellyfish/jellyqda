@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 10 of 17: Messages from the server (session$sendCustomMessage in R)
+/* jellyqda app -- browser logic, part 10 of 19: Messages from the server (session$sendCustomMessage in R)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

@@ -22,7 +22,8 @@
 #' qda_close()
 qda_stats <- function() {
   con <- qda_con()
-  src <- DBI::dbGetQuery(con, "SELECT id, name, frozen_text FROM sources ORDER BY id")
+  src <- DBI::dbGetQuery(con, "SELECT id, name FROM sources ORDER BY id")
+  src$frozen_text <- .texts(src$id)   # cached (utils.R)
   cod <- DBI::dbGetQuery(con, "SELECT source_id, code_id, start, end FROM codings")
   codes <- qda_codes()
   q <- function(sql) DBI::dbGetQuery(con, sql)[[1]]
@@ -31,10 +32,7 @@ qda_stats <- function() {
     id = src$id,
     name = src$name,
     chars = nchar(src$frozen_text, type = "chars"),
-    coded_chars = vapply(src$id, function(i) {
-      x <- cod[cod$source_id == i, , drop = FALSE]
-      if (nrow(x) == 0) 0L else .union_len(x$start, x$end)
-    }, integer(1))
+    coded_chars = .coded_chars(src$id, cod)
   )
   per_source$pct_coded <- ifelse(per_source$chars > 0,
                                  round(100 * per_source$coded_chars / per_source$chars, 1), 0)

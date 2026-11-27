@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 9 of 17: Tables: click a cell -> show segments for (code x document)
+/* jellyqda app -- browser logic, part 9 of 19: Tables: click a cell -> show segments for (code x document)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

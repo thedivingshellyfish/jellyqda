@@ -1,0 +1,54 @@
+DEMO TRANSCRIPT - FICTIONAL. Written for jellyqda (tests and demos).
+All persons, companies, places and events are invented; any resemblance is coincidental.
+Study:        Working in small software companies (fictional demo study)
+Interview:    DEMO_INT_010
+Pseudonym:    P01 "Alex" (fictional), junior developer
+Duration:     00:10 h (approx.)
+Format:       full transcript, time stamp at every speaker turn
+Speakers:     I = interviewer, P = participant
+------------------------------------------------------------
+
+[00:00:00] I: Thank you for taking part. As agreed, I will record the conversation. Shall we start?
+[00:00:07] P: Yes, sure, go ahead.
+[00:00:11] I: What did you do before you joined the company?
+[00:00:18] P: I still remember the job interview, it was in the kitchen because there was no meeting room. In the corporation every decision went through three levels of management.
+[00:00:34] I: Mhm.
+[00:00:40] P: In a small company I could take on responsibility much earlier than my friends in big firms. The switch was risky, the salary was lower at first. After my studies I worked for a large corporation for two years, and it felt anonymous. Yeah.
+[00:01:01] P: The switch was risky, the salary was lower at first. I still remember the job interview, it was in the kitchen because there was no meeting room. In the corporation every decision went through three levels of management. Yeah.
+(inaudible)
+[00:01:19] I: What keeps you going on difficult days?
+[00:01:24] P: Mentoring new colleagues gives me a lot of energy. I like that my ideas are taken seriously, even as a junior. What matters most to me is that people actually use what we build.
+[00:01:41] I: How did that feel?
+[00:01:45] P: So, when a customer writes that our tool saved them an hour a day, that makes my week. I enjoy learning something new almost every week. What matters most to me is that people actually use what we build. I like solving tricky problems, it feels good when something finally works. The freedom to decide how I work is important to me. I like that my ideas are taken seriously, even as a junior. (laughs)
+[00:02:17] I: And how did your colleagues react?
+[00:02:22] I: How would you describe the climate in your team?
+[00:02:30] P: You know, we have lunch together on Fridays, that helps a lot. In our retrospectives we speak openly about mistakes. I can ask anyone for help, including the founders. Remote work made it harder to notice when someone was struggling. Um, trust is the most important thing in our team. We celebrate small successes, for example with cake. When two people left at the same time the mood was tense for a while. I think.
+[00:03:05] P: Well, when two people left at the same time the mood was tense for a while. Remote work made it harder to notice when someone was struggling. New colleagues get a buddy for the first month. I can ask anyone for help, including the founders. There was a conflict about responsibilities last year, it took weeks to settle.
+[00:03:30] I: Could you say a bit more about that?
+[00:03:35] I: Do you manage to switch off after work?
+[00:03:39] P: In a small company there is no one else who can take over. You know, our manager tries to protect us from too many meetings. Honestly, I once got close to burning out, after that I changed a lot. Clear priorities help me more than overtime. The workload comes in waves, quiet weeks and very busy weeks. Well, before a release I often work late into the evening. I switch off my work phone at six, I had to learn that.
+[00:04:17] P: Working part-time helps me, but the meetings do not get fewer. I switch off my work phone at six, I had to learn that. When several projects start at once I sleep badly. I once got close to burning out, after that I changed a lot. Sometimes I still think about tickets at the weekend. Before a release I often work late into the evening. I think.
+[00:04:48] I: How do you get feedback from users?
+[00:04:52] P: I mean, once a customer called on a Sunday because the system was down. Customer contact mostly goes through the project lead, so I rarely see the users. Some customers expect us to answer within minutes. I talk to customers every week, the direct feedback is valuable even when it is uncomfortable.
+[00:05:18] I: I see.
+[00:05:24] P: Honestly, some customers expect us to answer within minutes. Well, customer contact mostly goes through the project lead, so I rarely see the users. (laughs)
+[00:05:37] I: Where do you see yourself in five years?
+[00:05:42] P: Um, better pay for support staff would be my first change. You know, I would like to stay, as long as the company stays this small. I would like to do more mentoring in the future. Well, I would introduce fixed focus times without meetings. Nothing to add, thank you, it was good to talk about it. I hope we can grow without losing our culture. Yeah.
+[00:06:12] I: What happened then?
+[00:06:19] I: What did you do before you joined the company?
+[00:06:27] P: Honestly, my first job was in a call centre, which taught me a lot about patience. I applied to the company because a former colleague recommended it. I still remember the job interview, it was in the kitchen because there was no meeting room. Here I can see what difference my work makes. I never planned a career in software, it just happened. To be fair, the switch was risky, the salary was lower at first. I think.
+[00:07:03] I: Mhm.
+[00:07:10] P: Here I can see what difference my work makes. After my studies I worked for a large corporation for two years, and it felt anonymous. I applied to the company because a former colleague recommended it. I think.
+[00:07:30] I: What motivates you at work?
+[00:07:36] P: I like that my ideas are taken seriously, even as a junior. I like solving tricky problems, it feels good when something finally works. I enjoy learning something new almost every week. I am proud of the release last spring, we finished it as a team. The freedom to decide how I work is important to me. (laughs)
+[00:08:02] I: How would you describe the climate in your team?
+[00:08:08] P: We are a close team, people help each other without being asked. In our retrospectives we speak openly about mistakes. When two people left at the same time the mood was tense for a while. So, I can ask anyone for help, including the founders. New colleagues get a buddy for the first month. Sometimes the discussions are loud, but nobody holds a grudge. Trust is the most important thing in our team.
+(inaudible)
+[00:08:39] I: What happens before a release?
+[00:08:46] P: I switch off my work phone at six, I had to learn that. Working part-time helps me, but the meetings do not get fewer. Sometimes I still think about tickets at the weekend. Well, our manager tries to protect us from too many meetings. Before a release I often work late into the evening. I think.
+[00:09:12] I: Can you tell me about a difficult customer situation?
+[00:09:19] P: Um, when users struggle with our software, it hurts a bit, but it helps us improve. I talk to customers every week, the direct feedback is valuable even when it is uncomfortable. I mean, I like visiting customers on site, you see things you never see in the office. I think.
+[00:09:42] P: Customer contact mostly goes through the project lead, so I rarely see the users. I like visiting customers on site, you see things you never see in the office. When users struggle with our software, it hurts a bit, but it helps us improve. Once a customer called on a Sunday because the system was down. I think.
+[00:10:07] I: And how did your colleagues react?
+[00:10:11] I: Thank you very much, that was very helpful.
+END OF DEMO TRANSCRIPT

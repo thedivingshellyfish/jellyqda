@@ -14,6 +14,8 @@ test_that("package source contains no network calls (100% offline guarantee)", {
     for (pat in forbidden) {
       m <- grep(pat, lines, value = TRUE)
       m <- m[!grepl("^\\s*#", m)]  # allow URLs inside comments/docs
+      # XML namespace identifiers (e.g. SVG) are names, never fetched
+      m <- m[!grepl("^\\s*\\.[A-Z_]+_NS <- \"http://www\\.w3\\.org/[0-9]{4}/[a-z]+\"$", m)]
       if (length(m)) hits <- c(hits, sprintf("%s: %s", basename(f), m))
     }
   }

@@ -32,7 +32,7 @@
       out
     }
     # columns: documents or the values of a variable (case comparison)
-    vars <- sort(unique(unlist(lapply(sources$id, function(i) names(qda_source_vars(i))))))
+    vars <- sort(unique(unlist(lapply(.all_source_vars(), names))))
     by <- rv$mx_by %||% ""
     if (!by %in% vars) by <- ""
     sel <- sprintf(paste0(.t('<div class="mxby"><label for="mx_by">Spalten</label>'),
@@ -80,15 +80,17 @@
     maxn <- max(cnt, 1L)
     head <- paste0(.t('<tr><th>Code \\ Dokument</th>'),
                    paste0('<th>', esc2(sources$name), '</th>', collapse = ""), "<th>SUM</th></tr>")
+    # all cells at once (matrix of strings), then one string per row -- with
+    # 150 documents x 40 codes the per-cell loop took noticeable time
+    # Heatmap: opacity 0.12..0.67 -- stronger would push the number in the
+    # cell (light and dark) below the WCAG contrast of 4.5:1
+    bg <- ifelse(cnt > 0, sprintf(' style="background:rgba(44,111,187,%s)"', round(0.12 + 0.55 * cnt / maxn, 2)), "")
+    cell_m <- matrix(sprintf('<td class="mxcell" data-mxcode="%d" data-mxsrc="%d"%s>%s</td>',
+                             rep(tr$id, times = ncol(cnt)), rep(sources$id, each = nrow(cnt)), bg,
+                             ifelse(cnt > 0, cnt, "")), nrow = nrow(cnt))
+    row_cells <- apply(cell_m, 1, paste0, collapse = "")
     body_rows <- vapply(seq_len(nrow(tr)), function(i) {
-      cells <- vapply(seq_len(nrow(sources)), function(j) {
-        n <- cnt[i, j]
-        # Heatmap: opacity 0.12..0.67 -- stronger would push the number in the
-        # cell (light and dark) below the WCAG contrast of 4.5:1
-        bg <- if (n > 0) sprintf(' style="background:rgba(44,111,187,%s)"', round(0.12 + 0.55 * n / maxn, 2)) else ""
-        sprintf('<td class="mxcell" data-mxcode="%d" data-mxsrc="%d"%s>%s</td>',
-                tr$id[i], sources$id[j], bg, if (n > 0) n else "")
-      }, character(1))
+      cells <- row_cells[i]
       sub <- tr$depth[i] > 1L
       sprintf('<tr data-mxrow="%d" data-anc="%s"%s><td class="rowlab" data-selcode="%d" style="padding-left:%.1frem"><span class="swatch%s" style="--c:%s"></span> %s%s</td>%s<td><b>%d</b></td></tr>',
               tr$id[i], paste(anc_of(tr$id[i]), collapse = " "), if (sub) "" else ' class="mxtop"',
@@ -133,13 +135,21 @@
     codes <- .code_tree(codes)
     head <- paste0(.t('<tr><th>Code \\ Dokument</th>'),
                    paste0("<th>", esc2(substr(sources$name, 1, 12)), "</th>", collapse = ""), "</tr>")
+    # counts as a matrix (one lookup instead of scanning all codings per
+    # cell), cells built at once
+    cnt <- matrix(0L, nrow(codes), nrow(sources))
+    if (nrow(cod)) {
+      i <- match(cod$code_id, codes$id); j <- match(cod$source_id, sources$id)
+      ok <- !is.na(i) & !is.na(j); cnt[cbind(i[ok], j[ok])] <- cod$n[ok]
+    }
+    ci <- rep(codes$id, times = nrow(sources)); sj <- rep(sources$id, each = nrow(codes))
+    cls <- ifelse(paste(ci, sj, sep = "_") %in% has_keys, "sumcell has", "sumcell")
+    cell_m <- matrix(sprintf('<td class="%s" data-sumcode="%d" data-sumsrc="%d" title="%d Codings">%s</td>',
+                             cls, ci, sj, as.vector(cnt), ifelse(as.vector(cnt) > 0, as.vector(cnt), "")),
+                     nrow = nrow(codes))
+    row_cells <- apply(cell_m, 1, paste0, collapse = "")
     body_rows <- vapply(seq_len(nrow(codes)), function(i) {
-      cells <- vapply(seq_len(nrow(sources)), function(j) {
-        n <- if (nrow(cod)) sum(cod$n[cod$code_id == codes$id[i] & cod$source_id == sources$id[j]]) else 0L
-        cls <- if (paste(codes$id[i], sources$id[j], sep = "_") %in% has_keys) "sumcell has" else "sumcell"
-        sprintf('<td class="%s" data-sumcode="%d" data-sumsrc="%d" title="%d Codings">%s</td>',
-                cls, codes$id[i], sources$id[j], n, if (n > 0) n else "")
-      }, character(1))
+      cells <- row_cells[i]
       sprintf('<tr><td class="rowlab" data-selcode="%d" style="padding-left:%.1frem"><span class="swatch%s" style="--c:%s"></span> %s</td>%s</tr>',
               codes$id[i], 0.3 + 0.9 * (codes$depth[i] - 1L), if (codes$depth[i] > 1L) " sub" else "",
               esc2(codes$root_color[i]), esc2(codes$label[i]), paste0(cells, collapse = ""))

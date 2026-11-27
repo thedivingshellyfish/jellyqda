@@ -124,6 +124,12 @@ code).
 The report shows the table as a section of its own; paraphrases also appear
 in the margin column next to the interview.
 
+## Intercoder agreement
+
+Two people code independently, jellyqda computes Cohen's kappa and
+Krippendorff's alpha: tab **Intercoder** in the analysis window, see
+[Intercoder agreement](Intercoder-agreement.md).
+
 ## As an R script
 
 ```r

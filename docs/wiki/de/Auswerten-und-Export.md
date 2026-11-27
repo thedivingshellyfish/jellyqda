@@ -57,10 +57,35 @@ qda_export("audit")      # für den Methodenteil
 
 ### Bericht (A4, druckfertig)
 
-Button **Bericht** oben: Der Bericht öffnet sich in einem **neuen Browser-Tab**
-und wird bei jedem Klick frisch erzeugt. Als Datei speichern: **Export ▾ →
-Bericht als HTML-Datei speichern** bzw. `qda_export("report")`; die Datei lässt
-sich ohne jellyqda in jedem Browser öffnen und weitergeben.
+Button **Bericht** oben öffnet *(seit 0.9.1)* einen kleinen Dialog mit zwei
+Möglichkeiten und der Dauer für Ihr Projekt:
+
+- **Übersicht**: Codesystem, Grafiken, Codebuch, Memos, codierte
+  Textstellen, Intercoder-Übereinstimmung – ohne die Dokumente. Auch bei
+  großen Projekten in wenigen Sekunden fertig.
+- **Vollständig (A4)**: dazu alle Dokumente mit Markierungen und Randspalte.
+
+Ab 50 Dokumenten ist die Übersicht vorausgewählt. **Bericht erstellen** zeigt
+einen **Fortschrittsbalken** („Dokument 87 von 150 …“), danach öffnet sich der
+Bericht in einem **neuen Browser-Tab**, in der Sprache der Oberfläche. Bewegt
+sich eine Minute lang nichts, fragt der Dialog, ob Sie **weiter warten** oder
+**zurück** möchten (das Ergebnis wird dann verworfen; R erstellt den Bericht im
+Hintergrund zu Ende, unterbrechen lässt es sich nicht).
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="../../screenshots/de/41-bericht-dialog.png" alt="Bericht-Dialog: Übersicht oder vollständig" width="420"></td>
+<td width="50%" valign="top"><img src="../../screenshots/de/42-bericht-fortschritt.png" alt="Bericht-Dialog mit Fortschrittsbalken" width="420"></td>
+</tr>
+</table>
+
+Als Datei speichern: **Export ▾ → Bericht als HTML-Datei speichern** (ebenfalls
+mit Fortschrittsbalken) bzw. `qda_export("report")`; für die Übersicht
+`qda_export("report", report_documents = FALSE)`. Die Datei lässt sich ohne
+jellyqda in jedem Browser öffnen und weitergeben.
+
+Arbeitet die App an etwas, das länger als einen Moment dauert, erscheint
+unten im Fenster ein kleines **„Wird verarbeitet …“**.
 
 Der Bericht ist für **A4** gemacht: **Strg+P** druckt ihn oder speichert ihn als
 PDF, mit Seitenzahlen. Farben stehen nur in Linien, Rahmen und Unterstreichungen,
@@ -91,6 +116,23 @@ nie als Hintergrundfläche, deshalb muss beim Drucken die Option
 <img src="../../screenshots/de/19b-html-bericht-dokument.png" alt="HTML-Bericht: Dokument" width="1100">
 
 <img src="../../screenshots/de/24-bericht-a4-druck.png" alt="Bericht als A4-PDF" width="455">
+
+## Austausch mit anderer QDA-Software (REFI-QDA, .qdpx)
+
+*Neu in Version 0.9.0.* **Export → REFI-QDA (.qdpx)** schreibt das ganze
+Projekt in eine `.qdpx`-Datei im offenen Austauschformat der qualitativen
+Datenanalyse. **MAXQDA, ATLAS.ti, NVivo, QualCoder** und andere Programme
+können sie importieren. So können Sie woanders weiterarbeiten, mit Kolleg*innen
+mit anderer Software zusammenarbeiten oder das Projekt in einem offenen
+Format archivieren.
+
+| Enthalten | Nicht enthalten (im Format nicht vorgesehen) |
+|---|---|
+| Dokumente (Text), Codesystem mit Farben, Kodierleitfaden (in der Code-Beschreibung), Codings mit Kommentar und Mayring-Feldern, alle Memos, Dokument-Variablen | Segmente, Summary Grid, Audit-Trail |
+
+In R: `qda_export_qdpx()` oder `qda_export("qdpx")`. Die Datei landet in
+`exports/`. Der Export ist gegen das offizielle REFI-QDA-Projektschema
+(QDA-XML 1.0) geprüft.
 
 ## Kennzahlen und Tabellen in R
 

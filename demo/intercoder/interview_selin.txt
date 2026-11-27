@@ -1,0 +1,15 @@
+DEMO FILE - fictional interview for the jellyqda intercoder demo. All persons, companies and events are invented.
+Interview Selin (fictional), UX designer, 41 years
+
+[00:00:03] I: Where did you work before?
+[00:00:08] P: Ten years in an agency, then three years in the digital department of an insurance corporation.
+[00:01:20] I: How was the move to a small company?
+[00:01:25] P: Liberating. Fewer rounds of approval, shorter paths, but also less security about the salary.
+[00:02:30] I: What is important to you in your work?
+[00:02:34] P: That people cope better with our products. User tests are the best part for me.
+[00:03:40] I: What is the climate like in the team?
+[00:03:44] P: Very collegial, we help each other. New people are included quickly.
+[00:04:50] I: And the workload?
+[00:04:55] P: High at times, especially when several projects start at once. Then I sleep badly.
+[00:05:40] I: Do you have contact with users?
+[00:05:44] P: Yes, regularly, in interviews and tests. That keeps me grounded.

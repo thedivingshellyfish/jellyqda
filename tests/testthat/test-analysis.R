@@ -50,13 +50,13 @@ test_that("qda_code_merge moves codings + subcodes, merges equal labels, undo re
 test_that("qda_autocode codes matches or segments, skips duplicates, one undo step", {
   setup_analysis(); on.exit(qda_close(), add = TRUE)
   n0 <- nrow(qda_codings())
-  r <- qda_autocode("Projekt", "A", scope = "match")
+  r <- qda_autocode("project", "A", scope = "match")
   expect_true(nrow(r) >= 1)
   frozen <- DBI::dbGetQuery(qda_con(), "SELECT frozen_text FROM sources")$frozen_text
-  expect_true(all(tolower(substring(frozen, r$start, r$end)) == "projekt"))
-  expect_equal(nrow(qda_autocode("Projekt", "A", scope = "match")), 0)   # nothing new
-  seg <- qda_autocode("Projekt", "B", scope = "segment")
-  expect_true(all(seg$end - seg$start > nchar("Projekt")))
+  expect_true(all(tolower(substring(frozen, r$start, r$end)) == "project"))
+  expect_equal(nrow(qda_autocode("project", "A", scope = "match")), 0)   # nothing new
+  seg <- qda_autocode("project", "B", scope = "segment")
+  expect_true(all(seg$end - seg$start > nchar("project")))
   qda_undo(); qda_undo()
   expect_equal(nrow(qda_codings()), n0)
   expect_error(qda_autocode("  ", "A"), "empty")
@@ -81,15 +81,15 @@ test_that("qda_words, qda_kwic and qda_case_matrix", {
   setup_analysis(); on.exit(qda_close(), add = TRUE)
   w <- qda_words(n = 10)
   expect_named(w, c("word", "n", "sources"))
-  expect_false(any(w$word %in% c("und", "der", "die", "ich")))      # stop words
+  expect_false(any(w$word %in% c("the", "and", "i", "und", "der")))  # stop words (EN + DE)
   expect_true(all(diff(w$n) <= 0))
   wc <- qda_words(code = "B", n = Inf)                               # B + subcode B1
   expect_true(nrow(wc) >= 1)
-  k <- qda_kwic("Projektleiterin", width = 15)
+  k <- qda_kwic("colleague", width = 15)
   expect_true(nrow(k) >= 1)
-  expect_equal(tolower(k$match[1]), "projektleiterin")
-  expect_equal(nrow(qda_kwic("Projekt", whole_word = TRUE)), 0)      # only inside words
-  expect_true(nrow(qda_kwic("Projekt", whole_word = FALSE)) >= 1)
+  expect_equal(tolower(k$match[1]), "colleague")
+  expect_equal(nrow(qda_kwic("inform", whole_word = TRUE)), 0)       # only inside "informatics"
+  expect_true(nrow(qda_kwic("inform", whole_word = FALSE)) >= 1)
   qda_source_set_var(1, "Rolle", "PL")
   cm <- qda_case_matrix("Rolle")
   expect_true("PL" %in% names(cm))
@@ -157,7 +157,7 @@ test_that("app: coding fields, anchor, in vivo, merge, autocode, case matrix, an
     expect_equal(qda_codes()$coding_rule[qda_codes()$id == 3L], "R")
 
     # search + autocode form
-    session$setInputs(search_q = "Projekt", search_btn = 1L)
+    session$setInputs(search_q = "project", search_btn = 1L)
     expect_true(grepl("data-autocode", as_html(output$search_results), fixed = TRUE))
     n0 <- nrow(qda_codings())
     session$setInputs(autocode = list(code = 4L, scope = "match"))
@@ -171,7 +171,7 @@ test_that("app: coding fields, anchor, in vivo, merge, autocode, case matrix, an
     # analysis tables
     session$setInputs(words_n = 20, words_src = "", words_code = "")
     expect_true(grepl("data-kwicword", as_html(output$words_table), fixed = TRUE))
-    session$setInputs(kwic_q = "Projektleiterin", kwic_src = "", kwic_whole = TRUE)
+    session$setInputs(kwic_q = "colleague", kwic_src = "", kwic_whole = TRUE)
     expect_true(grepl("data-kwicsrc", as_html(output$kwic_table), fixed = TRUE))
     session$setInputs(may_code = "", may_src = "")
     expect_true(grepl("data-mayid", as_html(output$mayring_table), fixed = TRUE))

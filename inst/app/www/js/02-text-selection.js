@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 2 of 17: Text selection in the document -> character offsets
+/* jellyqda app -- browser logic, part 2 of 19: Text selection in the document -> character offsets
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

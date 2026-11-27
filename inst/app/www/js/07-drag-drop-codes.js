@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 7 of 17: Drag & drop: move codes in the code tree (new parent)
+/* jellyqda app -- browser logic, part 7 of 19: Drag & drop: move codes in the code tree (new parent)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

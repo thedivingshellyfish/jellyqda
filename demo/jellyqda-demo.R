@@ -1,4 +1,6 @@
 # jellyqda end-to-end demo (milestone 1 of the concept) -----------------------
+# DEMO: the example files (inst/extdata) are FICTIONAL interviews; all
+# persons, companies and events are invented.
 # Import -> code -> view -> segments -> stats -> export -> backup, using the
 # bundled example data. Runs completely offline. Usage:
 #   Rscript -e 'pkgload::load_all("."); source("demo/jellyqda-demo.R")'
@@ -14,7 +16,7 @@ ext <- function(f) {
 }
 workdir <- file.path(tempdir(), "jellyqda-demo")
 dir.create(workdir, recursive = TRUE, showWarnings = FALSE)
-proj <- file.path(workdir, "demoarbeit.jellyqda")
+proj <- file.path(workdir, "demo-project.jellyqda")
 if (file.exists(proj)) file.remove(proj)
 
 step <- function(...) cat("\n=== ", ..., " ===\n", sep = "")
@@ -36,20 +38,20 @@ cat("warning caught as expected:", grepl("no usable text layer", warn_msg), "\n"
 print(qda_sources())
 
 step("3. qda_code_add: deductive codebook from the interview guide")
-qda_code_add("Beruflicher Werdegang")
-qda_code_add("KMU", parent = "Beruflicher Werdegang", description = "kleines Softwareunternehmen")
-qda_code_add("Konzern", parent = "Beruflicher Werdegang")
+qda_code_add("Career path")
+qda_code_add("Small company", parent = "Career path", description = "small software company")
+qda_code_add("Corporation", parent = "Career path")
 qda_code_add("Motivation")
-qda_code_add("Teamklima")   # inductive, created during coding
+qda_code_add("Team climate")   # inductive, created during coding
 print(qda_codes())
 
 step("4. qda_code: assign codes to segments (by segment number or offsets)")
-qda_code(source = 1, segment = 2, code = "KMU", memo = "5 Jahre im KMU, vorher 2 Jahre Konzern")
-qda_code(source = 1, segment = 3, code = "Beruflicher Werdegang")
-qda_code(source = 1, segment = 4, code = "Motivation")
-qda_code(source = 2, segment = 3, code = "Teamklima", memo = "Vertrauen ist zentral")
-qda_code(source = 3, segment = 2, code = "Motivation")
-qda_code(source = 4, start = 1, end = 60, code = "Beruflicher Werdegang")  # by char offsets
+qda_code(source = 1, segment = 3, code = "Small company", memo = "5 years in a small company, 2 years in a corporation before")
+qda_code(source = 1, segment = 5, code = "Career path")
+qda_code(source = 1, segment = 7, code = "Motivation")
+qda_code(source = 2, segment = 6, code = "Team climate", memo = "trust is central")
+qda_code(source = 3, segment = 3, code = "Motivation")
+qda_code(source = 4, start = 1, end = 60, code = "Career path")  # by char offsets
 print(qda_codings())
 
 step("5. qda_segments: all passages per code (Retrieved Segments)")

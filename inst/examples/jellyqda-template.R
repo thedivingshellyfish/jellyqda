@@ -121,6 +121,16 @@ qda_events()         # complete audit trail as a table (every action + time stam
 # qda_app(lang = "en")    # English user interface
 # qda_app(lang = "de")    # German user interface
 
+# --- 5c. Optional: intercoder agreement (a second person codes) -----------------------
+# 1. Blind copy for the second person: same documents, segments and codes,
+#    but none of your codings. Hand it over (USB stick, encrypted mail ...).
+# qda_intercoder_copy("coder_b.jellyqda")
+# 2. The second person opens it with qda_open("coder_b.jellyqda") and codes.
+# 3. Compare (the other file is only read): kappa, alpha, agreement per code
+# qda_intercoder("coder_b.jellyqda")
+# qda_intercoder_diff("coder_b.jellyqda")   # disagreements -> consensus talk
+# In the app: Analysis -> tab "Intercoder".
+
 # --- 6. End the session ----------------------------------------------------------------
 qda_close()
 

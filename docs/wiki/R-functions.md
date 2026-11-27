@@ -74,6 +74,15 @@ analyses. All functions return **tibbles**. Detailed help for every function:
 | `qda_case_matrix(by)` | case comparison: codes × values of a variable |
 | `qda_words(source, code, n)` | word frequencies |
 | `qda_kwic(pattern, width)` | keyword in context |
+| `qda_cooccurrence(unit, level)` | code co-occurrence: pairs of codes that occur together |
+| `qda_cooccurrence_passages(code_a, code_b)` | the passages where two codes occur together |
+| `qda_portrait(source, level)` | document portrait: which codes in which segment |
+| `qda_plot_cooccurrence()` / `qda_plot_network()` / `qda_plot_portrait()` | the graphics as SVG (Viewer or `file =`) |
+| `qda_export_qdpx(path)` | REFI-QDA project file for MAXQDA, ATLAS.ti, NVivo, QualCoder |
+| `qda_intercoder_copy(path)` | blind copy of the project for a second coder (no codings) |
+| `qda_intercoder(other, unit, level)` | intercoder agreement: percent, Cohen's kappa, Brennan & Prediger, Krippendorff's alpha |
+| `qda_intercoder_diff(other)` | units on which the two coders disagree |
+| `qda_intercoder_adopt(other, source, start, end, code)` | consensus: take over the other coder's coding |
 | `qda_summary_set()` / `qda_summaries()` | summary grid |
 | `qda_export(what, path)` | `"segments"`, `"codings"`, `"codebook"`, `"audit"`, `"report"`, `"all"` |
 | `qda_backup(path, keep = 10)` | ZIP backup |

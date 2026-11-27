@@ -66,4 +66,4 @@ restore point.
 - Made a mistake? **Ctrl+Z**, see [Undo](Undo-and-data-safety.md)
 
 > 💡 **To practise:** `qda_import(system.file("extdata", "interview_01.txt", package = "jellyqda"))`
-> or the fictional transcripts in the `demo/` folder of the repository.
+> or the fictional demo transcripts in the `demo/` folder of the repository (all invented, see `demo/README.md`).

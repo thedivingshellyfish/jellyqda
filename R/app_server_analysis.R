@@ -15,8 +15,9 @@
   bump <- shared$bump; esc <- shared$esc
 
   # Analysis window ---------------------------------------------------------------
-  # Three tabs: word frequencies (qda_words), keyword in context (qda_kwic),
-  # summary after Mayring (paraphrase/generalisation per coding).
+  # Four tabs: word frequencies (qda_words), keyword in context (qda_kwic),
+  # summary after Mayring (paraphrase/generalisation per coding) and
+  # intercoder agreement (R/app_server_intercoder.R).
   an_choices <- function() {
     src <- qda_sources(); tr <- .code_tree(qda_codes())
     list(docs = c(stats::setNames("", .t("(alle Dokumente)")), stats::setNames(as.character(src$id), src$name)),
@@ -30,7 +31,7 @@
     shiny::showModal(shiny::modalDialog(
       title = .t("Analyse"), size = "xl", easyClose = TRUE,
       footer = shiny::modalButton(.t("Schlie\u00dfen")),
-      shiny::tabsetPanel(id = "analysis_tab", type = "tabs",
+      shiny::tabsetPanel(id = "analysis_tab", type = "tabs", selected = rv$an_tab %||% "words",
         shiny::tabPanel(.t("Worth\u00e4ufigkeiten"), value = "words",
           shiny::div(class = "anfilters",
             sel("words_src", .t("Dokument"), ch$docs),
@@ -52,8 +53,11 @@
           shiny::p(class = "jq-sub", shiny::strong(.t("Paraphrase")), .t(" = Inhalt kurz in eigenen Worten \u00b7 "),
                    shiny::strong(.t("Generalisierung")), .t(" = auf das Abstraktionsniveau der Analyse gehoben \u00b7 "),
                    shiny::strong(.t("Reduktion")), .t(" = der Code. Gespeichert wird beim Verlassen eines Feldes.")),
-          shiny::uiOutput("mayring_table")))))
+          shiny::uiOutput("mayring_table")),
+        .ic_tab_ui())))   # intercoder agreement (R/app_server_intercoder.R)
   })
+  # reopening the window shows the tab used last (e.g. after "show" in a list)
+  shiny::observeEvent(input$analysis_tab, rv$an_tab <- input$analysis_tab)
   output$words_table <- shiny::renderUI({
     rv$tick
     n <- suppressWarnings(as.integer(input$words_n %||% 40)); if (is.na(n)) n <- 40L
@@ -150,7 +154,7 @@
         shiny::tags$li(shiny::strong(.t("Buch / Pfeil am Code")), .t(" - Kodierleitfaden (Definition, Ankerbeispiel, Kodierregel) / mit anderem Code zusammenf\u00fchren")),
         shiny::tags$li(shiny::strong(.t("Suche")), .t(" - \u201eAlle Treffer codieren\u201c codiert jede Fundstelle (oder ihr Segment) in einem Schritt")),
         shiny::tags$li(shiny::strong(.t("Code-Matrix: Spalten")), .t(" - Fallvergleich nach einer Dokument-Variable")),
-        shiny::tags$li(shiny::strong(.t("Analyse")), .t(" - Worth\u00e4ufigkeiten, Stichwort im Kontext, Zusammenfassung nach Mayring")),
+        shiny::tags$li(shiny::strong(.t("Analyse")), .t(" - Worth\u00e4ufigkeiten, Stichwort im Kontext, Zusammenfassung nach Mayring, Intercoder-\u00dcbereinstimmung (Kappa)")),
         shiny::tags$li(shiny::strong(.t("Strg+S")), .t(" - Speichern + Sicherungspunkt (gespeichert wird ohnehin jede Aktion sofort)")),
         shiny::tags$li(shiny::strong(.t("Bericht")), .t(" - \u00f6ffnet den Bericht in einem neuen Tab, druckbar auf A4 (Strg+P)")),
         shiny::tags$li(shiny::strong(.t("Strg+M")), .t(" - Textstellen-Memo zur Markierung (mit Text im Memo-Feld: sofort, sonst Formular im Memo-Panel)")),
@@ -176,12 +180,24 @@
     ex <- qda_export("codebook")
     bump(); shiny::showNotification(paste(.t("Codebuch exportiert:"), paste(basename(ex$file), collapse = ", ")), type = "message")
   })
+  shiny::observeEvent(input$export_qdpx_btn, {   # R/export_qdpx.R
+    f <- tryCatch(qda_export_qdpx(), error = function(e) { shiny::showNotification(conditionMessage(e), type = "error"); NULL })
+    if (!is.null(f)) { bump(); shiny::showNotification(paste(.t("REFI-QDA-Datei gespeichert:"), basename(f)), type = "message") }
+  })
+  # exports that contain the report show its progress (R/export.R)
+  with_report_progress <- function(expr) {
+    shiny::withProgress(message = .t("Bericht wird erstellt"), value = 0, {
+      .jellyqda_env$progress <- function(v, d) shiny::setProgress(value = v, detail = d)
+      on.exit(.jellyqda_env$progress <- NULL, add = TRUE)
+      expr
+    })
+  }
   shiny::observeEvent(input$export_report_btn, {
-    ex <- qda_export("report")
+    ex <- with_report_progress(qda_export("report"))
     bump(); shiny::showNotification(paste(.t("Bericht gespeichert:"), basename(ex$file)), type = "message")
   })
   shiny::observeEvent(input$export_btn, {
-    ex <- qda_export("all")
+    ex <- with_report_progress(qda_export("all"))
     bump(); shiny::showNotification(paste(.t("Exportiert:"), nrow(ex), .t("Dateien nach exports/")), type = "message")
   })
 }

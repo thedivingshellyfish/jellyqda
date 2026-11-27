@@ -16,7 +16,7 @@ qda_words(source = NULL, code = NULL, n = 50, min_chars = 3, stopwords = TRUE)
 
 \item{min_chars}{Minimum word length.}
 
-\item{stopwords}{\code{TRUE} (built-in German list), \code{FALSE}, or a character
+\item{stopwords}{\code{TRUE} (built-in German and English lists), \code{FALSE}, or a character
 vector of further words to leave out (added to the built-in list).}
 }
 \value{

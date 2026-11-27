@@ -1,50 +1,74 @@
 # Generates the example data in inst/extdata/ --------------------------------
-# Two short fake interview transcripts (txt UTF-8, md, docx, latin1 txt),
-# one valid PDF with a text layer and one "broken" scanned PDF without one.
-# Run once; outputs are committed so tests/demo work offline.
+#
+# DEMO FILES: every interview, person, company and event in these files is
+# FICTIONAL, invented for jellyqda's examples, tests and vignette. Any
+# resemblance to real persons or organisations is coincidental.
+#
+# Files (all in English, so the examples work internationally):
+#   interview_01.txt      career path of a project lead (UTF-8 text)
+#   interview_02.md       team collaboration and trust (Markdown)
+#   interview_03.docx     a typical working day (Word)
+#   interview_latin1.txt  further training; Latin-1 encoded ON PURPOSE
+#                         (tests the encoding detection: "J\u00fcrgen", "caf\u00e9")
+#   fieldnotes.pdf        field notes with a text layer (PDF)
+#   broken_scan.pdf       a "scanned" page WITHOUT text layer (import warning)
+#
+# Every file starts with a line that marks it as a fictional demo file.
+# Run once from the package root:  Rscript data-raw/make_extdata.R
+# The outputs are committed, so tests, examples and the vignette work offline.
+# See also data-raw/make_demo_transcripts.R (longer transcripts in demo/).
 
 suppressMessages({library(officer)})
 
 dir.create("inst/extdata", recursive = TRUE, showWarnings = FALSE)
+DEMO_NOTE <- "DEMO FILE - fictional interview written for jellyqda. All persons, companies and events are invented."
 
-# --- 1. fake interview as UTF-8 txt ----------------------------------------
-txt1 <- "Interviewerin: Guten Tag, danke, dass Sie sich Zeit nehmen. Koennen Sie sich kurz vorstellen?
+# --- 1. interview as UTF-8 txt: career path ------------------------------------
+txt1 <- paste(DEMO_NOTE, "
 
-Befragte: Ja, gerne. Ich bin 34 Jahre alt und arbeite seit fuenf Jahren als Projektleiterin in einem kleinen Softwareunternehmen.
+Interviewer: Good morning, and thank you for taking the time. Could you briefly introduce yourself?
 
-Interviewerin: Wie sind Sie zu diesem Beruf gekommen?
+Respondent: Sure. I am 34 years old and I have been working as a project lead in a small software company for five years.
 
-Befragte: Nach dem Studium der Wirtschaftsinformatik habe ich zuerst zwei Jahre in einem Konzern gearbeitet, aber das war mir zu anonym. Im KMU kann ich wirklich etwas bewegen.
+Interviewer: How did you get into this job?
 
-Interviewerin: Was motiviert Sie bei der Arbeit?
+Respondent: After studying business informatics I first worked for two years in a large corporation, but it felt too anonymous. In a small company I can really make a difference. A colleague from university told me about the opening.
 
-Befragte: Vor allem die direkte Zusammenarbeit mit den Kunden. Und dass wir agile Methoden ernst nehmen, nicht nur auf dem Papier."
+Interviewer: What motivates you at work?
+
+Respondent: Above all the direct contact with our customers. And that we take agile methods seriously, not just on paper. My family sometimes jokes that I talk more about the project than about our holidays.", sep = "")
 writeLines(txt1, "inst/extdata/interview_01.txt", useBytes = TRUE)
 
-# --- 2. fake interview as markdown ------------------------------------------
-md2 <- "# Interview 02 -- Feldnotizen-Session
+# --- 2. interview as markdown: team and trust ------------------------------------
+md2 <- "# Interview 02 -- team session (DEMO FILE, fictional)
 
-**Interviewerin:** Wie erleben Sie die Zusammenarbeit im Team?
+> Demo file written for jellyqda. All persons and events are invented.
 
-**Befragte:** Ehrlich gesagt ziemlich gut. Die regelmaessigen Retrospektiven helfen uns, Probleme frueh zu sehen.
+**Interviewer:** How do you experience the collaboration in your team?
 
-## Abschnitt: Vertrauen
+**Respondent:** Honestly, quite good. Our regular retrospectives help us to spot problems early, and a colleague usually brings coffee.
 
-**Befragte:** Vertrauen ist fuer mich zentral. Wenn ich Fehler machen kann, ohne Angst zu haben, dann lerne ich am meisten.
+## Section: trust
 
-**Interviewerin:** Vielen Dank fuer das Gespraech!"
+**Respondent:** Trust is central for me. If I can make mistakes without being afraid, that is when I learn the most.
+
+**Interviewer:** Thank you very much for the conversation!"
 writeLines(md2, "inst/extdata/interview_02.md", useBytes = TRUE)
 
-# --- 3. fake interview as docx ----------------------------------------------
+# --- 3. interview as docx: a typical working day -------------------------------
 doc <- read_docx()
-doc <- body_add_par(doc, "Interviewerin: Erzählen Sie von Ihrem typischen Arbeitstag.", style = "heading 2")
-doc <- body_add_par(doc, "Befragte: Ich starte mit einer kurzen Abstimmung im Team, dann arbeite ich zwei bis drei Stunden fokussiert an einem Thema.")
-doc <- body_add_par(doc, "Interviewerin: Was wuerden Sie als groesste Herausforderung nennen?", style = "heading 2")
-doc <- body_add_par(doc, "Befragte: Die vielen Meetings. Manchmal habe ich das Gefuehl, die eigentliche Arbeit passiert abends.")
+doc <- body_add_par(doc, "DEMO FILE - fictional interview written for jellyqda. All persons and events are invented.")
+doc <- body_add_par(doc, "Interviewer: Tell me about a typical working day.", style = "heading 2")
+doc <- body_add_par(doc, "Respondent: I start with a short stand-up with the team, then I work for two or three hours on one topic without interruptions.")
+doc <- body_add_par(doc, "Interviewer: What would you call your biggest challenge?", style = "heading 2")
+doc <- body_add_par(doc, "Respondent: All the meetings. Sometimes I feel the real work only happens in the evening, when the project chat is finally quiet.")
 print(doc, target = "inst/extdata/interview_03.docx")
 
-# --- 4. latin1-encoded txt (encoding detection test) -------------------------
-lat <- "Interviewerin: Wie wichtig ist Weiterbildung fuer Sie?\n\nBefragte: Sehr wichtig. Ich habe letztes Jahr eine Weiterbildung zum Thema Datenschutz gemacht -- Jürgen, mein Kollege, hat sie organisiert."
+# --- 4. Latin-1 encoded txt (encoding detection test) --------------------------
+lat <- paste0("DEMO FILE - fictional interview (Latin-1 encoded on purpose). All persons are invented.\n\n",
+              "Interviewer: How important is further training for you?\n\n",
+              "Respondent: Very important. Last year I took a course on data protection -- J\u00fcrgen, ",
+              "my colleague from the caf\u00e9 team, organised it.")
 lat_latin1 <- iconv(lat, from = "UTF-8", to = "ISO-8859-1")
 writeBin(charToRaw(lat_latin1), "inst/extdata/interview_latin1.txt")
 
@@ -78,11 +102,12 @@ make_pdf <- function(path, text_lines = NULL) {
 }
 
 make_pdf("inst/extdata/fieldnotes.pdf",
-         c("Field notes 2027-01-12",
+         c("DEMO FILE - fictional field notes. All persons and events are invented.",
+           "Field notes 2027-01-12",
            "Observation at the weekly team meeting:",
            "- short check-in round, everyone reports progress",
            "- blocker discussed: waiting on customer feedback",
-           "- decision: retry request tomorrow"))
+           "- decision: retry the request tomorrow"))
 make_pdf("inst/extdata/broken_scan.pdf", NULL)  # scanned page, no text layer
 
 cat("extdata files:\n")

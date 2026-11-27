@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 16 of 17: Analysis tools (since 0.6.0)
+/* jellyqda app -- browser logic, part 16 of 19: Analysis tools (since 0.6.0)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 
@@ -108,4 +108,21 @@ $(document).on('change', 'textarea[data-mayid]', function() {
     field: ta.getAttribute('data-mayfield'), value: ta.value, t: Date.now()}, {priority: 'event'});
   ta.classList.add('saved');
   setTimeout(function() { ta.classList.remove('saved'); }, 1200);
+});
+
+// --- 16h. Intercoder agreement (since 0.8.0) ------------------------------------
+// "Zeigen": jump to the unit in the document browser (same as keyword in context)
+$(document).on('click', '[data-icgoto]', function(e) {
+  e.preventDefault();
+  Shiny.setInputValue('kwic_goto', {src: parseInt(this.getAttribute('data-src'), 10),
+    pos: parseInt(this.getAttribute('data-pos'), 10), t: Date.now()}, {priority: 'event'});
+});
+// "Übernehmen": copy coder B's coding of this unit into the active project
+$(document).on('click', '[data-icadopt]', function(e) {
+  e.preventDefault();
+  var b = this;
+  b.disabled = true;
+  Shiny.setInputValue('ic_adopt', {src: parseInt(b.getAttribute('data-src'), 10),
+    start: parseInt(b.getAttribute('data-start'), 10), end: parseInt(b.getAttribute('data-end'), 10),
+    code: b.getAttribute('data-code'), t: Date.now()}, {priority: 'event'});
 });

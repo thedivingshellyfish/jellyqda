@@ -12,5 +12,5 @@ test_that("qda_view renders numbered segments and colored codings as HTML", {
   expect_true(grepl("#FF0000", html, fixed = TRUE))
   expect_true(grepl("interview_01.txt", html, fixed = TRUE))
   # HTML-escaping: no raw unescaped umlaut issues, text is present
-  expect_true(grepl("Projektleiterin", html, fixed = TRUE))
+  expect_true(grepl("project lead", html, fixed = TRUE))
 })

@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 13 of 17: Memo panel
+/* jellyqda app -- browser logic, part 13 of 19: Memo panel
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

@@ -91,9 +91,50 @@ qda_codings()[1, c("code", "paraphrase", "generalization")]
 qda_stats()$overall[, c("n_sources", "n_codes", "n_codings", "pct_coded")]
 qda_matrix()
 qda_words(n = 5)
-qda_kwic("Projektleiterin", width = 25)[, c("source", "left", "match", "right")]
+qda_kwic("colleague", width = 25)[, c("source", "left", "match", "right")]
 qda_source_set_var(1, "role", "project lead")
 qda_case_matrix("role")
+```
+
+## Intercoder agreement
+
+A second person codes a **blind copy** of the project (same documents,
+segments and code system, no codings); jellyqda then compares both files per
+code: percent agreement, Cohen's kappa, Brennan & Prediger's kappa and
+Krippendorff's alpha. The other file is only read.
+
+```{r}
+coder_b <- qda_intercoder_copy(file.path(dirname(project), "coder_b.jellyqda"))
+qda_close()
+qda_open(coder_b)                                  # the second person codes
+qda_code(1, "SME", segment = 2)
+qda_close()
+qda_open(project)                                  # back to the first person
+ic <- qda_intercoder(coder_b)
+ic[, c("code", "both", "only_a", "only_b", "agreement", "kappa", "alpha")]
+qda_intercoder_diff(coder_b)[, c("segment", "code", "coded_by")]
+```
+
+## Graphics
+
+Code co-occurrence (which codes occur in the same segment), a code network
+and document portraits -- as tables and as SVG graphics (printing one shows it
+in the RStudio Viewer; `file =` saves it).
+
+```{r}
+qda_code(1, "Motivation", segment = 2)   # together with "SME"
+qda_cooccurrence()
+svg <- qda_plot_network()
+head(qda_portrait()[, c("segment", "code")])
+```
+
+## Exchange with other QDA software
+
+`qda_export_qdpx()` writes the project in the REFI-QDA exchange format, which
+MAXQDA, ATLAS.ti, NVivo and QualCoder import.
+
+```{r}
+basename(qda_export_qdpx(tempfile(fileext = ".qdpx")))
 ```
 
 ## Export, report and backup

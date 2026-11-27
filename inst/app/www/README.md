@@ -31,7 +31,9 @@ changing CSS or JS: reinstall the package (`devtools::install()`) or run
 | `css/06-tables.css` | Tables: code matrix (.mxcell) and summary grid (.sumcell) |
 | `css/07-dark-mode.css` | Dark mode |
 | `css/08-code-tree.css` | Code tree with subcodes, coding bar, save / report / export |
-| `css/09-analysis-tools.css` | Analysis tools (since 0.6.0): coding fields, auto-coding, case comparison |
+| `css/09-analysis-tools.css` | Analysis tools (since 0.6.0): coding fields, auto-coding, case comparison; intercoder tab (0.8.0) |
+| `css/10-visuals.css` | Graphics window (since 0.9.0) |
+| `css/11-report.css` | Report dialog, progress bar, busy hint (since 0.9.1) |
 
 Notes:
 
@@ -60,8 +62,10 @@ Notes:
 | `js/13-memo-panel.js` | Memo panel |
 | `js/14-icons.js` | Icons |
 | `js/15-code-tree.js` | Code tree (codes + subcodes) and coding bar |
-| `js/16-analysis-tools.js` | Analysis tools (since 0.6.0) |
+| `js/16-analysis-tools.js` | Analysis tools (since 0.6.0); intercoder "show" / "take over" (0.8.0) |
 | `js/17-language.js` | Language (EN/DE) |
+| `js/18-visuals.js` | Graphics window (since 0.9.0): clicks on heatmap, network, portraits |
+| `js/19-report.js` | Report dialog: progress bar, stall hint; busy hint (since 0.9.1) |
 
 Principle: the browser does almost nothing by itself. Every action is sent
 to the server with

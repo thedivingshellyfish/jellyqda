@@ -1,0 +1,11 @@
+/* jellyqda app -- stylesheet, part 10 of 11: Graphics window (since 0.9.0)
+   All css/*.css files are joined in name order into one
+   <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md
+   The colours inside the graphics come with the SVG itself (.viz_css() in
+   R/plot_svg.R, light + dark mode). */
+
+.vizbox { overflow-x:auto; padding:.4rem 0 .6rem; }
+.vizbox svg { display:block; max-width:none; }
+.vizbox .jqv [data-a], .vizbox .jqv [data-jump] { cursor:pointer; }
+.vizpairs { max-height:22rem; overflow-y:auto; border-top:1px solid #e3e8ee; }
+[data-bs-theme="dark"] .vizpairs { border-color:var(--jq-border); }

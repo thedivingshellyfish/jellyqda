@@ -12,7 +12,7 @@ test_that("all four import formats work and freeze text", {
   # frozen text is stored, not re-extracted, as valid UTF-8 bytes
   con <- qda_con()
   frozen <- DBI::dbGetQuery(con, "SELECT frozen_text FROM sources WHERE name = 'interview_01.txt'")$frozen_text
-  expect_true(grepl("Projektleiterin", frozen, fixed = TRUE))
+  expect_true(grepl("project lead", frozen, fixed = TRUE))
   expect_true(stringi::stri_enc_isutf8(charToRaw(frozen)))
   expected <- paste(readLines(ext("interview_01.txt"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
   expect_equal(frozen, expected)
@@ -44,7 +44,8 @@ test_that("latin1 txt is detected and converted to UTF-8", {
   on.exit(qda_close(), add = TRUE)
   qda_import(ext("interview_latin1.txt"))
   frozen <- DBI::dbGetQuery(qda_con(), "SELECT frozen_text FROM sources")$frozen_text
-  expect_true(grepl("Jürgen", frozen, fixed = TRUE))   # umlaut decoded correctly
+  expect_true(grepl("J\u00fcrgen", frozen, fixed = TRUE))   # umlaut decoded correctly
+  expect_true(grepl("caf\u00e9", frozen, fixed = TRUE))
   expect_true(stringi::stri_enc_isutf8(charToRaw(frozen)))
 })
 

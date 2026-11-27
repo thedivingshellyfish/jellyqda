@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 1 of 17: Helper functions
+/* jellyqda app -- browser logic, part 1 of 19: Helper functions
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

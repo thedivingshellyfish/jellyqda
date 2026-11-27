@@ -115,18 +115,17 @@ qda_memos <- function(kind = NULL, source = NULL, code = NULL) {
   con <- qda_con()
   df <- DBI::dbGetQuery(con, "
     SELECT m.id, m.kind, m.title, m.text_, m.source_id, s.name AS source,
-           m.code_id, k.label AS code, m.start, m.end, s.frozen_text,
+           m.code_id, k.label AS code, m.start, m.end,
            m.created_at, IFNULL(m.updated_at, m.created_at) AS updated_at
     FROM memos m
     LEFT JOIN sources s ON s.id = m.source_id
     LEFT JOIN codes k ON k.id = m.code_id
     ORDER BY m.id")
-  df$frozen_text <- .utf8(df$frozen_text)
   if (!is.null(kind)) df <- df[df$kind %in% kind, , drop = FALSE]
   if (!is.null(source)) df <- df[!is.na(df$source_id) & df$source_id == .resolve_source(source)$id, , drop = FALSE]
   if (!is.null(code)) df <- df[!is.na(df$code_id) & df$code_id == .resolve_code(code)$id, , drop = FALSE]
-  passage <- ifelse(df$kind == "passage" & !is.na(df$start),
-                    substring(df$frozen_text, df$start, df$end), NA_character_)
+  is_p <- df$kind == "passage" & !is.na(df$start)
+  passage <- .passages(ifelse(is_p, df$source_id, NA), df$start, df$end)
   tibble::tibble(
     id = df$id, kind = df$kind, title = df$title, text_ = df$text_,
     source_id = df$source_id, source = df$source, code_id = df$code_id, code = df$code,

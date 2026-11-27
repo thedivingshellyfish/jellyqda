@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 12 of 17: Overlapping codings: popover
+/* jellyqda app -- browser logic, part 12 of 19: Overlapping codings: popover
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

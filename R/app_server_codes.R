@@ -182,7 +182,8 @@
       shiny::span(sprintf(.t("Retrieved Segments: %s%s (%d)"), lab, if (length(ids) > 1) .t(" + Subcodes") else "",
                           sum(qda_codings()$code_id %in% ids)))
     } else {
-      shiny::span(sprintf(.t("All Codings (%d)"), nrow(qda_codings())))
+      shiny::span(sprintf(.t("All Codings (%d)"),
+                          DBI::dbGetQuery(qda_con(), "SELECT COUNT(*) AS n FROM codings")$n))
     }
   })
   output$seg_panel <- shiny::renderUI({
@@ -196,24 +197,24 @@
     # optional filter: only documents having a certain variable value
     if (!is.null(rv$var_filter) && nzchar(rv$var_filter)) {
       kv <- strsplit(rv$var_filter, "=", fixed = TRUE)[[1]]
-      keep <- vapply(qda_sources()$id, function(sid) {
-        v <- qda_source_vars(sid)
-        !is.null(v[[kv[1]]]) && v[[kv[1]]] == kv[2]
-      }, logical(1))
-      df <- df[df$source_id %in% qda_sources()$id[keep], , drop = FALSE]
+      av <- .all_source_vars()
+      keep <- vapply(av, function(v) !is.na(v[kv[1]]) && v[[kv[1]]] == kv[2], logical(1))
+      df <- df[df$source_id %in% as.integer(names(av))[keep], , drop = FALSE]
     }
     if (nrow(df) == 0) return(shiny::tags$div(class = "jq-hint", .t("Noch keine Codings.")))
-    rows <- vapply(seq_len(nrow(df)), function(i) {
-      snippet <- if (nchar(df$text[i]) > 80) paste0(substr(df$text[i], 1, 80), "...") else df$text[i]
-      sprintf(.t('<div class="segrow" data-goto="%d" title="Im Dokument-Browser zeigen">
+    # large projects: show the first rows only (thousands of rows made the
+    # page slow, see dev/stress-test-results.md); filtering narrows the list
+    total <- nrow(df); max_rows <- 300L
+    df <- utils::head(df, max_rows)
+    snippet <- ifelse(nchar(df$text) > 80, paste0(substr(df$text, 1, 80), "..."), df$text)
+    memo <- ifelse(nzchar(df$memo), sprintf(.t('<span class="memo">Memo: %s</span>'), esc(df$memo)), "")
+    rows <- sprintf(.t('<div class="segrow" data-goto="%d" title="Im Dokument-Browser zeigen">
                <span class="snippet">#%d <b>%s</b> &rarr; <b>%s</b> (%d-%d) %s%s</span>
                <button class="mini" data-delcoding="%d" title="Coding l\u00f6schen (Strg+Z macht es r\u00fcckg\u00e4ngig)"><i class="fa-solid fa-trash"></i> L\u00f6schen</button></div>'),
-              df$id[i], df$id[i], esc(df$source[i]), esc(df$code[i]), df$start[i], df$end[i],
-              esc(snippet),
-              if (nzchar(df$memo[i])) sprintf(.t('<span class="memo">Memo: %s</span>'), esc(df$memo[i])) else "",
-              df$id[i])
-    }, character(1))
-    shiny::HTML(paste(rows, collapse = ""))
+              df$id, df$id, esc(df$source), esc(df$code), df$start, df$end, esc(snippet), memo, df$id)
+    more <- if (total > max_rows) sprintf(.t('<div class="jq-hint">Gezeigt: die ersten %d von %d Codings. Einen Code im Codebaum anklicken oder nach einer Variable filtern, um die Liste einzugrenzen.</div>'),
+                                          max_rows, total) else ""
+    shiny::HTML(paste0(paste(rows, collapse = ""), more))
   })
 }
 

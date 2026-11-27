@@ -11,6 +11,8 @@
 - [Segments](Segments.md)
 - [Memos](Memos.md)
 - [Analysis](Analysis.md)
+- [Intercoder agreement](Intercoder-agreement.md)
+- [Graphics](Graphics.md)
 - [Evaluation & export](Evaluation-and-export.md)
 - [Undo & data safety](Undo-and-data-safety.md)
 

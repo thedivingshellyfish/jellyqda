@@ -34,12 +34,13 @@ written to the \code{events} audit trail. See \code{vignette("jellyqda")} for de
 Useful links:
 \itemize{
   \item \url{https://github.com/thedivingshellyfish/jellyqda}
+  \item \url{https://thedivingshellyfish.github.io/jellyqda/dev}
   \item Report bugs at \url{https://github.com/thedivingshellyfish/jellyqda/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Shelly \email{shelly@systemli.org}
+\strong{Maintainer}: Shelly \email{jellyqda@systemli.org}
 
 }
 \keyword{internal}

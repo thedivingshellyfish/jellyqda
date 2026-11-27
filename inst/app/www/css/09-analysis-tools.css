@@ -1,4 +1,4 @@
-/* jellyqda app -- stylesheet, part 9 of 9: Analysis tools (since 0.6.0): coding fields, auto-coding, case
+/* jellyqda app -- stylesheet, part 9 of 11: Analysis tools (since 0.6.0): coding fields, auto-coding, case
    All css/*.css files are joined in name order into one
    <style> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 
@@ -80,3 +80,42 @@ td.mxcell.nolink { cursor:default; }
 .symbolbar .langbtn { font:700 .68rem/1 system-ui, sans-serif; text-decoration:none; color:#2c6fbb;
                       display:inline-flex; align-items:center; justify-content:center; min-width:1.9rem; }
 [data-bs-theme="dark"] .symbolbar .langbtn { color:var(--jq-blue); }
+
+/* Intercoder agreement (analysis window, since 0.8.0) */
+.icsteps { display:grid; grid-template-columns:repeat(auto-fit, minmax(15rem, 1fr)); gap:.6rem; margin:.7rem 0 .2rem; }
+.icstep { display:flex; gap:.55rem; align-items:flex-start; border:1px solid #d6dee7; border-radius:.5rem; padding:.55rem .65rem; font-size:.8rem; }
+.icstep p { margin:.15rem 0 .4rem; }
+.icstep .form-group { margin-bottom:0; }
+.icstep .progress { margin-bottom:0; }
+.icnum { flex:none; width:1.5rem; height:1.5rem; border-radius:50%; background:#2c6fbb; color:#fff; font-weight:700;
+         display:inline-flex; align-items:center; justify-content:center; font-size:.78rem; }
+.iccards { display:flex; flex-wrap:wrap; gap:.55rem; margin:.5rem 0 .8rem; }
+.iccard { flex:1 1 9rem; border:1px solid #d6dee7; border-left-width:4px; border-radius:.5rem; padding:.45rem .6rem; display:flex; flex-direction:column; }
+.iccard b { font-size:1.35rem; font-variant-numeric:tabular-nums; line-height:1.15; }
+.iccard span { font-size:.74rem; font-weight:600; color:#3a4652; }
+.iccard small { font-size:.7rem; color:#56616d; }
+.iccard.ic-hi, td.ic-hi { border-left-color:#1f7a4d; } .iccard.ic-hi b, td.ic-hi b { color:#1f7a4d; }
+.iccard.ic-mid, td.ic-mid { border-left-color:#b26a00; } .iccard.ic-mid b, td.ic-mid b { color:#9a5b00; }
+.iccard.ic-lo, td.ic-lo { border-left-color:#b3261e; } .iccard.ic-lo b, td.ic-lo b { color:#b3261e; }
+.antable.ictable td.icbarcell { width:18%; }
+.icbar { display:block; height:.55rem; border-radius:.2rem; margin-top:.35rem; background:#999; }
+.icbar.ic-hi { background:#1f7a4d; } .icbar.ic-mid { background:#d08a1e; } .icbar.ic-lo { background:#c5443b; }
+.icwarn { font-size:.76rem; color:#8a5300; background:#fff6e0; border:1px solid #f0d9a0; border-radius:.45rem; padding:.35rem .5rem .35rem 1.4rem; margin:.3rem 0 .5rem; }
+.ic-error { color:#b3261e; }
+h6.ich { margin:1rem 0 .2rem; font-weight:700; }
+.antable.icdiff td.kref { font-size:.72rem; width:10rem; color:#56616d; }
+.antable.icdiff td.mtext { font-family:Georgia, serif; }
+.antable.icdiff td.icbtns { white-space:nowrap; width:1%; }
+.antable.icdiff .btn { padding:.1rem .5rem; font-size:.74rem; }
+.icwho { display:inline-block; font-size:.7rem; font-weight:700; border-radius:1rem; padding:.05rem .5rem; white-space:nowrap; }
+.icwho.a { background:#e6f0fa; color:#1d4f86; } .icwho.b { background:#f6e8f3; color:#7a2e68; }
+
+[data-bs-theme="dark"] .icstep, [data-bs-theme="dark"] .iccard { border-color:var(--jq-border); }
+[data-bs-theme="dark"] .iccard span { color:var(--jq-text); }
+[data-bs-theme="dark"] .iccard small, [data-bs-theme="dark"] .antable.icdiff td.kref { color:var(--jq-muted); }
+[data-bs-theme="dark"] .iccard.ic-hi b, [data-bs-theme="dark"] td.ic-hi b { color:#6fd19c; }
+[data-bs-theme="dark"] .iccard.ic-mid b, [data-bs-theme="dark"] td.ic-mid b { color:#f0b35a; }
+[data-bs-theme="dark"] .iccard.ic-lo b, [data-bs-theme="dark"] td.ic-lo b { color:#ff8a80; }
+[data-bs-theme="dark"] .icwarn { background:var(--jq-amberbg); border-color:var(--jq-border); color:var(--jq-gold); }
+[data-bs-theme="dark"] .icwho.a { background:#1d3550; color:#a9cdf5; }
+[data-bs-theme="dark"] .icwho.b { background:#43233c; color:#f0b9e3; }

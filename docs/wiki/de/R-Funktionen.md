@@ -57,6 +57,15 @@ jeder Funktion: `?qda_code` usw. Eine kommentierte Vorlage liegt in
 | `qda_words(source, code, n)` | Worthäufigkeiten |
 | `qda_kwic(pattern, width)` | Stichwort im Kontext |
 | `qda_case_matrix(by)` | Fallvergleich: Codes × Werte einer Variable |
+| `qda_cooccurrence(unit, level)` | Code-Überschneidungen: Code-Paare, die gemeinsam vorkommen |
+| `qda_cooccurrence_passages(code_a, code_b)` | die Stellen, an denen zwei Codes gemeinsam vorkommen |
+| `qda_portrait(source, level)` | Dokument-Portrait: welche Codes in welchem Segment |
+| `qda_plot_cooccurrence()` / `qda_plot_network()` / `qda_plot_portrait()` | die Grafiken als SVG (Viewer oder `file =`) |
+| `qda_export_qdpx(path)` | REFI-QDA-Projektdatei für MAXQDA, ATLAS.ti, NVivo, QualCoder |
+| `qda_intercoder_copy(path)` | Blind-Kopie des Projekts für eine zweite Person (ohne Codings) |
+| `qda_intercoder(other, unit, level)` | Intercoder-Übereinstimmung: Prozent, Cohens Kappa, Brennan & Prediger, Krippendorffs Alpha |
+| `qda_intercoder_diff(other)` | Einheiten, bei denen die beiden abweichen |
+| `qda_intercoder_adopt(other, source, start, end, code)` | Konsens: Coding der anderen Person übernehmen |
 | `qda_segments(code)` | alle Stellen eines Codes |
 
 ## Memos

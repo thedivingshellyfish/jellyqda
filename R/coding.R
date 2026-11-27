@@ -93,19 +93,18 @@ qda_codings <- function(source = NULL, code = NULL) {
   con <- qda_con()
   df <- DBI::dbGetQuery(con, "
     SELECT c.id, c.source_id, s.name AS source, c.code_id, k.label AS code,
-           c.start, c.end, c.memo, c.paraphrase, c.generalization, s.frozen_text
+           c.start, c.end, c.memo, c.paraphrase, c.generalization
     FROM codings c
     JOIN sources s ON s.id = c.source_id
     JOIN codes k ON k.id = c.code_id
     ORDER BY c.source_id, c.start, c.id")
-  df$frozen_text <- .utf8(df$frozen_text)
   if (!is.null(source)) df <- df[df$source_id == .resolve_source(source)$id, , drop = FALSE]
   if (!is.null(code)) df <- df[df$code_id == .resolve_code(code)$id, , drop = FALSE]
   tibble::tibble(
     id = df$id, source_id = df$source_id, source = df$source,
     code_id = df$code_id, code = df$code,
     start = df$start, end = df$end, memo = df$memo,
-    text = substring(df$frozen_text, df$start, df$end),
+    text = .passages(df$source_id, df$start, df$end),   # each text loaded once (utils.R)
     paraphrase = ifelse(is.na(df$paraphrase), "", df$paraphrase),
     generalization = ifelse(is.na(df$generalization), "", df$generalization)
   )
@@ -227,17 +226,16 @@ qda_segments <- function(code) {
   cod <- .resolve_code(code)
   df <- DBI::dbGetQuery(con, "
     SELECT c.id, c.source_id, s.name AS source, c.code_id, k.label AS code,
-           c.start, c.end, c.memo, s.frozen_text
+           c.start, c.end, c.memo
     FROM codings c
     JOIN sources s ON s.id = c.source_id
     JOIN codes k ON k.id = c.code_id
     WHERE c.code_id = ?
     ORDER BY c.source_id, c.start", params = list(cod$id))
-  df$frozen_text <- .utf8(df$frozen_text)
   tibble::tibble(
     id = df$id, source_id = df$source_id, source = df$source,
     code_id = df$code_id, code = df$code,
     start = df$start, end = df$end, memo = df$memo,
-    text = substring(df$frozen_text, df$start, df$end)
+    text = .passages(df$source_id, df$start, df$end)
   )
 }

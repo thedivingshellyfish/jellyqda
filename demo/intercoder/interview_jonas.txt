@@ -1,0 +1,15 @@
+DEMO FILE - fictional interview for the jellyqda intercoder demo. All persons, companies and events are invented.
+Interview Jonas (fictional), developer, 29 years
+
+[00:00:04] I: Tell me a bit about your career.
+[00:00:09] P: I did an apprenticeship as an IT specialist, directly in a medium-sized firm, and stayed on afterwards.
+[00:01:15] I: Why did you stay?
+[00:01:19] P: Because after three years I already had a project of my own. In a corporation that would have taken forever.
+[00:02:05] I: What drives you?
+[00:02:09] P: Honestly: tricky problems. When something finally works, that is a good feeling.
+[00:02:58] I: And the team?
+[00:03:02] P: Mostly good. But there was an argument about responsibilities, and that weighed on the mood for a while.
+[00:04:00] I: How do you deal with pressure?
+[00:04:05] P: I deliberately finish work on time and switch off my work phone. I had to learn that first.
+[00:05:10] I: Do you work with customers?
+[00:05:14] P: Rarely, the project lead does that. Sometimes I lose sight of what we are actually building it for.

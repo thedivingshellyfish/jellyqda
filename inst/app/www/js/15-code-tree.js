@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 15 of 17: Code tree (codes + subcodes) and coding bar
+/* jellyqda app -- browser logic, part 15 of 19: Code tree (codes + subcodes) and coding bar
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

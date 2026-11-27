@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 14 of 17: Icons
+/* jellyqda app -- browser logic, part 14 of 19: Icons
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 

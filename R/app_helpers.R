@@ -44,7 +44,7 @@
     "table-cells", "table-list", "xmark", "check", "rotate-left", "rotate-right", "moon",
     "scissors", "circle-question", "magnifying-glass", "book", "comment",
     "chart-column", "arrow-up-right-from-square", "box-archive", "file-word",
-    "book-open", "code-merge")
+    "book-open", "code-merge", "diagram-project")
 }
 #' @noRd
 .jq_icon_registry <- function() {

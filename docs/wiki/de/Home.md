@@ -23,6 +23,8 @@ erklärt alle Funktionen Schritt für Schritt mit Screenshots.
 | [Segmente](Segmente.md) | Absätze oder Sprecherwechsel, Segmente teilen und zusammenführen |
 | [Memos](Memos.md) | Textstellen-, Dokument-, Code- und Projekt-Memos, Kommentare |
 | [Analysieren](Analysieren.md) | Kodierleitfaden, In vivo, Codes zusammenführen, Suchtreffer codieren, Fallvergleich, Worthäufigkeiten, Stichwort im Kontext, Mayring |
+| [Intercoder-Übereinstimmung](Intercoder-Uebereinstimmung.md) | Blind-Kopie für eine zweite Person, Cohens Kappa, Krippendorffs Alpha, Abweichungen und Konsens |
+| [Grafiken](Grafiken.md) | Code-Überschneidungen (Heatmap), Code-Netzwerk, Dokument-Portraits |
 | [Auswerten & Export](Auswerten-und-Export.md) | Codings je Code, Suche, Code-Matrix, Summary Grid, Export, HTML-Bericht |
 | [Rückgängig & Datensicherheit](Rueckgaengig-und-Datensicherheit.md) | Strg+Z/Strg+Y, Protokoll, Backups, Datenschutz |
 

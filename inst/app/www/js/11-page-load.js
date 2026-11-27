@@ -1,4 +1,4 @@
-/* jellyqda app -- browser logic, part 11 of 17: On page load (as soon as the HTML is complete)
+/* jellyqda app -- browser logic, part 11 of 19: On page load (as soon as the HTML is complete)
    All js/*.js files are joined in name order into one
    <script> tag by .jellyqda_assets() (R/app.R). Overview: ../README.md */
 
