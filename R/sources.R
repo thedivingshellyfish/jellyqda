@@ -110,6 +110,6 @@ qda_source_del_var <- function(source, key) {
                  params = list(.to_json(m), src$id))
   log_event("source_var_del", list(source_id = src$id, key = key),
             changes = list(.chg("sources", before, .snap("sources", src$id))),
-            desc = sprintf(.t("Variable geloescht: %s (%s)"), key, src$name))
+            desc = sprintf(.t("Variable gel\u00f6scht: %s (%s)"), key, src$name))
   invisible(qda_source_vars(src$id))
 }

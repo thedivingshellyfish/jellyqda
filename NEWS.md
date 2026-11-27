@@ -24,6 +24,18 @@
 
 ## Fixes
 
+  * **Codings no longer shift after emoji.** The browser counted text length
+    in UTF-16 code units, R counts characters, so every emoji (or other
+    character outside the Basic Multilingual Plane) before a selection moved
+    the stored coding by one character. Selection, cursor and "jump to"
+    positions now count characters exactly like R.
+  * **`qda_import()` never overwrites an original.** A different file with a
+    name that is already taken (e.g. `a/interview.txt` and `b/interview.txt`)
+    is imported as `interview (2).txt`; before, its copy replaced the first
+    original in `originals/` and the name matched two sources.
+  * **Umlauts in the German interface.** Undo/redo tooltips, notifications and
+    audit-trail texts showed "geaendert", "geloescht", "fuer" etc.; all
+    German texts now use real umlauts. A test guards against regressions.
   * Translations with umlauts in the catalogue keys kept their encoding only
     in UTF-8 sessions (names in `c()` are converted at installation).
 

@@ -18,6 +18,27 @@ function jqF(s, args) {
   return jqT(s).replace(/\{(\d+)\}/g, function(m, i) { return args[+i]; });
 }
 
+// Character counting in Unicode code points, as R does (nchar(type =
+// "chars")). JavaScript's .length counts UTF-16 code units, so an emoji or
+// another character outside the Basic Multilingual Plane counts as 2 there
+// but as 1 in R -- every such character before a selection would shift the
+// stored coding by one. All offsets sent to / received from the server go
+// through these two helpers.
+function jqCpLen(s) {
+  var m = s.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g);
+  return s.length - (m ? m.length : 0);
+}
+// UTF-16 index in `s` of code point position `cp` (clamped to s.length).
+function jqCpToUnit(s, cp) {
+  var i = 0;
+  while (cp > 0 && i < s.length) {
+    var c = s.charCodeAt(i);
+    i += (c >= 0xD800 && c <= 0xDBFF && i + 1 < s.length) ? 2 : 1;
+    cp--;
+  }
+  return i;
+}
+
 // Absolute 0-based character offset of the position (node, offset) within
 // #doc. Trick: build a range from the start of #doc to the position and
 // measure its text length. Works because #doc contains exactly the frozen
@@ -27,7 +48,7 @@ function absOffset(doc, node, offset) {
     var r = document.createRange();
     r.selectNodeContents(doc);
     r.setEnd(node, offset);
-    return r.toString().length;
+    return jqCpLen(r.toString());
   } catch (e) { return null; }
 }
 
@@ -45,14 +66,15 @@ function scrollToChar(doc, pos) {
   var walker = document.createTreeWalker(doc, NodeFilter.SHOW_TEXT, null);
   var n, acc = 0;
   while ((n = walker.nextNode())) {
-    var len = n.nodeValue.length;
+    var len = jqCpLen(n.nodeValue);   // code points, like R (see jqCpLen)
     if (acc + len >= pos) {
       // BUGFIX: a Range has no scrollIntoView (error "r.scrollIntoView is not a
       // function", jumping to search hits did not scroll). Now: measure the
       // position of the place and scroll the scrollable ancestor.
       var r = document.createRange();
-      r.setStart(n, Math.max(0, pos - acc));
-      r.setEnd(n, Math.min(len, Math.max(0, pos - acc) + 1));
+      var u0 = jqCpToUnit(n.nodeValue, Math.max(0, pos - acc));
+      r.setStart(n, u0);
+      r.setEnd(n, jqCpToUnit(n.nodeValue, Math.max(0, pos - acc) + 1));
       var rect = r.getBoundingClientRect();
       var sc = doc.parentElement;
       while (sc && sc !== document.body) {

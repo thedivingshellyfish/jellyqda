@@ -38,7 +38,7 @@
   "^[ \t]*\\[?[0-9]{1,2}:[0-9]{2}(:[0-9]{2})?([.,][0-9]+)?\\]?[ \t]*",
   "\\p{L}[\\p{L}\\p{N}_-]{0,24}:([ \t]|$)")
 
-.SEGMENT_RULES <- c(blankline = "Leerzeilen (Absaetze)",
+.SEGMENT_RULES <- c(blankline = "Leerzeilen (Abs\u00e4tze)",
                     speaker   = "Sprecherwechsel",
                     line      = "jede Zeile")
 
@@ -186,10 +186,10 @@ qda_source_segments <- function(source) {
   segs <- segs[order(segs$start), c("start", "end"), drop = FALSE]
   s <- as.integer(segs$start); e <- as.integer(segs$end)
   if (any(is.na(s) | is.na(e)) || any(s < 1L | e > n | e < s)) {
-    stop(.t("Ungueltige Segmentgrenzen."), call. = FALSE)
+    stop(.t("Ung\u00fcltige Segmentgrenzen."), call. = FALSE)
   }
   if (length(s) > 1 && any(s[-1] <= e[-length(e)])) {
-    stop(.t("Segmente duerfen sich nicht ueberlappen."), call. = FALSE)
+    stop(.t("Segmente d\u00fcrfen sich nicht \u00fcberlappen."), call. = FALSE)
   }
   old_ids <- DBI::dbGetQuery(con, "SELECT id FROM segments WHERE source_id = ?",
                              params = list(src$id))$id
@@ -264,7 +264,7 @@ qda_segments_set <- function(source, rule = c("blankline", "speaker", "line"),
 qda_segments_reset <- function(source) {
   src <- .resolve_source(source)
   .store_segments(src, data.frame(start = integer(), end = integer()), "segments_set",
-                  desc = sprintf(.t("Segmente zurueckgesetzt (automatisch): %s"), src$name),
+                  desc = sprintf(.t("Segmente zur\u00fcckgesetzt (automatisch): %s"), src$name),
                   details = list(rule = "reset"))
 }
 
@@ -322,7 +322,7 @@ qda_segment_merge <- function(source, segment) {
   new <- rbind(segs[-c(i, i + 1L), c("start", "end")],
                data.frame(start = segs$start[i], end = segs$end[i + 1L]))
   .store_segments(src, new, "segment_merge",
-                  desc = sprintf(.t("Segmente %d und %d zusammengefuehrt (%s)"), i, i + 1L, src$name))
+                  desc = sprintf(.t("Segmente %d und %d zusammengef\u00fchrt (%s)"), i, i + 1L, src$name))
 }
 
 #' Define a passage as its own segment
@@ -345,7 +345,7 @@ qda_segment_define <- function(source, start, end) {
   src <- .resolve_source(source)
   text <- src$frozen_text
   r <- .trim_range(start, end, text)
-  if (is.null(r)) stop(.t("Die Auswahl enthaelt keinen Text."), call. = FALSE)
+  if (is.null(r)) stop(.t("Die Auswahl enth\u00e4lt keinen Text."), call. = FALSE)
   s <- r[1]; e <- r[2]
   segs <- .segments_for(src)
   keep <- list()

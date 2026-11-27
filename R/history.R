@@ -202,14 +202,14 @@
 # German, human-readable labels for the undo/redo tooltips -----------------------
 
 .ACTION_DE <- c(
-  coding_add = "Coding hinzugefuegt", coding_delete = "Coding geloescht",
-  coding_memo = "Coding-Memo geaendert", coding_update = "Coding geaendert",
-  memo_add = "Memo angelegt", memo_delete = "Memo geloescht", memo_update = "Memo geaendert",
-  code_add = "Code angelegt", code_rename = "Code umbenannt", code_delete = "Code geloescht",
-  code_move = "Code verschoben", code_update = "Code geaendert", code_merge = "Codes zusammengefuehrt",
-  source_var_set = "Variable gesetzt", source_var_del = "Variable geloescht",
-  summary_set = "Summary geaendert", segments_set = "Segmente neu eingeteilt",
-  segment_split = "Segment geteilt", segment_merge = "Segmente zusammengefuehrt",
+  coding_add = "Coding hinzugef\u00fcgt", coding_delete = "Coding gel\u00f6scht",
+  coding_memo = "Coding-Memo ge\u00e4ndert", coding_update = "Coding ge\u00e4ndert",
+  memo_add = "Memo angelegt", memo_delete = "Memo gel\u00f6scht", memo_update = "Memo ge\u00e4ndert",
+  code_add = "Code angelegt", code_rename = "Code umbenannt", code_delete = "Code gel\u00f6scht",
+  code_move = "Code verschoben", code_update = "Code ge\u00e4ndert", code_merge = "Codes zusammengef\u00fchrt",
+  source_var_set = "Variable gesetzt", source_var_del = "Variable gel\u00f6scht",
+  summary_set = "Summary ge\u00e4ndert", segments_set = "Segmente neu eingeteilt",
+  segment_split = "Segment geteilt", segment_merge = "Segmente zusammengef\u00fchrt",
   segment_adjust = "Segmentgrenze verschoben")
 
 #' Short description of an event, e.g. "Coding hinzugefuegt: 'Thema A' in
@@ -272,7 +272,7 @@ qda_redo <- function() {
   n <- nrow(st$redo)
   ev <- st$redo[n, , drop = FALSE]
   if (!grepl("\"changes\"", ev$details, fixed = TRUE)) {
-    stop(.t("Diese Aktion stammt aus einer aelteren jellyqda-Version und kann nicht wiederholt werden."),
+    stop(.t("Diese Aktion stammt aus einer \u00e4lteren jellyqda-Version und kann nicht wiederholt werden."),
          call. = FALSE)
   }
   .apply_changes(.changes_from_json(ev$details), "after")

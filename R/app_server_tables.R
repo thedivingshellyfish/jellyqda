@@ -22,7 +22,7 @@
     codes <- qda_codes()
     sources <- qda_sources()
     if (nrow(codes) == 0 || nrow(sources) == 0) {
-      return(shiny::tags$div(class = "jq-hint", .t("Codes und Dokumente noetig.")))
+      return(shiny::tags$div(class = "jq-hint", .t("Codes und Dokumente n\u00f6tig.")))
     }
     tr <- .code_tree(codes)
     esc2 <- htmltools::htmlEscape
@@ -109,7 +109,7 @@
     rv$src <- input$mx_cell$source
     rv$sel <- NULL
     bump()
-    shiny::showNotification(.t("Zelle gewaehlt: Code im Browser geoeffnet."), type = "message")
+    shiny::showNotification(.t("Zelle gew\u00e4hlt: Code im Browser ge\u00f6ffnet."), type = "message")
   })
 }
 
@@ -124,7 +124,7 @@
     codes <- qda_codes()
     sources <- qda_sources()
     if (nrow(codes) == 0 || nrow(sources) == 0) {
-      return(shiny::tags$div(class = "jq-hint", .t("Codes und Dokumente noetig.")))
+      return(shiny::tags$div(class = "jq-hint", .t("Codes und Dokumente n\u00f6tig.")))
     }
     cod <- DBI::dbGetQuery(qda_con(), "SELECT code_id, source_id, COUNT(*) AS n FROM codings GROUP BY code_id, source_id")
     has_sum <- qda_summaries()

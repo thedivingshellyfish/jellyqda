@@ -84,3 +84,37 @@ test_that("unsupported formats are rejected", {
   writeLines("x", f)
   expect_error(qda_import(f), "Unsupported format")
 })
+
+test_that("different files with the same name get unique names, originals are kept", {
+  new_project()
+  on.exit(qda_close(), add = TRUE)
+  d <- tempfile("same-name-")
+  dir.create(file.path(d, "a"), recursive = TRUE)
+  dir.create(file.path(d, "b"))
+  writeLines(c("Interview A", "", "Text von Person A."), file.path(d, "a", "interview.txt"))
+  writeLines(c("Interview B", "", "Text von Person B."), file.path(d, "b", "interview.txt"))
+  res <- qda_import(file.path(d, c("a", "b"), "interview.txt"))
+  expect_equal(res$name, c("interview.txt", "interview (2).txt"))
+  expect_equal(res$status, c("ok", "ok"))
+  # both originals exist, each with its own content
+  odir <- file.path(project_dir(), "originals")
+  expect_equal(readLines(file.path(odir, "interview.txt"))[3], "Text von Person A.")
+  expect_equal(readLines(file.path(odir, "interview (2).txt"))[3], "Text von Person B.")
+  # both sources can still be addressed by name
+  expect_match(jellyqda:::.resolve_source("interview.txt")$frozen_text, "Person A")
+  expect_match(jellyqda:::.resolve_source("interview (2).txt")$frozen_text, "Person B")
+  # a third file with that name -> "(3)"; the same file again is still skipped
+  dir.create(file.path(d, "c"))
+  writeLines("Interview C", file.path(d, "c", "interview.txt"))
+  expect_equal(qda_import(file.path(d, "c", "interview.txt"))$name, "interview (3).txt")
+  expect_match(qda_import(file.path(d, "a", "interview.txt"))$status, "already imported")
+  expect_equal(nrow(qda_sources()), 3)
+})
+
+test_that(".unique_name keeps free names and counts up taken ones", {
+  un <- jellyqda:::.unique_name
+  expect_equal(un("x.txt", character()), "x.txt")
+  expect_equal(un("x.txt", "x.txt"), "x (2).txt")
+  expect_equal(un("x.txt", c("X.TXT", "x (2).txt")), "x (3).txt")   # case-insensitive
+  expect_equal(un("notes", "notes"), "notes (2)")                    # no extension
+})

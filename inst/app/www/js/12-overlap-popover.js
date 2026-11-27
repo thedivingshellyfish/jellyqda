@@ -71,8 +71,8 @@ function showOverlapPopover(mark, pinned) {
       (c.memo ? '<div class="jqp-memo">Memo: ' + jqEsc(c.memo) + '</div>' : '') +
       '</div>' +
       '<div class="jqp-btns">' +
-      '<button class="mini jqp-show" data-jqp-show="' + id + '" title="' + jqT('Details in der Leiste ueber dem Text') + '">' + jqT('Anzeigen') + '</button>' +
-      '<button class="mini" data-delcoding="' + id + '" title="' + jqT('Dieses Coding loeschen (Strg+Z macht es rueckgaengig)') + '">' + jqT('Löschen') + '</button>' +
+      '<button class="mini jqp-show" data-jqp-show="' + id + '" title="' + jqT('Details in der Leiste über dem Text') + '">' + jqT('Anzeigen') + '</button>' +
+      '<button class="mini" data-delcoding="' + id + '" title="' + jqT('Dieses Coding löschen (Strg+Z macht es rückgängig)') + '">' + jqT('Löschen') + '</button>' +
       '</div></div>';
   }).join('');
   jqPop.innerHTML = '<div class="jqp-head">' + jqF('{0} Codings an dieser Stelle', [ids.length]) +

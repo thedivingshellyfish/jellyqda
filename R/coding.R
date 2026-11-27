@@ -65,7 +65,7 @@ qda_code <- function(source, code, segment = NULL, start = NULL, end = NULL, mem
   log_event("coding_add", list(coding_id = id, source_id = src$id, code_id = cod$id,
                                start = start, end = end, memo = as.character(memo)),
             changes = list(.chg("codings", .snap("codings", integer()), .snap("codings", id))),
-            desc = sprintf(.t("Coding hinzugefuegt: '%s' in %s (Zeichen %d-%d)"),
+            desc = sprintf(.t("Coding hinzugef\u00fcgt: '%s' in %s (Zeichen %d-%d)"),
                            cod$label, src$name, start, end))
   invisible(tibble::tibble(id = id, source_id = src$id, code_id = cod$id,
                            start = start, end = end, memo = as.character(memo)))
@@ -135,7 +135,7 @@ qda_coding_set_memo <- function(coding, memo) {
   log_event("coding_memo", list(coding_id = row$id, memo = as.character(memo),
                                 old_memo = as.character(row$memo)),
             changes = list(.chg("codings", before, .snap("codings", row$id))),
-            desc = sprintf(.t("Memo von Coding #%d geaendert"), row$id))
+            desc = sprintf(.t("Memo von Coding #%d ge\u00e4ndert"), row$id))
   invisible(tibble::tibble(id = row$id, source_id = row$source_id, code_id = row$code_id,
                            start = row$start, end = row$end, memo = as.character(memo)))
 }
@@ -163,7 +163,7 @@ qda_coding_delete <- function(coding) {
                                   code_id = row$code_id, start = row$start, end = row$end,
                                   memo = as.character(row$memo)),
             changes = list(.chg("codings", before, .snap("codings", integer()))),
-            desc = sprintf(.t("Coding #%d geloescht (Zeichen %d-%d)"), row$id, row$start, row$end))
+            desc = sprintf(.t("Coding #%d gel\u00f6scht (Zeichen %d-%d)"), row$id, row$start, row$end))
   invisible(NULL)
 }
 

@@ -140,7 +140,7 @@
   # help modal: legend of icons + shortcuts
   shiny::observeEvent(input$help_btn, {
     shiny::showModal(shiny::modalDialog(
-      title = .t("Hilfe: Symbole & Tastenkuerzel"),
+      title = .t("Hilfe: Symbole & Tastenk\u00fcrzel"),
       shiny::tags$ul(
         shiny::tags$li(shiny::strong(.t("Kodier-Leiste")), .t(" - Text markieren, dann Code anklicken. Hat ein Code Subcodes, klappt der Klick sie aus; \u201e(nur Code)\u201c vergibt den Code selbst. Suchfeld: Code \u00fcber den Pfad finden, Enter ohne Treffer legt einen neuen Code an")),
         shiny::tags$li(shiny::strong(.t("Strg+1..9")), .t(" - n-ter Code der Kodier-Leiste; danach "), shiny::strong("1..9"), .t(" = Subcode, "), shiny::strong("0"), .t(" = nur der Code, "), shiny::strong("Esc"), .t(" = zuklappen")),

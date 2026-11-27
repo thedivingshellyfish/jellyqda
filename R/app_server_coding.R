@@ -22,7 +22,7 @@
   output$doc <- shiny::renderUI({
     rv$tick
     id <- rv$src
-    if (is.null(id)) return(shiny::tags$div(class = "jq-hint", .t("Links ein Dokument auswaehlen ...")))
+    if (is.null(id)) return(shiny::tags$div(class = "jq-hint", .t("Links ein Dokument ausw\u00e4hlen ...")))
     shiny::HTML(.render_doc_html(id, sel_mid = rv$sel_memo))
   })
   # Text selection from the browser (js/02-text-selection.js). NULL = selection
@@ -280,11 +280,11 @@
     shiny::req(rv$clicked)
     qda_coding_delete(rv$clicked)
     rv$clicked <- NULL; bump()
-    shiny::showNotification(.t("Coding geloescht (Audit-Trail)."), type = "message")
+    shiny::showNotification(.t("Coding gel\u00f6scht (Audit-Trail)."), type = "message")
   })
   shiny::observeEvent(input$del_coding, {
     qda_coding_delete(input$del_coding); bump()
-    shiny::showNotification(.t("Coding geloescht (Audit-Trail)."), type = "message")
+    shiny::showNotification(.t("Coding gel\u00f6scht (Audit-Trail)."), type = "message")
   })
   # click a segment/coding in a list -> jump to it in the document browser ----
   shiny::observeEvent(input$goto_coding, {
