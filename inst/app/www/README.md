@@ -88,6 +88,6 @@ that they also work for HTML that Shiny re-renders later via `renderUI`.
 jQuery and Shiny are already loaded when the script runs.
 
 Texts shown to the user are written in German as `jqT('...')` /
-`jqF('...', args)` and translated via `R/i18n_catalog.R`; a test
+`jqF('...', args)` and translated via `R/i18n_catalog_*.R`; a test
 (`tests/testthat/test-i18n.R`) checks that every such text in `js/` has an
 English translation.

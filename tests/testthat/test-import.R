@@ -1,3 +1,6 @@
+# Import of .txt / .md / .docx / .pdf: encodings, names, originals/ copies,
+# re-imports (R/import.R)
+
 test_that("all four import formats work and freeze text", {
   new_project()
   on.exit(qda_close(), add = TRUE)

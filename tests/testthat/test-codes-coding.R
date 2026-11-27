@@ -1,3 +1,6 @@
+# Code tree, codings and memos: create, rename, delete, audit trail
+# (R/codes.R, R/coding.R, R/memos.R)
+
 test_that("codes form a tree with paths; duplicates under same parent rejected", {
   new_project()
   on.exit(qda_close(), add = TRUE)

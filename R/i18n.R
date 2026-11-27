@@ -1,7 +1,7 @@
 # jellyqda :: i18n.R -- user interface language (English / German)
 #
 # The UI texts are written in German in the code and wrapped in .t("...");
-# R/i18n_catalog.R holds their English translations. .t() returns the text
+# R/i18n_catalog_*.R hold their English translations. .t() returns the text
 # in the current language. The browser code (inst/app/www/js/) uses jqT('...')
 # with the same catalogue, sent to the page by .jq_i18n_script().
 #

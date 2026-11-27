@@ -94,10 +94,10 @@ qda_app <- function(host = "127.0.0.1", port = NULL, open = TRUE, new_window = T
   # in the address (EN/DE button) switches the language
   app <- shiny::shinyApp(ui = function(req) .jellyqda_ui(req), server = .jellyqda_server)
   launcher <- function(url) {
-    cat("jellyqda app (local, offline):", url, "\n")
+    message("jellyqda app (local, offline): ", url)
     if (isTRUE(open)) {
       if (isTRUE(new_window)) {
-        utils::browseURL(url)  # eigenes Browser-Fenster
+        utils::browseURL(url)  # own browser window
       } else if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
         rstudioapi::viewer(url)  # RStudio Viewer-Pane
       } else {

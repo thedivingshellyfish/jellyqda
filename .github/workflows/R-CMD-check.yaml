@@ -1,3 +1,6 @@
+# R CMD check --as-cran on the three CRAN platforms, plus R-devel on Linux
+# (what CRAN checks new submissions with). The Linux release job also builds
+# the PDF manual (LaTeX via TinyTeX), which CRAN checks as well.
 name: R-CMD-check
 
 on:
@@ -8,19 +11,32 @@ on:
 
 jobs:
   R-CMD-check:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        config:
+          - {os: ubuntu-latest,  r: 'release', manual: true}
+          - {os: ubuntu-latest,  r: 'devel',   manual: false}
+          - {os: macos-latest,   r: 'release', manual: false}
+          - {os: windows-latest, r: 'release', manual: false}
     steps:
       - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-pandoc@v2
       - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-tinytex@v2
+        if: matrix.config.manual
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
-            rcmdcheck
+            any::rcmdcheck
             any::writexl
+          needs: check
       - uses: r-lib/actions/check-r-package@v2
         with:
-          args: 'args = c("--no-manual", "--as-cran")'
+          args: ${{ matrix.config.manual && 'c("--as-cran")' || 'c("--no-manual", "--as-cran")' }}
+          upload-snapshots: true
