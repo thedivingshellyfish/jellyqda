@@ -1,5 +1,6 @@
 # jellyqda :: schema.R -- CREATE TABLE IF NOT EXISTS for the whole project DB
-# Tables: sources, codes, codings, memos, summaries, segments, events. sources.frozen_text
+# Tables: sources, codes, codings, memos, summaries, segments, cases,
+# case_members, events. sources.frozen_text
 # is the frozen import text all offsets refer to; meta_json holds import
 # metadata + per-source variables (sources.R).
 
@@ -100,6 +101,27 @@ create_schema <- function(con) {
       end INTEGER NOT NULL,
       CHECK (start >= 1 AND end >= start)
     )")
+  # V6 (0.10.0): cases independent of documents (cases.R). A case is a
+  # person, group, organisation ... with its own variables (meta_json). It
+  # consists of whole documents (start/end NULL) and/or passages of documents
+  # (start/end, e.g. the speaker turns of one person in a group interview).
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS cases (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT DEFAULT '',
+      meta_json TEXT DEFAULT '{}'
+    )")
+  DBI::dbExecute(con, "
+    CREATE TABLE IF NOT EXISTS case_members (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+      source_id INTEGER NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+      start INTEGER,
+      end INTEGER,
+      CHECK ((start IS NULL AND end IS NULL) OR (start >= 1 AND end >= start))
+    )")
+  DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_case_members_case ON case_members(case_id)")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_segments_source ON segments(source_id)")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_memos_source ON memos(source_id)")
   DBI::dbExecute(con, "CREATE INDEX IF NOT EXISTS idx_memos_code ON memos(code_id)")

@@ -8,7 +8,8 @@ qda_import(
   files,
   copy_originals = TRUE,
   names = NULL,
-  segments = c("blankline", "speaker", "line")
+  segments = c("blankline", "speaker", "line"),
+  pseudonyms = NULL
 )
 }
 \arguments{
@@ -24,6 +25,13 @@ meaningless (\verb{0.pdf}, ...). Defaults to \code{basename(files)}.}
 \code{"blankline"} (paragraphs, default), \code{"speaker"} (one segment per
 speaker turn, e.g. \code{"[00:01:12] P: ..."}) or \code{"line"}. Can be changed
 later with \code{\link[=qda_segments_set]{qda_segments_set()}}; see also \code{\link[=qda_segment_split]{qda_segment_split()}}.}
+
+\item{pseudonyms}{Optional key list for pseudonymisation (see
+\code{\link[=qda_pseudonyms]{qda_pseudonyms()}}): names of people, places, organisations ... are
+replaced in the text -- and in the document name -- BEFORE the text is
+frozen. The key list itself is not stored in the project, and the
+original files are not copied to \verb{originals/} (they contain the real
+names). Check the list first with \code{\link[=qda_pseudonymise_preview]{qda_pseudonymise_preview()}}.}
 }
 \value{
 A tibble with one row per input file: \code{id}, \code{name}, \code{format},
@@ -53,5 +61,9 @@ qda_import(files)
 qda_import(system.file("extdata", "fieldnotes.pdf", package = "jellyqda"),
            segments = "line")                  # one segment per line
 qda_sources()
+f <- file.path(tempdir(), "interview_anna.txt")
+writeLines(c("I: Anna, how did you start?", "Anna: In Hamburg, with Ben."), f)
+qda_import(f, pseudonyms = c("Anna" = "[Person A]", "Hamburg" = "[City 1]", "Ben" = "[Person B]"))
+qda_sources()$name[5]           # the name is pseudonymised too
 qda_close()
 }

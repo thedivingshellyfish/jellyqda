@@ -1,0 +1,20 @@
+/* jellyqda app -- stylesheet, part 12 of 12: Cases, merging projects, pseudonymisation (since 0.10.0)
+   Dialogs of R/app_server_cases.R, R/app_server_merge.R and R/app_server_pseudonyms.R. */
+
+/* rows of inputs and buttons side by side */
+.csrow { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: .3rem 0; }
+.csrow .form-group { margin: 0; }
+.csrow .checkbox { margin: 0 .3rem; }
+/* case dialog: case on the left, its variables on the right */
+.csgrid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 1rem; }
+@media (max-width: 760px) { .csgrid { grid-template-columns: 1fr; } }
+.cslist { list-style: none; padding: 0; margin: .3rem 0; font-size: .9rem; }
+.cslist li { padding: .25rem .4rem; border-bottom: 1px solid var(--jq-line, #e5e7eb); }
+.cslist .mini { border: 0; background: none; color: #b42318; font-weight: 700; cursor: pointer; float: right; }
+.modal h6 { margin: .6rem 0 .2rem; font-weight: 700; }
+/* pseudonymisation: link under the import button, state, preview */
+.pseudo-link { display: inline-block; margin-top: .35rem; font-size: .85rem; }
+.pseudo-on { margin-top: .3rem; border-left: 3px solid #009E73; }
+tr.zero td { color: #b42318; }
+[data-bs-theme="dark"] .cslist li { border-color: #2c3445; }
+[data-bs-theme="dark"] .cslist .mini, [data-bs-theme="dark"] tr.zero td { color: #f87171; }

@@ -16,6 +16,10 @@
 #                                      only (read as annotation by QualCoder)
 #   document / code / project memos -> Notes/Note + NoteRef
 #   document variables              -> Variables + VariableValue (text)
+#   cases (cases.R)                 -> Cases/Case with SourceRef (whole
+#                                      documents) or SelectionRef to a
+#                                      PlainTextSelection (passages) and the
+#                                      case variables as VariableValue
 # Positions: REFI counts characters from 0, end exclusive; jellyqda from 1,
 # end inclusive -> startPosition = start - 1, endPosition = end.
 # Segments, summaries (summary grid) and the audit trail have no place in
@@ -52,7 +56,7 @@
 #' Export the project as REFI-QDA project file (.qdpx)
 #'
 #' Writes the whole project -- documents, code system with colours and
-#' coding guideline, codings with comments, memos and document variables --
+#' coding guideline, codings with comments, memos, document variables and cases --
 #' into one `.qdpx` file in the REFI-QDA exchange format. MAXQDA, ATLAS.ti,
 #' NVivo, QualCoder and other programs can import it, so a jellyqda project
 #' can be continued elsewhere, shared with colleagues who use other software,
@@ -130,7 +134,10 @@ qda_export_qdpx <- function(path = NULL, user = NULL) {
     v <- m$variables %||% list()
     if (length(v)) unlist(v) else character()
   })
-  var_names <- sort(unique(unlist(lapply(vars_of, names))))
+  cases <- qda_cases()
+  cvars <- .all_case_vars()
+  members <- DBI::dbGetQuery(con, "SELECT id, case_id, source_id, start, end FROM case_members ORDER BY case_id, source_id, start")
+  var_names <- sort(unique(c(unlist(lapply(vars_of, names)), unlist(lapply(cvars, names)))))
   variables <- if (length(var_names)) paste0("<Variables>\n", paste(sprintf(
     '  <Variable guid="%s" name="%s" typeOfVariable="Text"/>', g("var", var_names), e(var_names)), collapse = "\n"),
     "\n</Variables>\n") else ""
@@ -160,6 +167,12 @@ qda_export_qdpx <- function(path = NULL, user = NULL) {
               g("passage", pm$id[j]), pm$start[j] - 1L, pm$end[j], attr_user, .qdpx_time(pm$created_at[j]),
               e(txt), memo_note(pm$id[j]))
     }, character(1))
+    cm <- members[members$source_id == sid & !is.na(members$start), , drop = FALSE]
+    csel <- vapply(seq_len(nrow(cm)), function(j) {
+      sprintf('  <PlainTextSelection guid="%s" startPosition="%d" endPosition="%d" %s creationDateTime="%s"/>',
+              g("casepart", cm$id[j]), cm$start[j] - 1L, cm$end[j], attr_user, now)
+    }, character(1))
+    ann <- c(ann, csel)
     dm <- memos$id[memos$kind == "document" & !is.na(memos$source_id) & memos$source_id == sid]
     v <- vars_of[[i]]
     vv <- if (length(v)) paste(sprintf('  <VariableValue><VariableRef targetGUID="%s"/><TextValue>%s</TextValue></VariableValue>',
@@ -172,6 +185,20 @@ qda_export_qdpx <- function(path = NULL, user = NULL) {
            "</TextSource>")
   }, character(1))
   sources <- if (nrow(src)) paste0("<Sources>\n", paste(src_xml, collapse = "\n"), "\n</Sources>\n") else ""
+
+  # --- cases ----------------------------------------------------------------------
+  case_xml <- vapply(seq_len(nrow(cases)), function(i) {
+    cid <- cases$id[i]; m <- members[members$case_id == cid, , drop = FALSE]
+    v <- cvars[[as.character(cid)]] %||% character()
+    paste0(sprintf('  <Case guid="%s" name="%s">', g("case", cid), e(cases$name[i])),
+           if (nzchar(cases$description[i] %||% "")) sprintf("<Description>%s</Description>", e(cases$description[i])) else "",
+           if (length(v)) paste(sprintf('<VariableValue><VariableRef targetGUID="%s"/><TextValue>%s</TextValue></VariableValue>',
+                                        g("var", names(v)), e(v)), collapse = "") else "",
+           paste(sprintf('<SourceRef targetGUID="%s"/>', g("source", unique(m$source_id[is.na(m$start)]))), collapse = ""),
+           paste(sprintf('<SelectionRef targetGUID="%s"/>', g("casepart", m$id[!is.na(m$start)])), collapse = ""),
+           "</Case>")
+  }, character(1))
+  cases_xml <- if (nrow(cases)) paste0("<Cases>\n", paste(case_xml, collapse = "\n"), "\n</Cases>\n") else ""
 
   # --- notes (all memos; passage memos are also annotations above) -----------------
   kind_lab <- c(passage = .t("Textstellen-Memo"), document = .t("Dokument-Memo"),
@@ -189,7 +216,7 @@ qda_export_qdpx <- function(path = NULL, user = NULL) {
     sprintf('<Project xmlns="urn:QDA-XML:project:1.0" name="%s" origin="jellyqda %s" creatingUserGUID="%s" creationDateTime="%s">\n',
             e(proj), as.character(utils::packageVersion("jellyqda")), ug, now),
     sprintf('<Users><User guid="%s" name="%s"/></Users>\n', ug, e(user)),
-    codebook, variables, sources, notes,
+    codebook, variables, cases_xml, sources, notes,
     sprintf("<Description>%s</Description>\n", e(sprintf(.t("Exportiert aus jellyqda (%s) am %s."), basename(project_path()), now))),
     paste(sprintf('<NoteRef targetGUID="%s"/>\n', vapply(proj_notes, memo_note, character(1))), collapse = ""),
     "</Project>\n")

@@ -34,6 +34,7 @@ changing CSS or JS: reinstall the package (`devtools::install()`) or run
 | `css/09-analysis-tools.css` | Analysis tools (since 0.6.0): coding fields, auto-coding, case comparison; intercoder tab (0.8.0) |
 | `css/10-visuals.css` | Graphics window (since 0.9.0) |
 | `css/11-report.css` | Report dialog, progress bar, busy hint (since 0.9.1) |
+| `css/12-cases.css` | Cases, merging projects, pseudonymisation dialogs (since 0.10.0) |
 
 Notes:
 

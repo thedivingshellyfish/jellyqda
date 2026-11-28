@@ -87,7 +87,7 @@
                           id = if (nzchar(input$survey_id %||% "")) input$survey_id else NA,
                           code_questions = isTRUE(input$survey_code),
                           prefix = { p <- trimws(input$survey_prefix %||% ""); if (nzchar(p)) p else NULL },
-                          name = s$name)),
+                          name = s$name, pseudonyms = rv$pseudo)),   # R/app_server_pseudonyms.R
       error = function(e) { shiny::showNotification(conditionMessage(e), type = "error"); NULL })
     if (is.null(res)) return()
     shiny::removeModal(); rv$survey <- NULL; bump()

@@ -1,6 +1,6 @@
 # jellyqda :: i18n_lookup.R -- the English translation table .I18N_EN
 # The English translations of the German UI texts live in four files,
-# R/i18n_catalog_{app,analysis,report,features}.R; this file joins them.
+# R/i18n_catalog_{app,analysis,report,features,cases}.R; this file joins them.
 # Keys are the German originals as used in .t("...") calls (R/*.R) and
 # jqT('...') calls (inst/app/www/js/*.js). A test checks that every key used
 # in the code has an entry (tests/testthat/test-i18n.R).
@@ -20,6 +20,7 @@
 # lookup -- a new pair can go anywhere, but the group of its file keeps things
 # findable.
 
-.I18N_PAIRS <- c(.I18N_PAIRS_APP, .I18N_PAIRS_ANALYSIS, .I18N_PAIRS_REPORT, .I18N_PAIRS_FEATURES)
+.I18N_PAIRS <- c(.I18N_PAIRS_APP, .I18N_PAIRS_ANALYSIS, .I18N_PAIRS_REPORT, .I18N_PAIRS_FEATURES,
+                 .I18N_PAIRS_CASES)
 
 .I18N_EN <- stats::setNames(.I18N_PAIRS[c(FALSE, TRUE)], .I18N_PAIRS[c(TRUE, FALSE)])

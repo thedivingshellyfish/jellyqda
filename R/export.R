@@ -13,14 +13,17 @@
 #' * `"codings"`: raw codings table -- CSV
 #' * `"codebook"`: the code tree -- CSV and `.docx` (via officer)
 #' * `"audit"`: the full events audit trail -- CSV
+#' * `"cases"`: the cases with their variables and members (documents or
+#'   passages) -- CSV, one row per member (see [qda_cases()])
 #' * `"report"`: a standalone HTML report -- all documents with colored coding
 #'   marks, the codebook, all memos and project statistics
 #' * `"qdpx"`: the whole project in the REFI-QDA exchange format for MAXQDA,
 #'   ATLAS.ti, NVivo, QualCoder ... (see [qda_export_qdpx()])
-#' * `"all"`: all of the above except `"qdpx"`
+#' * `"all"`: all of the above except `"qdpx"` (`"cases"` only if the
+#'   project has cases)
 #'
 #' @param what One or more of `"all"`, `"segments"`, `"codings"`, `"codebook"`,
-#'   `"audit"`, `"report"`, `"qdpx"`.
+#'   `"audit"`, `"cases"`, `"report"`, `"qdpx"`.
 #' @param path Output directory (created if missing).
 #' @param report_documents Logical; include every document with its marks in
 #'   the report (`TRUE`, default). `FALSE` writes the overview only, which is
@@ -39,9 +42,12 @@
 #' qda_close()
 qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
   con <- qda_con()
-  what <- match.arg(what, c("all", "segments", "codings", "codebook", "audit", "report", "qdpx"),
+  what <- match.arg(what, c("all", "segments", "codings", "codebook", "audit", "cases", "report", "qdpx"),
                     several.ok = TRUE)
-  if ("all" %in% what) what <- c("segments", "codings", "codebook", "audit", "report")
+  if ("all" %in% what) {
+    what <- c("segments", "codings", "codebook", "audit", "report",
+              if (DBI::dbGetQuery(con, "SELECT COUNT(*) AS n FROM cases")$n > 0) "cases")
+  }
   dir <- path %||% file.path(project_dir(), "exports")
   dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   ts <- format(Sys.time(), "%Y%m%d-%H%M%S", tz = "UTC")
@@ -106,6 +112,12 @@ qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
     readr::write_csv(df, f)
     add(f, "audit", nrow(df))
   }
+  if ("cases" %in% what) {   # R/cases.R
+    df <- .cases_table()
+    f <- file.path(dir, paste0("cases_", ts, ".csv"))
+    readr::write_csv(df, f)
+    add(f, "cases", nrow(df))
+  }
   if ("report" %in% what) {
     f <- file.path(dir, paste0("report_", ts, ".html"))
     # (the app sets .jellyqda_env$progress for a progress bar, R/app_server_analysis.R)
@@ -126,7 +138,8 @@ qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
 # lines and underlines, never as filled areas -- so the report looks complete
 # even without the print option "background graphics".
 # Sections: code system and frequencies (with share in %), case comparison,
-# codebook (coding guideline), memos, coded passages, Mayring summary,
+# cases (R/report_cases.R), codebook (coding guideline), memos, coded
+# passages, Mayring summary,
 # documents with marks and margin column. UI language: .t() (R/i18n.R).
 #' @noRd
 .report_html <- function(documents = TRUE, progress = NULL) {
@@ -302,6 +315,9 @@ qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
            "</tr></thead><tbody>", paste(rows, collapse = ""), "</tbody></table>")
   }, character(1)), collapse = "\n")
 
+  # cases (R/report_cases.R) -----------------------------------------------------
+  cases_html <- .report_cases_html(codes, esc)
+
   # numbers of the codings per document (anchor in the text <-> margin column)
   cnum <- if (nrow(cods)) stats::ave(seq_len(nrow(cods)), cods$source_id, FUN = seq_along) else integer()
   names(cnum) <- cods$id
@@ -411,6 +427,8 @@ qda_export <- function(what = "all", path = NULL, report_documents = TRUE) {
     h2(.t("Codesystem und H\u00e4ufigkeiten")), freq_html, "\n",
     if (nzchar(case_html)) paste0(h2(.t("Fallvergleich")),
       .t('<p class="meta">Codings je Gruppe von Dokumenten (Dokument-Variablen); Codes z\u00e4hlen ihre Subcodes mit.</p>'), case_html, "\n"),
+    if (nzchar(cases_html)) paste0(h2(.t("F\u00e4lle")),
+      .t('<p class="meta">F\u00e4lle mit ihren Dokumenten oder Textstellen und Fallvariablen; Codings z\u00e4hlen f\u00fcr einen Fall, wenn sie in seinen Textstellen liegen.</p>'), cases_html, "\n"),
     h2(.t("Codebuch (Kodierleitfaden)")), cb_html, "\n",
     h2("Memos"), memo_html, "\n",
     h2(.t("Codierte Textstellen")), quote_html, "\n",

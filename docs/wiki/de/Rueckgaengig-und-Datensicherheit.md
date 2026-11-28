@@ -64,5 +64,9 @@ qda_export("audit")      # als CSV exportieren
   eigenen Rechner (`127.0.0.1`), auch wenn sie im Browser angezeigt wird.
   Das wird in den automatischen Tests geprüft.
 - Alle Daten liegen in **deiner** Projektdatei; nichts wird hochgeladen.
+- Namen lassen sich beim Import ersetzen, bevor der Text eingefroren wird –
+  siehe [Pseudonymisieren beim Import](Dokumente-importieren.md#pseudonymisieren-beim-import).
+- Das Zusammenführen mit dem Projekt eines Teammitglieds ([Teamarbeit](Teamarbeit.md))
+  wird nicht mit Strg+Z rückgängig gemacht; jellyqda legt direkt davor ein Backup an.
 - Interviewdaten **nicht in Git** einchecken: Die `.gitignore` des Projekts
   schließt `*.jellyqda`, `originals/`, `exports/` und Backups aus.

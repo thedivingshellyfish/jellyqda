@@ -66,6 +66,38 @@ In R: `qda_survey_columns("survey.csv")` and
 package `readxl` (`install.packages("readxl")`); CSV works always. A fictional
 example: `system.file("extdata", "survey_demo.csv", package = "jellyqda")`.
 
+## Pseudonymising while importing
+
+*New in version 0.10.0.* The text of a document is frozen at import and cannot
+be changed afterwards. So names of people, places and organisations have to be
+replaced **before** – jellyqda can do that for you.
+
+Under the import button: **Pseudonymise …**. Enter one line per name,
+`Original = Replacement`, or load a list (CSV / Excel with two columns:
+original, replacement). Choose the transcripts under **Files…** first – then
+the dialog shows how often each name will be replaced. A name with 0 hits is
+perhaps spelled differently in the transcript (or already part of a longer
+name, e.g. "Schmidt" in "Anna Schmidt"; longer names are replaced first).
+
+<img src="../screenshots/50-pseudonymisieren.png" alt="Pseudonymise while importing: key list and preview" width="720">
+
+Click **Apply**: as long as the green note *Pseudonymisation on* is shown,
+**Import** (and the survey import) replace the names in the text **and in the
+document name**. Options: whole words only (default: "Ina" does not hit
+"Martina"), ignore upper/lower case.
+
+What jellyqda does **not** keep: the key list (only for this app session),
+the original files (they are not copied to `originals/`) and the original
+names (the audit trail only records how many replacements were made). Keep
+your key list separately and safely – it is the only link back to the real
+names.
+
+```r
+key <- qda_pseudonyms("key_list.csv")                 # or c("Anna Schmidt" = "[Person A]", ...)
+qda_pseudonymise_preview(c("int_01.docx", "int_02.docx"), key)   # check first
+qda_import(c("int_01.docx", "int_02.docx"), pseudonyms = key)
+```
+
 ## Variables (case attributes)
 
 You can give every document attributes such as *age*, *role* or *duration*.
@@ -77,6 +109,8 @@ value, **Set variable**.
 The variables appear as chips above the text. In the codings list you can
 filter with **"Only documents with variable"**, e.g. `role=project lead`.
 They are also the basis of the [case comparison](Analysis.md#case-comparison).
+If a case is not one document – a person interviewed twice, the participants
+of a group interview – use [cases](Cases.md) with their own case variables.
 
 ```r
 qda_source_set_var("interview_01.docx", "age", "34")

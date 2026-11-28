@@ -13,6 +13,8 @@
 - [Analysieren](Analysieren.md)
 - [Intercoder-Übereinstimmung](Intercoder-Uebereinstimmung.md)
 - [Grafiken](Grafiken.md)
+- [Fälle](Faelle.md)
+- [Teamarbeit](Teamarbeit.md)
 - [Auswerten & Export](Auswerten-und-Export.md)
 - [Rückgängig & Datensicherheit](Rueckgaengig-und-Datensicherheit.md)
 

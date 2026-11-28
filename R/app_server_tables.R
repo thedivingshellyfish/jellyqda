@@ -31,22 +31,34 @@
       while (length(p) && !is.na(p)) { out <- c(out, p); p <- tr$parent_id[tr$id == p] }
       out
     }
-    # columns: documents or the values of a variable (case comparison)
+    # columns: documents, the values of a document variable (case
+    # comparison), the cases or the values of a case variable (R/cases.R).
+    # Values of the select: "" | "<doc var>" | "@case" | "@case:<case var>"
     vars <- sort(unique(unlist(lapply(.all_source_vars(), names))))
+    ncase <- DBI::dbGetQuery(qda_con(), "SELECT COUNT(*) AS n FROM cases")$n
+    cvars <- if (ncase) sort(unique(unlist(lapply(.all_case_vars(), names)))) else character()
     by <- rv$mx_by %||% ""
-    if (!by %in% vars) by <- ""
+    if (!by %in% c(vars, if (ncase) c("@case", paste0("@case:", cvars)))) by <- ""
+    opt <- function(value, label) sprintf('<option value="%s"%s>%s</option>', esc2(value, attribute = TRUE),
+                                          ifelse(value == by, " selected", ""), esc2(label))
     sel <- sprintf(paste0(.t('<div class="mxby"><label for="mx_by">Spalten</label>'),
                           .t('<select id="mx_by" class="form-select form-select-sm"><option value="">Dokumente</option>%s</select>%s</div>')),
-                   paste(sprintf(.t('<option value="%s"%s>Fallvergleich: %s</option>'), esc2(vars, attribute = TRUE),
-                                 ifelse(vars == by, " selected", ""), esc2(vars)), collapse = ""),
-                   if (length(vars) == 0) .t('<span class="jq-sub">Fallvergleich: erst Variablen an Dokumenten setzen</span>') else "")
+                   paste(c(if (length(vars)) opt(vars, sprintf(.t("Fallvergleich: %s"), vars)),
+                           if (ncase) opt("@case", .t("F\u00e4lle")),
+                           if (length(cvars)) opt(paste0("@case:", cvars), sprintf(.t("Fallvariable: %s"), cvars))), collapse = ""),
+                   if (length(vars) == 0 && ncase == 0) .t('<span class="jq-sub">Fallvergleich: erst Variablen an Dokumenten setzen</span>') else "")
     if (nzchar(by)) {
-      cm <- qda_case_matrix(by)
+      unit <- if (startsWith(by, "@case")) "case" else "document"
+      var <- if (unit == "case") { v <- sub("^@case:?", "", by); if (nzchar(v)) v else NULL } else by
+      cm <- qda_case_matrix(var, unit = unit)
+      by <- var %||% .t("Fall")
       groups <- setdiff(names(cm), c("code", "path", "depth"))
-      nd <- attr(cm, "n_documents")
+      nd <- attr(cm, "n_units")
+      nlab <- if (unit == "case") ifelse(nd[groups] == 1, .t(" Fall)"), .t(" F\u00e4lle)")) else .t(' Dok.)')
       maxn <- max(1, as.matrix(cm[, groups, drop = FALSE]))
       head <- paste0('<tr><th>Code \\ ', esc2(by), '</th>',
-                     paste0('<th>', esc2(groups), ' <span class="jq-sub">(', nd[groups], .t(' Dok.)</span></th>'), collapse = ""),
+                     paste0('<th>', esc2(groups), if (unit == "case" && is.null(var)) "" else paste0(' <span class="jq-sub">(', nd[groups], nlab, '</span>'),
+                            '</th>', collapse = ""),
                      '</tr>')
       body <- vapply(seq_len(nrow(tr)), function(i) {
         cells <- vapply(groups, function(g) {

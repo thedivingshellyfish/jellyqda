@@ -17,7 +17,7 @@ Invisibly, the path of the written file.
 }
 \description{
 Writes the whole project -- documents, code system with colours and
-coding guideline, codings with comments, memos and document variables --
+coding guideline, codings with comments, memos, document variables and cases --
 into one \code{.qdpx} file in the REFI-QDA exchange format. MAXQDA, ATLAS.ti,
 NVivo, QualCoder and other programs can import it, so a jellyqda project
 can be continued elsewhere, shared with colleagues who use other software,

@@ -395,10 +395,20 @@ qda_kwic <- function(pattern, source = NULL, width = 50, ignore_case = TRUE, who
 #' subcodes as well (column `with_subcodes`). Documents without the variable
 #' are collected in the column `(ohne)`.
 #'
-#' @param by Name of a document variable (see [qda_source_set_var()]).
+#' With `unit = "case"` the columns are cases instead of documents (see
+#' [qda_case_add()]): one column per case, or -- with `by` -- one column per
+#' value of a case variable. A coding counts for a case when it lies in one
+#' of the case's documents or passages; a coding that belongs to two cases of
+#' the same group counts once.
+#'
+#' @param by Name of a document variable (see [qda_source_set_var()]) or,
+#'   with `unit = "case"`, of a case variable (see [qda_case_set_var()]).
+#'   With `unit = "case"` it may be `NULL`: one column per case.
 #' @param percent Logical; column percentages (share of all codings of the
 #'   group) instead of counts.
-#' @return A tibble: `code`, `path`, `depth`, then one column per value.
+#' @param unit `"document"` (default) or `"case"`.
+#' @return A tibble: `code`, `path`, `depth`, then one column per value (or
+#'   case). Attribute `"n_units"`: number of documents (or cases) per column.
 #' @export
 #' @examples
 #' qda_open(file.path(tempfile(), "example.jellyqda"))
@@ -410,25 +420,45 @@ qda_kwic <- function(pattern, source = NULL, width = 50, ignore_case = TRUE, who
 #' qda_code(2, "Motivation", segment = 1)
 #' qda_case_matrix("role")
 #' qda_case_matrix("role", percent = TRUE)
+#' qda_case_add("Person A", sources = 1:2)              # one person, two interviews
+#' qda_case_matrix(unit = "case")
 #' qda_close()
-qda_case_matrix <- function(by, percent = FALSE) {
-  s <- qda_sources()
-  val <- vapply(s$id, function(i) { v <- qda_source_vars(i)[by]; if (is.na(v)) "(ohne)" else unname(v) }, character(1))
-  groups <- sort(unique(val))
-  if ("(ohne)" %in% groups) groups <- c(setdiff(groups, "(ohne)"), "(ohne)")
+qda_case_matrix <- function(by = NULL, percent = FALSE, unit = c("document", "case")) {
+  unit <- match.arg(unit)
   tr <- .code_tree(qda_codes())
   cd <- qda_codings()
-  grp_of <- val[match(cd$source_id, s$id)]
+  if (unit == "document") {
+    if (is.null(by)) stop("Give `by` (a document variable) or use unit = \"case\".", call. = FALSE)
+    s <- qda_sources()
+    val <- vapply(s$id, function(i) { v <- qda_source_vars(i)[by]; if (is.na(v)) "(ohne)" else unname(v) }, character(1))
+    pairs <- data.frame(i = seq_len(nrow(cd)), group = val[match(cd$source_id, s$id)], stringsAsFactors = FALSE)
+    unit_groups <- val
+  } else {
+    cs <- qda_cases()
+    if (nrow(cs) == 0) stop("No cases yet (qda_case_add(), qda_cases_from_speakers(), qda_cases_from_variable()).", call. = FALSE)
+    val <- if (is.null(by)) cs$name else {
+      v <- if (by %in% names(cs)) cs[[by]] else rep(NA_character_, nrow(cs))
+      ifelse(is.na(v), "(ohne)", v)
+    }
+    cc <- .coding_cases(cd)
+    pairs <- unique(data.frame(i = cc$i, group = val[match(cc$case_id, cs$id)], stringsAsFactors = FALSE))
+    unit_groups <- val
+  }
+  groups <- if (unit == "case" && is.null(by)) unique(val) else sort(unique(val))
+  if ("(ohne)" %in% groups) groups <- c(setdiff(groups, "(ohne)"), "(ohne)")
   out <- tibble::tibble(code = tr$label, path = tr$path, depth = tr$depth)
+  code_of <- cd$code_id[pairs$i]
   for (g in groups) {
-    out[[g]] <- vapply(tr$id, function(i) {
-      sum(cd$code_id %in% .code_descendants(tr, i) & grp_of == g)
-    }, integer(1))
+    in_g <- pairs$group == g
+    out[[g]] <- vapply(tr$id, function(i) sum(code_of[in_g] %in% .code_descendants(tr, i)), integer(1))
     if (isTRUE(percent)) {
-      tot <- sum(grp_of == g)
+      tot <- sum(in_g)
       out[[g]] <- if (tot > 0) round(100 * out[[g]] / tot, 1) else 0
     }
   }
-  attr(out, "n_documents") <- stats::setNames(as.integer(table(factor(val, levels = groups))), groups)
+  n <- stats::setNames(as.integer(table(factor(unit_groups, levels = groups))), groups)
+  attr(out, "n_units") <- n
+  attr(out, "n_documents") <- if (unit == "document") n else NULL   # kept for older code
+  attr(out, "unit") <- unit
   out
 }

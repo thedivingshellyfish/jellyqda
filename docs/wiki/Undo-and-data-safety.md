@@ -64,5 +64,9 @@ of the action.
   computer (`127.0.0.1`), even though it is shown in the browser. This is
   checked by the automatic tests.
 - All data stays in **your** project file; nothing is uploaded.
+- Names can be replaced while importing, before the text is frozen – see
+  [Pseudonymising while importing](Importing-documents.md#pseudonymising-while-importing).
+- Merging a team member's project ([Team work](Team-work.md)) is not undone
+  with Ctrl+Z; jellyqda writes a backup right before it.
 - Do **not** commit interview data to git: the project's `.gitignore`
   excludes `*.jellyqda`, `originals/`, `exports/` and backups.

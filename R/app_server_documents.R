@@ -41,9 +41,14 @@
   shiny::observeEvent(input$import_btn, {
     shiny::req(input$import_files)
     # original upload names (datapath is only a temp name like 0.pdf)
-    qda_import(input$import_files$datapath, names = input$import_files$name,
-               segments = input$import_segrule %||% "blankline")
-    bump(); shiny::showNotification(.t("Importiert (Text eingefroren, Original in originals/)."), type = "message")
+    # rv$pseudo: active key list from the pseudonymisation dialog (R/app_server_pseudonyms.R)
+    res <- tryCatch(suppressMessages(qda_import(input$import_files$datapath, names = input$import_files$name,
+                                                segments = input$import_segrule %||% "blankline", pseudonyms = rv$pseudo)),
+                    error = function(e) { shiny::showNotification(conditionMessage(e), type = "error"); NULL })
+    if (is.null(res)) return()
+    bump()
+    shiny::showNotification(if (is.null(rv$pseudo)) .t("Importiert (Text eingefroren, Original in originals/).")
+                            else .t("Pseudonymisiert importiert (Text eingefroren; keine Originale gespeichert)."), type = "message")
   })
 }
 

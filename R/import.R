@@ -2,6 +2,7 @@
 # SHA-256 dedup (same content is never imported twice), originals copied to
 # originals/ under the display name (names= arg, e.g. real upload names),
 # broken PDFs import with a warning. Text is FROZEN here and never re-read.
+# Optional pseudonymisation before freezing: R/pseudonymise.R.
 
 # Import engine --------------------------------------------------------------
 # txt / md / docx / pdf are first-class formats; everything is normalized to
@@ -33,6 +34,12 @@
 #'   `"blankline"` (paragraphs, default), `"speaker"` (one segment per
 #'   speaker turn, e.g. `"[00:01:12] P: ..."`) or `"line"`. Can be changed
 #'   later with [qda_segments_set()]; see also [qda_segment_split()].
+#' @param pseudonyms Optional key list for pseudonymisation (see
+#'   [qda_pseudonyms()]): names of people, places, organisations ... are
+#'   replaced in the text -- and in the document name -- BEFORE the text is
+#'   frozen. The key list itself is not stored in the project, and the
+#'   original files are not copied to `originals/` (they contain the real
+#'   names). Check the list first with [qda_pseudonymise_preview()].
 #' @return A tibble with one row per input file: `id`, `name`, `format`,
 #'   `chars`, `status`.
 #' @export
@@ -44,10 +51,19 @@
 #' qda_import(system.file("extdata", "fieldnotes.pdf", package = "jellyqda"),
 #'            segments = "line")                  # one segment per line
 #' qda_sources()
+#' f <- file.path(tempdir(), "interview_anna.txt")
+#' writeLines(c("I: Anna, how did you start?", "Anna: In Hamburg, with Ben."), f)
+#' qda_import(f, pseudonyms = c("Anna" = "[Person A]", "Hamburg" = "[City 1]", "Ben" = "[Person B]"))
+#' qda_sources()$name[5]           # the name is pseudonymised too
 #' qda_close()
 qda_import <- function(files, copy_originals = TRUE, names = NULL,
-                       segments = c("blankline", "speaker", "line")) {
+                       segments = c("blankline", "speaker", "line"), pseudonyms = NULL) {
   segments <- match.arg(segments)
+  key <- if (!is.null(pseudonyms)) qda_pseudonyms(pseudonyms) else NULL   # R/pseudonymise.R
+  if (length(key) && isTRUE(copy_originals)) {
+    copy_originals <- FALSE
+    message("Pseudonymised import: the original files are not copied to originals/ (they contain the real names).")
+  }
   con <- qda_con()
   files <- normalizePath(as.character(files), mustWork = TRUE)
   rows <- list()
@@ -83,6 +99,11 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL,
       pdf = .read_pdf_file(f)
     )
     text <- .normalize_text(extracted$text)
+    n_pseudo <- NA_integer_
+    if (length(key)) {
+      ps <- .pseudo_apply(c(text, nm), key)
+      text <- ps$text[1]; nm <- ps$text[2]; n_pseudo <- sum(ps$counts)
+    }
     warn <- isTRUE(extracted$warn)
     if (warn) {
       warning(sprintf(
@@ -107,7 +128,8 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL,
     meta <- list(
       file = nm, original = orig_rel, sha256 = sha,
       encoding = extracted$encoding, pages = extracted$pages,
-      format = fmt, imported_at = .now()
+      format = fmt, imported_at = .now(),
+      pseudonymised = if (!is.na(n_pseudo)) TRUE else NULL
     )
     DBI::dbExecute(
       con,
@@ -117,12 +139,14 @@ qda_import <- function(files, copy_originals = TRUE, names = NULL,
     id <- DBI::dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
     log_event("import", list(
       source_id = id, file = nm, format = fmt,
-      chars = nchar(text, type = "chars"), sha256 = sha, warning = warn
+      chars = nchar(text, type = "chars"), sha256 = sha, warning = warn,
+      pseudonymised = if (!is.na(n_pseudo)) n_pseudo else NULL      # only the number, never the names
     ))
     rows[[length(rows) + 1]] <- tibble::tibble(
       id = id, name = nm, format = fmt,
       chars = nchar(text, type = "chars"),
-      status = if (warn) "imported with warning (broken text layer?)" else "ok"
+      status = if (warn) "imported with warning (broken text layer?)"
+               else if (!is.na(n_pseudo)) sprintf("ok, pseudonymised (%d replacements)", n_pseudo) else "ok"
     )
   }
   if (length(rows) == 0) {
