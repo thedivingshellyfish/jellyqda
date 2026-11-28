@@ -12,7 +12,8 @@ qda_query(
   unit = c("segment", "document"),
   subcodes = TRUE,
   source = NULL,
-  min_overlap = 1L
+  min_overlap = 1L,
+  case = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ coded (default \code{TRUE}).}
 
 \item{min_overlap}{Minimum number of characters a coding must overlap a
 passage.}
+
+\item{case}{Optional cases (ids or names, see \code{\link[=qda_case_add]{qda_case_add()}}): only
+passages that lie in one of these cases.}
 }
 \value{
 A tibble, one row per hit: \code{source_id}, \code{source}, \code{segment},
@@ -55,6 +59,8 @@ qda_source_set_var(1, "role", "project lead")
 qda_query(all = c("Career path", "Motivation"))        # both in the same segment
 qda_query(any = c("Motivation", "Team"), none = "Career path")
 qda_query(any = "Motivation", vars = list(role = "project lead"))
+qda_case_add("Person A"); qda_case_assign("Person A", 1, segment = 5:7)
+qda_query(any = "Motivation", case = "Person A")      # only this person's passages
 qda_close()
 }
 \seealso{

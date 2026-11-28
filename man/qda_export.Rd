@@ -8,7 +8,7 @@ qda_export(what = "all", path = NULL, report_documents = TRUE)
 }
 \arguments{
 \item{what}{One or more of \code{"all"}, \code{"segments"}, \code{"codings"}, \code{"codebook"},
-\code{"audit"}, \code{"report"}, \code{"qdpx"}.}
+\code{"audit"}, \code{"cases"}, \code{"report"}, \code{"qdpx"}.}
 
 \item{path}{Output directory (created if missing).}
 
@@ -29,11 +29,14 @@ Writes files into \code{path} (default: \verb{exports/} next to the project file
 \item \code{"codings"}: raw codings table -- CSV
 \item \code{"codebook"}: the code tree -- CSV and \code{.docx} (via officer)
 \item \code{"audit"}: the full events audit trail -- CSV
+\item \code{"cases"}: the cases with their variables and members (documents or
+passages) -- CSV, one row per member (see \code{\link[=qda_cases]{qda_cases()}})
 \item \code{"report"}: a standalone HTML report -- all documents with colored coding
 marks, the codebook, all memos and project statistics
 \item \code{"qdpx"}: the whole project in the REFI-QDA exchange format for MAXQDA,
 ATLAS.ti, NVivo, QualCoder ... (see \code{\link[=qda_export_qdpx]{qda_export_qdpx()}})
-\item \code{"all"}: all of the above except \code{"qdpx"}
+\item \code{"all"}: all of the above except \code{"qdpx"} (\code{"cases"} only if the
+project has cases)
 }
 }
 \examples{

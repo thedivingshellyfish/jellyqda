@@ -1,0 +1,95 @@
+# App dialogs of 0.10.0: cases (R/app_server_cases.R), code matrix by case
+# (R/app_server_tables.R), merging projects (R/app_server_merge.R) and
+# pseudonymisation at import (R/app_server_pseudonyms.R)
+
+html_of <- function(x) htmltools::renderTags(x)$html
+
+test_that("cases dialog: create, assign document and passage, variables, delete", {
+  skip_if_not_installed("shiny")
+  new_project(); on.exit(qda_close(), add = TRUE)
+  qda_import(ext(c("interview_01.txt", "interview_02.md")))
+  shiny::testServer(jellyqda:::.jellyqda_server, {
+    session$setInputs(open_source = 1L)
+    session$setInputs(cases_btn = 1)
+    expect_match(html_of(output$cases_body), "Noch keine F\u00e4lle")
+    session$setInputs(case_new = "Person A", case_new_doc = TRUE, case_add_btn = 1)
+    expect_equal(qda_cases()$name, "Person A"); expect_equal(qda_cases()$documents, 1L)
+    session$setInputs(selection = list(start = 5L, end = 40L, text = "x"))
+    session$setInputs(open_source = 2L)
+    session$setInputs(selection = list(start = 5L, end = 40L, text = "some passage"))
+    session$setInputs(case_assign_sel = 1)
+    m <- qda_case_members("Person A")
+    expect_equal(nrow(m), 2L); expect_equal(m$start[2], 5L)
+    session$setInputs(case_var_k = "role", case_var_v = "nurse", case_var_set = 1)
+    expect_equal(qda_case_vars("Person A")[["role"]], "nurse")
+    body <- html_of(output$cases_body)
+    expect_match(body, "role = <b>nurse</b>"); expect_match(body, "Alle F\u00e4lle")
+    session$setInputs(case_unassign = m$id[2])
+    expect_equal(nrow(qda_case_members("Person A")), 1L)
+    session$setInputs(case_var_del = "role")
+    expect_equal(length(qda_case_vars("Person A")), 0L)
+    session$setInputs(case_rename = "P-A", case_rename_btn = 1)
+    expect_equal(qda_cases()$name, "P-A")
+    session$setInputs(case_delete_btn = 1)
+    expect_equal(nrow(qda_cases()), 0L)
+  })
+})
+
+test_that("code matrix: columns by case and by case variable", {
+  skip_if_not_installed("shiny")
+  viz_setup(); on.exit(qda_close(), add = TRUE)
+  viz_code("A", 2); viz_code("B", 3)
+  qda_case_add("X"); qda_case_assign("X", 1, segment = 2); qda_case_set_var("X", "group", "g1")
+  qda_case_add("Y"); qda_case_assign("Y", 1, segment = 3); qda_case_set_var("Y", "group", "g2")
+  shiny::testServer(jellyqda:::.jellyqda_server, {
+    h <- html_of(output$matrix_panel)
+    expect_match(h, 'value="@case"'); expect_match(h, 'value="@case:group"')
+    session$setInputs(mx_by = "@case")
+    h <- html_of(output$matrix_panel)
+    expect_match(h, "<th>X</th>"); expect_match(h, "<th>Y</th>")
+    session$setInputs(mx_by = "@case:group")
+    expect_match(html_of(output$matrix_panel), "g1 <span class=\"jq-sub\">\\(1 Fall\\)")
+  })
+})
+
+test_that("merge dialog: preview, then merge", {
+  skip_if_not_installed("shiny")
+  d <- tempfile("mapp-"); dir.create(d)
+  lead <- file.path(d, "lead.jellyqda")
+  qda_open(lead, auto_snapshot = Inf); on.exit(qda_close(), add = TRUE)
+  qda_import(ext("interview_01.txt")); qda_code_add("Team")
+  copy <- qda_intercoder_copy(file.path(d, "copy.jellyqda"))
+  qda_close(); qda_open(copy, auto_snapshot = Inf); qda_code(1, "Team", segment = 2); qda_close()
+  qda_open(lead, auto_snapshot = Inf)
+  shiny::testServer(jellyqda:::.jellyqda_server, {
+    session$setInputs(merge_btn = 1, merge_add_docs = TRUE)
+    session$setInputs(merge_file = data.frame(name = "copy.jellyqda", size = 1, type = "", datapath = copy))
+    p <- html_of(output$merge_preview)
+    expect_match(p, "Vorschau f\u00fcr copy.jellyqda"); expect_match(p, "<td>Codings</td><td><b>1</b>")
+    expect_equal(nrow(qda_codings()), 0L)
+    session$setInputs(merge_go = 1)
+    expect_equal(nrow(qda_codings()), 1L)
+  })
+})
+
+test_that("pseudonymisation dialog: key list, preview, import with pseudonyms", {
+  skip_if_not_installed("shiny")
+  p <- new_project(); on.exit(qda_close(), add = TRUE)
+  f <- file.path(tempfile(), "0.txt"); dir.create(dirname(f))
+  writeLines(c("I: Anna, how did you start?", "B: With Ben in Hamburg."), f)
+  shiny::testServer(jellyqda:::.jellyqda_server, {
+    session$setInputs(import_files = data.frame(name = "Anna.txt", size = 1, type = "text/plain", datapath = f))
+    session$setInputs(pseudo_btn = 1, pseudo_word = TRUE, pseudo_case = FALSE,
+                      pseudo_text = "Anna = [Person A]\nBen = [Person B]\nKiel = [City 2]")
+    pv <- html_of(output$pseudo_preview)
+    expect_match(pv, "<td>Anna</td><td>\\[Person A\\]</td><td>1</td>")
+    expect_match(pv, "anders geschrieben")                                 # Kiel: 0 hits
+    session$setInputs(pseudo_ok = 1)
+    expect_match(html_of(output$pseudo_state), "Pseudonymisierung aktiv: 3")
+    session$setInputs(import_btn = 1)
+    expect_equal(qda_sources()$name, "[Person A].txt")
+    expect_false(grepl("Anna|Ben", paste(qda_source_segments(1)$text, collapse = " ")))
+    session$setInputs(pseudo_off = 1)
+    expect_null(rv$pseudo)
+  })
+})

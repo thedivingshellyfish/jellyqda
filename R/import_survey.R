@@ -154,6 +154,9 @@ qda_survey_columns <- function(file, sheet = 1, name = NULL) {
 #'   `"survey"` gives `survey_017`.
 #' @param name File name to use for `originals/` and the default prefix (e.g.
 #'   the original name of an upload).
+#' @param pseudonyms Optional key list (see [qda_pseudonyms()]): names in the
+#'   answers, the ids and the variable values are replaced before the text is
+#'   frozen; the survey file is then not copied to `originals/`.
 #' @return Invisibly, a tibble of the new documents (`id`, `name`, `format`,
 #'   `chars`, `status`), like [qda_import()]. Attribute `"skipped"`: number
 #'   of respondents without answers or already imported.
@@ -168,8 +171,11 @@ qda_survey_columns <- function(file, sheet = 1, name = NULL) {
 #' qda_source_vars(1)
 #' qda_close()
 qda_import_survey <- function(file, text = NULL, vars = NULL, id = NULL, sheet = 1,
-                              code_questions = FALSE, prefix = NULL, name = NULL) {
+                              code_questions = FALSE, prefix = NULL, name = NULL, pseudonyms = NULL) {
   con <- qda_con()
+  key <- if (!is.null(pseudonyms)) qda_pseudonyms(pseudonyms) else NULL   # R/pseudonymise.R
+  pz <- function(x) if (length(key)) .pseudo_apply(x, key)$text else x
+  n_pseudo <- 0L
   file <- normalizePath(file, mustWork = TRUE)
   fname <- basename(name %||% file)
   df <- .read_survey(file, sheet, fname)
@@ -191,22 +197,24 @@ qda_import_survey <- function(file, text = NULL, vars = NULL, id = NULL, sheet =
   # original survey file, once
   odir <- file.path(project_dir(), "originals"); dir.create(odir, recursive = TRUE, showWarnings = FALSE)
   orig <- .unique_name(fname, list.files(odir))
-  if (!any(grepl(sha, known, fixed = TRUE))) file.copy(file, file.path(odir, orig))
+  if (!length(key) && !any(grepl(sha, known, fixed = TRUE))) file.copy(file, file.path(odir, orig))
   taken <- DBI::dbGetQuery(con, "SELECT name FROM sources")$name
   rows <- list(); skipped <- 0L; answer_pos <- list()
   DBI::dbWithTransaction(con, {
     for (i in seq_len(nrow(df))) {
-      if (paste(sha, ids[i]) %in% known) { skipped <- skipped + 1L; next }
+      if (paste(sha, pz(ids[i])) %in% known) { skipped <- skipped + 1L; next }
       ans <- .survey_clean(vapply(text, function(cl) df[[cl]][i], character(1)))
+      if (length(key)) { ps <- .pseudo_apply(ans, key); ans <- ps$text; n_pseudo <- n_pseudo + sum(ps$counts) }
       has <- nzchar(ans)
       if (!any(has)) { skipped <- skipped + 1L; next }
       d <- .survey_doc(text[has], ans[has])
       body <- d$body; a_start <- d$a_start; a_end <- d$a_end
-      nm <- .unique_name(paste0(prefix, "_", ids[i]), taken); taken <- c(taken, nm)
+      nm <- .unique_name(pz(paste0(prefix, "_", ids[i])), taken); taken <- c(taken, nm)
       v <- if (length(vars)) stats::setNames(as.list(vapply(vars, function(cl) df[[cl]][i], character(1))), vars) else list()
-      v <- v[nzchar(unlist(v))]
-      meta <- list(file = nm, original = file.path("originals", orig), survey = fname, survey_sha256 = sha,
-                   respondent = ids[i], format = "survey", imported_at = .now(), variables = v)
+      v <- lapply(v[nzchar(unlist(v))], pz)
+      meta <- list(file = nm, original = if (length(key)) NULL else file.path("originals", orig), survey = fname,
+                   survey_sha256 = sha, respondent = pz(ids[i]), format = "survey", imported_at = .now(), variables = v,
+                   pseudonymised = if (length(key)) TRUE else NULL)
       DBI::dbExecute(con, "INSERT INTO sources (name, format, frozen_text, meta_json) VALUES (?, ?, ?, ?)",
                      params = list(nm, "survey", body, as.character(.to_json(meta))))
       sid <- DBI::dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
@@ -220,6 +228,7 @@ qda_import_survey <- function(file, text = NULL, vars = NULL, id = NULL, sheet =
     tibble::tibble(id = integer(), name = character(), format = character(), chars = integer(), status = character())
   log_event("import", list(survey = fname, documents = nrow(out), skipped = skipped,
                            questions = length(text), variables = length(vars),
+                           pseudonymised = if (length(key)) n_pseudo else NULL,
                            desc = sprintf(.t("Fragebogen importiert: %s (%d Dokumente, %d offene Fragen)"),
                                           fname, nrow(out), length(text))))
   # optional: one code per question, every answer coded with it (one undo step)

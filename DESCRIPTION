@@ -1,29 +1,32 @@
 Package: jellyqda
 Type: Package
 Title: 'RStudio'-Native, Fully Offline Coding of Interview Transcripts
-Version: 0.9.4
+Version: 0.10.0
 Authors@R: person("Shelly", email = "jellyqda@systemli.org", role = c("aut", "cre"))
-Description: Qualitative data analysis ('QDA') of interview transcripts,
-    field notes and open survey answers on your own computer, completely
-    offline. Supports deductive and inductive coding with codes and
-    subcodes, coding guidelines (definition, anchor example, coding rule),
-    memos, segments by speaker turns, the summarizing qualitative content
-    analysis of Mayring (2014) <https://nbn-resolving.org/urn:nbn:de:0168-ssoar-395173>,
-    word frequencies, keyword in context, case comparisons and code queries
-    (AND, OR, NOT). Intercoder agreement between two coders is measured with
-    Cohen's kappa (Cohen 1960) <doi:10.1177/001316446002000104>, Brennan and
-    Prediger's kappa (Brennan and Prediger 1981) <doi:10.1177/001316448104100307>
-    and Krippendorff's alpha (Hayes and Krippendorff 2007)
+Description: Qualitative data analysis ('QDA') of interview transcripts, field notes
+    and open survey answers on your own computer, completely offline.
+    Supports deductive and inductive coding with codes and subcodes, coding
+    guidelines (definition, anchor example, coding rule), memos, segments by
+    speaker turns, the summarizing qualitative content analysis of Mayring
+    (2014) <https://nbn-resolving.org/urn:nbn:de:0168-ssoar-395173>, word
+    frequencies, keyword in context, case comparisons and code queries (AND,
+    OR, NOT). Cases can span several documents or parts of a document (e.g.
+    the participants of a group interview) and have their own variables.
+    Intercoder agreement between two coders is measured with Cohen's kappa
+    (Cohen 1960) <doi:10.1177/001316446002000104>, Brennan and Prediger's
+    kappa (Brennan and Prediger 1981) <doi:10.1177/001316448104100307> and
+    Krippendorff's alpha (Hayes and Krippendorff 2007)
     <doi:10.1080/19312450709336664>, with a blind project copy and consensus
-    coding. Graphics (code co-occurrence heatmap, code network, document
-    portraits) are plain 'SVG'; projects can be exported in the 'REFI-QDA'
-    exchange format for other 'QDA' software. Text is imported from plain
-    text, 'Markdown', 'Word' and 'PDF' files or from survey tables ('CSV',
-    'Excel') and frozen at import, so character offsets never drift. All
-    project data lives in a single 'SQLite' file; every action is recorded in
-    an audit trail and can be undone. A local 'shiny' app with an English and
-    a German user interface and a scriptable API that returns tibbles share
-    the same project file.
+    coding, and team members' project copies can be merged. Graphics (code
+    co-occurrence heatmap, code network, document portraits) are plain
+    'SVG'; projects can be exported in the 'REFI-QDA' exchange format for
+    other 'QDA' software. Text is imported from plain text, 'Markdown',
+    'Word' and 'PDF' files or from survey tables ('CSV', 'Excel'),
+    optionally pseudonymised, and frozen at import, so character offsets
+    never drift. All project data lives in a single 'SQLite' file; every
+    action is recorded in an audit trail and can be undone. A local 'shiny'
+    app with an English and a German user interface and a scriptable API
+    that returns tibbles share the same project file.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US

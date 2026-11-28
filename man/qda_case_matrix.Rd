@@ -4,22 +4,34 @@
 \alias{qda_case_matrix}
 \title{Case comparison: codes x values of a document variable}
 \usage{
-qda_case_matrix(by, percent = FALSE)
+qda_case_matrix(by = NULL, percent = FALSE, unit = c("document", "case"))
 }
 \arguments{
-\item{by}{Name of a document variable (see \code{\link[=qda_source_set_var]{qda_source_set_var()}}).}
+\item{by}{Name of a document variable (see \code{\link[=qda_source_set_var]{qda_source_set_var()}}) or,
+with \code{unit = "case"}, of a case variable (see \code{\link[=qda_case_set_var]{qda_case_set_var()}}).
+With \code{unit = "case"} it may be \code{NULL}: one column per case.}
 
 \item{percent}{Logical; column percentages (share of all codings of the
 group) instead of counts.}
+
+\item{unit}{\code{"document"} (default) or \code{"case"}.}
 }
 \value{
-A tibble: \code{code}, \code{path}, \code{depth}, then one column per value.
+A tibble: \code{code}, \code{path}, \code{depth}, then one column per value (or
+case). Attribute \code{"n_units"}: number of documents (or cases) per column.
 }
 \description{
 Counts codings per code (rows, in code-tree order) and per value of a
 document variable (columns), e.g. \code{by = "Rolle"}. Codes count their
 subcodes as well (column \code{with_subcodes}). Documents without the variable
 are collected in the column \code{(ohne)}.
+}
+\details{
+With \code{unit = "case"} the columns are cases instead of documents (see
+\code{\link[=qda_case_add]{qda_case_add()}}): one column per case, or -- with \code{by} -- one column per
+value of a case variable. A coding counts for a case when it lies in one
+of the case's documents or passages; a coding that belongs to two cases of
+the same group counts once.
 }
 \examples{
 qda_open(file.path(tempfile(), "example.jellyqda"))
@@ -31,5 +43,7 @@ qda_code(1, "Motivation", segment = 2)
 qda_code(2, "Motivation", segment = 1)
 qda_case_matrix("role")
 qda_case_matrix("role", percent = TRUE)
+qda_case_add("Person A", sources = 1:2)              # one person, two interviews
+qda_case_matrix(unit = "case")
 qda_close()
 }

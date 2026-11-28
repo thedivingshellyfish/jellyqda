@@ -69,6 +69,9 @@
             shiny::actionButton("export_report_btn", .t("Bericht als HTML-Datei speichern"),
                                 icon = .jq_ico("chart-column"), class = "btn-sm jq-menuitem"),
             shiny::tags$hr(),
+            # merge the copy of a team member (R/app_server_merge.R)
+            shiny::actionButton("merge_btn", .t("Projekt zusammenf\u00fchren \u2026"), icon = .jq_ico("code-merge"),
+                                class = "btn-sm jq-menuitem"),
             shiny::actionButton("backup_btn", .t("Backup anlegen (.zip)"), icon = .jq_ico("box-archive"),
                                 class = "btn-sm jq-menuitem"),
             shiny::actionButton("layout_reset", .t("Layout zur\u00fccksetzen"), icon = .jq_ico("table-columns"),
@@ -117,9 +120,16 @@ shiny::div(class = "panelhead", draggable = "true", fa("folder-tree"), shiny::sp
             shiny::p(class = "jq-hint", style = "padding:.2rem;margin:.2rem 0",
                      .t("oder Dateien hierher ziehen")),
             shiny::actionButton("import_btn", .t("Importieren"), icon = .jq_ico("plus"), class = "btn-sm btn-primary"),
+            # optional key list: names are replaced before the text is frozen (R/app_server_pseudonyms.R)
+            shiny::actionLink("pseudo_btn", .t("Pseudonymisieren \u2026"), icon = .jq_ico("user-secret"), class = "pseudo-link"),
+            shiny::uiOutput("pseudo_state"),
             # open answers of an online survey (CSV / Excel), R/app_server_survey.R
             shiny::actionButton("survey_btn", .t("Fragebogen importieren \u2026"), icon = .jq_ico("table-list"),
                                 class = "btn-sm btn-outline-secondary", style = "margin-top:.35rem"),
+            # cases independent of documents (R/app_server_cases.R)
+            shiny::actionButton("cases_btn", .t("F\u00e4lle \u2026"), icon = .jq_ico("users"),
+                                class = "btn-sm btn-outline-secondary", style = "margin-top:.35rem",
+                                title = .t("Personen, Teams, Organisationen \u2013 unabh\u00e4ngig von den Dokumenten")),
             shiny::hr(),
             shiny::selectInput("var_doc", .t("Variablen f\u00fcr Dokument"), choices = character()),
             shiny::div(style = "display:flex; gap:.3rem;",

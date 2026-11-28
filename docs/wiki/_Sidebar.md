@@ -13,6 +13,8 @@
 - [Analysis](Analysis.md)
 - [Intercoder agreement](Intercoder-agreement.md)
 - [Graphics](Graphics.md)
+- [Cases](Cases.md)
+- [Team work](Team-work.md)
 - [Evaluation & export](Evaluation-and-export.md)
 - [Undo & data safety](Undo-and-data-safety.md)
 

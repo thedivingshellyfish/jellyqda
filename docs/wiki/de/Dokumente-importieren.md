@@ -67,6 +67,40 @@ In R: `qda_survey_columns("umfrage.csv")` und
 brauchen das Paket `readxl` (`install.packages("readxl")`); CSV geht immer. Ein
 fiktives Beispiel: `system.file("extdata", "survey_demo.csv", package = "jellyqda")`.
 
+## Pseudonymisieren beim Import
+
+*Neu in Version 0.10.0.* Der Text eines Dokuments wird beim Import
+eingefroren und lässt sich danach nicht mehr ändern. Namen von Personen,
+Orten und Organisationen müssen also **vorher** ersetzt werden – das kann
+jellyqda für dich übernehmen.
+
+Unter dem Import-Knopf: **Pseudonymisieren …**. Trag eine Zeile je Name ein,
+`Original = Ersatz`, oder lade eine Liste (CSV / Excel mit zwei Spalten:
+Original, Ersatz). Wähl vorher unter **Dateien…** die Transkripte – dann zeigt
+der Dialog, wie oft jeder Name ersetzt wird. Ein Name mit 0 Treffern ist
+vielleicht im Transkript anders geschrieben (oder schon Teil eines längeren
+Namens, z. B. „Schmidt“ in „Anna Schmidt“; längere Namen werden zuerst
+ersetzt).
+
+<img src="../../screenshots/de/50-pseudonymisieren.png" alt="Pseudonymisieren beim Import: Zuordnungsliste und Vorschau" width="720">
+
+Klick **Übernehmen**: Solange der grüne Hinweis *Pseudonymisierung aktiv* zu
+sehen ist, ersetzen **Importieren** (und der Fragebogen-Import) die Namen im
+Text **und im Dokumentnamen**. Optionen: nur ganze Wörter (Standard: „Ina“
+trifft nicht „Martina“), Groß-/Kleinschreibung ignorieren.
+
+Was jellyqda **nicht** aufbewahrt: die Zuordnungsliste (nur für diese
+App-Sitzung), die Originaldateien (sie werden nicht nach `originals/`
+kopiert) und die echten Namen (das Protokoll hält nur fest, wie viele
+Ersetzungen es gab). Bewahre deine Zuordnungsliste getrennt und sicher auf –
+sie ist die einzige Verbindung zu den echten Namen.
+
+```r
+key <- qda_pseudonyms("zuordnung.csv")               # oder c("Anna Schmidt" = "[Person A]", ...)
+qda_pseudonymise_preview(c("int_01.docx", "int_02.docx"), key)   # erst prüfen
+qda_import(c("int_01.docx", "int_02.docx"), pseudonyms = key)
+```
+
 ## Variablen (Fallmerkmale)
 
 Jedem Dokument kannst du Merkmale wie *Alter*, *Rolle* oder *Dauer* geben.
@@ -77,6 +111,9 @@ Unten im Dokumente-Panel: Dokument wählen, Variable und Wert eintragen,
 
 Die Variablen erscheinen als Chips über dem Text. In der Codings-Liste kannst
 du mit **„Nur Dokumente mit Variable“** auf z. B. `Rolle=Projektleitung` filtern.
+Ist ein Fall nicht ein Dokument – eine Person, zweimal interviewt, die
+Teilnehmenden eines Gruppeninterviews –, nimm [Fälle](Faelle.md) mit eigenen
+Fallvariablen.
 
 ```r
 qda_source_set_var("interview_01.docx", "Alter", "34")

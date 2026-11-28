@@ -31,12 +31,15 @@
   memos     = c("id", "kind", "title", "text_", "source_id", "code_id", "start", "end",
                 "created_at", "updated_at"),
   summaries = c("id", "code_id", "source_id", "text_", "updated_at"),
-  segments  = c("id", "source_id", "start", "end")
+  segments  = c("id", "source_id", "start", "end"),
+  cases     = c("id", "name", "description", "meta_json"),
+  case_members = c("id", "case_id", "source_id", "start", "end")
 )
 
 # Order in which tables are written when restoring (parents before children)
 # and deleted (children before parents).
-.SNAP_ORDER <- c("sources", "codes", "codings", "memos", "summaries", "segments")
+.SNAP_ORDER <- c("sources", "codes", "codings", "memos", "summaries", "segments",
+                 "cases", "case_members")
 
 #' Read the current rows `ids` of `table` (only the snapshot columns).
 #' @noRd
@@ -152,7 +155,9 @@
                "memo_add", "memo_delete", "memo_update",
                "code_add", "code_rename", "code_delete", "code_move", "code_update", "code_merge",
                "source_var_set", "source_var_del", "summary_set",
-               "segments_set", "segment_split", "segment_merge", "segment_adjust")
+               "segments_set", "segment_split", "segment_merge", "segment_adjust",
+               "case_add", "case_update", "case_delete", "case_assign", "case_unassign",
+               "case_var_set", "case_var_del", "cases_build")
 
 # Legacy events (no snapshot) that the old logic can undo.
 .LEGACY_UNDOABLE <- c("coding_add", "coding_delete", "coding_memo", "memo_add",

@@ -39,7 +39,11 @@ Browser.
 - 🌙 **Dark Mode**, gut lesbar (geprüfter Kontrast).
 - 🌐 **Deutsch und Englisch:** Oberfläche und Bericht in beiden Sprachen, umschaltbar per Klick (**DE/EN**).
 
-> 🆕 **Neu in Version 0.9.3:** **Abfragen** (Codes kombiniert mit UND / ODER / NICHT, nach Gruppen) und
+> 🆕 **Neu in Version 0.10.0:** **Fälle** unabhängig von Dokumenten (mehrere
+> Interviews je Person, die Teilnehmenden eines Gruppeninterviews,
+> Fallvariablen, Fälle vergleichen), **Projekte zusammenführen** für die
+> Teamarbeit und **Pseudonymisieren beim Import**.
+> **0.9.3:** **Abfragen** (Codes kombiniert mit UND / ODER / NICHT, nach Gruppen) und
 > **Fragebogen-Import** (offene Antworten aus CSV / Excel, ein Dokument je Person).
 > **0.9.2:** das [Wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/de/),
 > jellyqda-Logo im Browser-Tab, aktualisierte Website.

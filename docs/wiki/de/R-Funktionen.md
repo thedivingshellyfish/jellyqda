@@ -25,6 +25,20 @@ jeder Funktion: `?qda_code` usw. Eine kommentierte Vorlage liegt in
 | `qda_sources()` | alle Dokumente |
 | `qda_view(source)` | Dokument mit Markierungen im Viewer |
 | `qda_source_vars()` / `qda_source_set_var()` / `qda_source_del_var()` | Variablen |
+| `qda_pseudonyms(x)` / `qda_pseudonymise_preview(files, key)` | Zuordnungsliste für `qda_import(..., pseudonyms = key)`, vorher prüfen |
+
+## Fälle und Teamarbeit
+
+| Funktion | Zweck |
+|---|---|
+| `qda_case_add(name, sources)` / `qda_cases()` | Fall anlegen / alle Fälle mit Variablen |
+| `qda_case_assign(case, source, start, end, segment)` / `qda_case_unassign()` | Dokumente oder Stellen in einen Fall oder heraus |
+| `qda_case_members(case)` | was zu einem Fall gehört |
+| `qda_case_set_var()` / `qda_case_vars()` / `qda_case_del_var()` | Fallvariablen |
+| `qda_cases_from_speakers(source)` / `qda_cases_from_variable(key)` | viele Fälle auf einmal |
+| `qda_case_update()` / `qda_case_delete()` | umbenennen, löschen |
+| `qda_case_matrix(by, unit = "case")` | Codes x Fälle oder x Werte einer Fallvariable |
+| `qda_merge(other, dry_run = TRUE)` | Projektdatei eines Teammitglieds zusammenführen (erst Vorschau) |
 
 ## Segmente
 

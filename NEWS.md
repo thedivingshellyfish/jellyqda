@@ -1,3 +1,53 @@
+# jellyqda 0.10.0
+
+## New features
+
+  * **Cases independent of documents.** A case -- a person, a team, an
+    organisation -- can consist of several whole documents (one person
+    interviewed twice) or of passages (the turns of one participant in a
+    group interview). Cases have their own case variables. Button
+    **Fälle … / Cases …** in the documents panel; `qda_case_add()`,
+    `qda_case_assign()`, `qda_case_unassign()`, `qda_case_members()`,
+    `qda_case_update()`, `qda_case_delete()`, `qda_cases()`, case variables
+    with `qda_case_set_var()` / `qda_case_vars()` / `qda_case_del_var()`.
+    Many at once: `qda_cases_from_speakers()` (group interview: one case per
+    speaker) and `qda_cases_from_variable()` (one case per value of a
+    document variable). Every step is undoable.
+  * Cases everywhere: `qda_case_matrix(unit = "case")` and the code matrix
+    (columns *Cases* and *Case variable: …*), `qda_query(case = )`, a
+    section *Cases* in the report, `cases_<time>.csv` in `qda_export("all")`
+    and cases in the REFI-QDA export (`Cases` with `SourceRef` /
+    `SelectionRef` and variables).
+  * **Merging projects** for team work: `qda_merge()` and **Export → Projekt
+    zusammenführen … / Merge projects …** take codings, new codes, memos,
+    document and case variables, summary grid cells, cases and -- if wanted
+    -- missing documents from a team member's copy. Documents are matched by
+    their text, codes by their path; nothing is added twice, and where both
+    projects differ the open project keeps its value (counted as a
+    conflict). A preview (`dry_run = TRUE`) shows what would happen; a
+    backup is written before merging. The other file is only read.
+  * **Pseudonymisation at import.** `qda_import(pseudonyms = )` and
+    `qda_import_survey(pseudonyms = )` replace names in the text and in the
+    document name before the text is frozen; `qda_pseudonyms()` reads a key
+    list (CSV / Excel / "A = B" lines / named vector, longest names first,
+    whole words), `qda_pseudonymise_preview()` counts the hits per name. In
+    the app: **Pseudonymisieren … / Pseudonymise …** under the import button,
+    with a preview. The key list is never stored, originals are not copied
+    to `originals/`, and the audit trail only records the number of
+    replacements.
+
+## Other
+
+  * New tables `cases` and `case_members`; older project files are upgraded
+    when they are opened.
+  * `qda_case_matrix()`: `by` may be `NULL` with `unit = "case"`; attribute
+    `n_units` (the old `n_documents` is kept for documents).
+  * Wiki: new pages *Cases* / *Fälle* and *Team work* / *Teamarbeit*, a
+    section on pseudonymisation in *Importing documents*; screenshots 46–50.
+  * Landing page: the card "Exchange with other software" shows the export
+    menu (it showed the document portraits); the German page's
+    "Assistenz kennenlernen" jumps to the assistant section.
+
 # jellyqda 0.9.4
 
 Preparation for CRAN; no new features.

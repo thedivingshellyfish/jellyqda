@@ -31,11 +31,33 @@ reference:
     - qda_import
     - qda_survey_columns
     - qda_import_survey
+    - qda_pseudonyms
+    - qda_pseudonymise_preview
     - qda_sources
     - qda_source_set_var
     - qda_source_del_var
     - qda_source_vars
     - qda_source_segments
+
+- title: Fälle und Teamarbeit
+  desc: >
+    Fälle unabhängig von Dokumenten (mehrere Interviews je Person,
+    Teilnehmende eines Gruppeninterviews) mit Fallvariablen, und das
+    Zusammenführen der Projektdateien eines Teams.
+  contents:
+    - qda_cases
+    - qda_case_add
+    - qda_case_assign
+    - qda_case_unassign
+    - qda_case_members
+    - qda_case_update
+    - qda_case_delete
+    - qda_case_vars
+    - qda_case_set_var
+    - qda_case_del_var
+    - qda_cases_from_speakers
+    - qda_cases_from_variable
+    - qda_merge
 
 - title: Code System und Codings
   desc: >

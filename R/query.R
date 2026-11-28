@@ -7,7 +7,8 @@
 #
 # A passage is a unit of analysis (R/units.R): a segment (default, e.g. a
 # speaker turn) or a whole document. A code counts with its subcodes unless
-# subcodes = FALSE. The app shows this as the tab "Abfrage" in the analysis
+# subcodes = FALSE. `case` restricts the search to the passages of some
+# cases (cases_data.R). The app shows this as the tab "Abfrage" in the analysis
 # window (R/app_server_query.R).
 
 #' Code ids a query term stands for: the code (path or unique label) and, if
@@ -39,6 +40,8 @@
 #' @param subcodes Logical; a code also counts when one of its subcodes is
 #'   coded (default `TRUE`).
 #' @param source Optional documents (ids or names) to search.
+#' @param case Optional cases (ids or names, see [qda_case_add()]): only
+#'   passages that lie in one of these cases.
 #' @param min_overlap Minimum number of characters a coding must overlap a
 #'   passage.
 #' @return A tibble, one row per hit: `source_id`, `source`, `segment`,
@@ -56,10 +59,12 @@
 #' qda_query(all = c("Career path", "Motivation"))        # both in the same segment
 #' qda_query(any = c("Motivation", "Team"), none = "Career path")
 #' qda_query(any = "Motivation", vars = list(role = "project lead"))
+#' qda_case_add("Person A"); qda_case_assign("Person A", 1, segment = 5:7)
+#' qda_query(any = "Motivation", case = "Person A")      # only this person's passages
 #' qda_close()
 qda_query <- function(all = NULL, any = NULL, none = NULL, vars = NULL,
                       unit = c("segment", "document"), subcodes = TRUE,
-                      source = NULL, min_overlap = 1L) {
+                      source = NULL, min_overlap = 1L, case = NULL) {
   unit <- match.arg(unit)
   all <- unique(as.character(all)); any <- unique(as.character(any)); none <- unique(as.character(none))
   if (length(all) == 0 && length(any) == 0) stop("Give at least one code in `all` or `any`.", call. = FALSE)
@@ -99,13 +104,17 @@ qda_query <- function(all = NULL, any = NULL, none = NULL, vars = NULL,
   if (length(all)) hit <- hit & rowSums(M[, col(all), drop = FALSE]) == length(all)
   if (length(any)) hit <- hit & rowSums(M[, col(any), drop = FALSE]) > 0
   if (length(none)) hit <- hit & rowSums(M[, col(none), drop = FALSE]) == 0
+  if (length(case)) {
+    cids <- vapply(case, function(x) as.integer(.resolve_case(x)$id), integer(1))
+    hit <- hit & .in_cases(units$source_id, units$start, units$end, cids)
+  }
   idx <- which(hit)
   present <- vapply(idx, function(i) paste(terms[M[i, ] & terms %in% c(all, any)], collapse = ", "), character(1))
   u <- units[idx, , drop = FALSE]
   out <- tibble::tibble(source_id = as.integer(u$source_id), source = u$source, segment = as.integer(u$segment),
                         start = as.integer(u$start), end = as.integer(u$end), codes = present,
                         text = .passages(u$source_id, u$start, u$end))
-  attr(out, "info") <- list(all = all, any = any, none = none, vars = vars, unit = unit,
+  attr(out, "info") <- list(all = all, any = any, none = none, vars = vars, unit = unit, case = case,
                             subcodes = subcodes, units = nrow(units), documents = nrow(src))
   out
 }

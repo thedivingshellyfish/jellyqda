@@ -38,7 +38,11 @@ browser, with an **English and a German** user interface.
 - 🌐 **English and German:** user interface and report in both languages, switchable with one click (**DE/EN**).
 - 🌙 **Dark mode**, easy to read (checked contrast).
 
-> 🆕 **New in version 0.9.3:** **queries** (codes combined with AND / OR / NOT, by group) and
+> 🆕 **New in version 0.10.0:** **cases** independent of documents (several
+> interviews per person, the participants of a group interview, case
+> variables, comparing cases), **merging projects** for team work and
+> **pseudonymising while importing**.
+> **0.9.3:** **queries** (codes combined with AND / OR / NOT, by group) and
 > **survey import** (open answers from CSV / Excel, one document per respondent).
 > **0.9.2:** the [wiki online](https://thedivingshellyfish.github.io/jellyqda/wiki/),
 > jellyqda logo in the browser tab, updated website.

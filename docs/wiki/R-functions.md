@@ -25,6 +25,20 @@ analyses. All functions return **tibbles**. Detailed help for every function:
 | `qda_sources()` | all documents |
 | `qda_view(source)` | document with marks in the Viewer |
 | `qda_source_vars()` / `qda_source_set_var()` / `qda_source_del_var()` | variables |
+| `qda_pseudonyms(x)` / `qda_pseudonymise_preview(files, key)` | key list for `qda_import(..., pseudonyms = key)`, check it first |
+
+## Cases and team work
+
+| Function | Purpose |
+|---|---|
+| `qda_case_add(name, sources)` / `qda_cases()` | create a case / all cases with their variables |
+| `qda_case_assign(case, source, start, end, segment)` / `qda_case_unassign()` | documents or passages in or out of a case |
+| `qda_case_members(case)` | what belongs to a case |
+| `qda_case_set_var()` / `qda_case_vars()` / `qda_case_del_var()` | case variables |
+| `qda_cases_from_speakers(source)` / `qda_cases_from_variable(key)` | build many cases at once |
+| `qda_case_update()` / `qda_case_delete()` | rename, delete |
+| `qda_case_matrix(by, unit = "case")` | codes x cases or x values of a case variable |
+| `qda_merge(other, dry_run = TRUE)` | merge a team member's project file (preview first) |
 
 ## Segments
 

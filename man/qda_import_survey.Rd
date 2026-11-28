@@ -12,7 +12,8 @@ qda_import_survey(
   sheet = 1,
   code_questions = FALSE,
   prefix = NULL,
-  name = NULL
+  name = NULL,
+  pseudonyms = NULL
 )
 }
 \arguments{
@@ -37,6 +38,10 @@ question.}
 
 \item{name}{File name to use for \verb{originals/} and the default prefix (e.g.
 the original name of an upload).}
+
+\item{pseudonyms}{Optional key list (see \code{\link[=qda_pseudonyms]{qda_pseudonyms()}}): names in the
+answers, the ids and the variable values are replaced before the text is
+frozen; the survey file is then not copied to \verb{originals/}.}
 }
 \value{
 Invisibly, a tibble of the new documents (\code{id}, \code{name}, \code{format},
