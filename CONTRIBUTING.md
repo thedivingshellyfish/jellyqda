@@ -15,7 +15,7 @@ R CMD build . && R CMD check --as-cran jellyqda_*.tar.gz   # package check
 - R code in `R/` must stay **ASCII-only** (use `\u00e4` etc. for umlauts) so
   the package builds everywhere; code comments are written in English.
 - User-facing texts are written in German as `.t("...")` (R) or `jqT('...')`
-  (JS) and translated in `R/i18n_catalog.R`. `tests/testthat/test-i18n.R`
+  (JS) and translated in `R/i18n_catalog_*.R`. `tests/testthat/test-i18n.R`
   fails if a translation is missing or loses a placeholder.
 - Every user-facing function needs roxygen docs + at least one test in
   `tests/testthat/`.

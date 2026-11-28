@@ -1,3 +1,21 @@
+# jellyqda 0.9.4
+
+Preparation for CRAN; no new features.
+
+  * DESCRIPTION: software names in single quotes ('RStudio', 'QDA', ...),
+    references for the methods (Mayring; Cohen; Brennan and Prediger;
+    Hayes and Krippendorff) with DOI / URN, survey import mentioned.
+  * `qda_app()` reports its address with `message()` instead of `cat()`, so
+    it can be silenced with `suppressMessages()`.
+  * The English translation table is split into four topic files
+    (`R/i18n_catalog_{app,analysis,report,features}.R`, joined in
+    `R/i18n_lookup.R`) -- no file in `R/` has more than 500 lines now.
+  * Every test file starts with a short comment on what it tests;
+    `test-features2.R` is now `test-undo-variables-report.R`.
+  * `cran-comments.md` updated (test environments, expected NOTE).
+  * GitHub check workflow: R-devel on Linux added, and the Linux job now
+    also builds the PDF manual (TinyTeX) -- both are part of CRAN's checks.
+
 # jellyqda 0.9.3
 
 ## New features

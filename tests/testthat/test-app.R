@@ -1,3 +1,6 @@
+# Shiny app: document rendering, server wiring (shiny::testServer), layout,
+# code tree and coding bar (R/app.R, R/app_ui.R, R/app_server*.R)
+
 test_that(".split_segments_full preserves the exact text (offset integrity)", {
   cases <- c("a\n\nb\n\n\nc", "a\n\n \n\nb", "one line only", "", "a\n\n\n\nb",
              "Start\n\nMit Umlauten äöü und <Sonder> & Zeichen\n\nEnde")

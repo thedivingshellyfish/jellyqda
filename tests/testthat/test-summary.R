@@ -1,3 +1,5 @@
+# Memo updates and the summary grid (R/memos.R, R/summary.R)
+
 test_that("qda_memo_update overwrites a memo and is audited", {
   new_project()
   on.exit(qda_close(), add = TRUE)

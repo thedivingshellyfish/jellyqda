@@ -1,4 +1,4 @@
-# English / German user interface (R/i18n.R, R/i18n_catalog.R)
+# English / German user interface (R/i18n.R, R/i18n_catalog_*.R, R/i18n_lookup.R)
 
 # set the UI language for one test; restored by the caller's on.exit()
 set_lang <- function(lang) {

@@ -1,3 +1,6 @@
+# 100% offline guarantee: no network calls in the source, a full session
+# with all network entry points disabled
+
 test_that("package source contains no network calls (100% offline guarantee)", {
   # Only possible when the source tree is available (dev / test_local);
   # under R CMD check the installed package has no R/ sources, so skip and

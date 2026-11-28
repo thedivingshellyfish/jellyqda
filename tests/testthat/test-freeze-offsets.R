@@ -1,3 +1,6 @@
+# Frozen text: offsets stay exact, coding by offsets, stable segment numbers
+# (R/import.R, R/coding.R, R/segments.R)
+
 test_that("frozen text is stable and offsets extract exactly the segment text", {
   new_project()
   on.exit(qda_close(), add = TRUE)

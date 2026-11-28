@@ -1,3 +1,6 @@
+# Undo through the history, moving codes, document variables and the
+# standalone A4 HTML report (R/history.R, R/codes.R, R/sources.R, R/export.R)
+
 test_that("qda_undo reverts coding_add / coding_delete / coding_memo", {
   new_project()
   on.exit(qda_close(), add = TRUE)

@@ -1,3 +1,5 @@
+# qda_view(): numbered segments and coloured codings as HTML (R/view.R)
+
 test_that("qda_view renders numbered segments and colored codings as HTML", {
   new_project()
   on.exit(qda_close(), add = TRUE)
