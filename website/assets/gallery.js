@@ -66,5 +66,12 @@
   }
   addEventListener("hashchange", fromHash);
   addEventListener("load", fromHash);
+  // a screenshot much wider than the 16:10 frame (e.g. only a toolbar) is shown
+  // whole instead of being zoomed in until it looks blurred (gallery.css: .wide)
+  cards.forEach(function (c) {
+    var im = c.querySelector("img");
+    function check() { if (im.naturalWidth / im.naturalHeight > 2.4) im.classList.add("wide"); }
+    if (im.complete && im.naturalWidth) check(); else im.addEventListener("load", check);
+  });
   mark();
 })();

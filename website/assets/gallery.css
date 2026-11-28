@@ -31,6 +31,7 @@
 /* one card per feature: screenshot left, text right */
 .gcard { box-sizing: border-box; flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 30px; align-items: center; padding: 6px 4px 14px; }
 .gcard .window img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; background: var(--surface-2); }
+.gcard .window img.wide { object-fit: contain; object-position: center; padding: 0 12px; box-sizing: border-box; }
 .gtext h3 { font-size: 1.3rem; margin: 4px 0 10px; letter-spacing: -.01em; }
 .gtext p { margin: 0 0 14px; color: var(--ink-2); }
 .gtext a { font-weight: 650; }
