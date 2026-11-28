@@ -8,6 +8,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="jellyqda: free, fully offline qualitative content analysis of interviews in R and RStudio. A project is one file, every action lands in the audit trail.">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/gallery.css">
 </head>
 <body>
 
@@ -19,7 +20,7 @@
     </a>
     <nav aria-label="Main">
       <a href="#workflow">How it works</a>
-      <a href="#new">New</a>
+      <a href="#overview">Overview</a>
       <a href="#features">Features</a>
       <a href="#install">Install</a>
       <a href="https://thedivingshellyfish.github.io/jellyqda-assistant">Assistant</a>
@@ -90,7 +91,7 @@
   <section id="workflow">
     <div class="wrap">
       <div class="sechead">
-        <h2>From transcript to report, in five steps</h2>
+        <h2>From transcript to report in five steps</h2>
         <p>The app shows documents, code system, transcript and memos side by side. Pick a step to see that part of the interface.</p>
       </div>
       <div class="flow">
@@ -98,7 +99,7 @@
           <li><button role="tab" aria-selected="true" data-img="img/03-dokumente-import.png" data-cap="Documents panel: import by dialog or drag and drop. The text is frozen at import, so codings never drift."><b>Import transcripts</b><span><code>.txt</code>, <code>.md</code>, <code>.docx</code> and <code>.pdf</code>, by dialog or drag and drop.</span></button></li>
           <li><button role="tab" aria-selected="false" data-img="img/05-codesystem.png" data-cap="Code tree: each code family keeps its colour; rename with a double click."><b>Build a code system</b><span>Codes and subcodes, each family in its own colour-blind-safe colour.</span></button></li>
           <li><button role="tab" aria-selected="false" data-img="img/06-markieren-aktionsleiste.png" data-cap="Mark text and the coding bar appears above it. Ctrl+1 to 9 picks a code."><b>Mark text and code it</b><span>Select a passage, click a code chip. Segments by paragraph or speaker turn.</span></button></li>
-          <li><button role="tab" aria-selected="false" data-img="img/29-fallvergleich.png" data-cap="Case comparison: codings per code across the values of a document variable."><b>Analyse</b><span>Code matrix, case comparison, word frequencies, keyword in context, Mayring.</span></button></li>
+          <li><button role="tab" aria-selected="false" data-img="img/29-fallvergleich.png" data-cap="Case comparison: codings per code across the values of a document variable."><b>Analyse</b><span>Code matrix, case comparison, cases, queries, graphics, word frequencies, Mayring.</span></button></li>
           <li><button role="tab" aria-selected="false" data-img="img/33-bericht-randspalte-a4.png" data-cap="HTML report on A4: each interview with codings, comments and memos in the margin."><b>Report and export</b><span>A4 report with a margin column, codebook as Word, data as CSV or Excel.</span></button></li>
         </ol>
         <figure class="stage">
@@ -109,61 +110,186 @@
     </div>
   </section>
 
-  <section id="new">
+  <section id="overview">
+    <span id="new" class="anchor" aria-hidden="true"></span>
     <div class="wrap">
       <div class="sechead">
-        <h2>New in versions 0.8 to 0.10</h2>
-        <p>Cases independent of documents, team work, pseudonymisation, intercoder agreement, graphics, queries, survey import and exchange with other QDA software. Tested with up to 150 interviews.</p>
+        <h2>jellyqda at a glance</h2>
+        <p>Every feature to browse through: pick one above or page through with the arrows. Each card shows the feature in the app and leads to its guide in the wiki.</p>
       </div>
-      <div class="newgrid">
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/47-faelle.png" alt="Cases dialog" loading="lazy"></div>
-          <h3>Cases independent of documents</h3>
-          <p>A person interviewed twice, the participants of a group interview, a whole team: cases bundle documents or passages, get their own variables and are compared in the code matrix – also built automatically, one case per speaker.</p>
-          <a href="wiki/Cases.html">Guide: cases →</a>
+      <nav class="gnav" aria-label="Feature gallery">
+        <div class="ggroup"><span>Material</span><button type="button" data-go="g-import" aria-controls="g-import">Import</button><button type="button" data-go="g-survey" aria-controls="g-survey">Survey answers</button><button type="button" data-go="g-pseudo" aria-controls="g-pseudo">Pseudonymising<i class="gnew">new</i></button></div>
+        <div class="ggroup"><span>Coding</span><button type="button" data-go="g-codes" aria-controls="g-codes">Code system &amp; guideline</button><button type="button" data-go="g-coding" aria-controls="g-coding">Coding</button><button type="button" data-go="g-segments" aria-controls="g-segments">Segments</button><button type="button" data-go="g-memos" aria-controls="g-memos">Memos</button></div>
+        <div class="ggroup"><span>Analysis</span><button type="button" data-go="g-mayring" aria-controls="g-mayring">Mayring</button><button type="button" data-go="g-words" aria-controls="g-words">Word frequencies &amp; KWIC</button><button type="button" data-go="g-query" aria-controls="g-query">Queries</button><button type="button" data-go="g-matrix" aria-controls="g-matrix">Code matrix</button><button type="button" data-go="g-cases" aria-controls="g-cases">Cases <i class="gnew">new</i></button><button type="button" data-go="g-graphics" aria-controls="g-graphics">Graphics</button></div>
+        <div class="ggroup"><span>Together &amp; safe</span><button type="button" data-go="g-intercoder" aria-controls="g-intercoder">Intercoder</button><button type="button" data-go="g-team" aria-controls="g-team">Team work <i class="gnew">new</i></button><button type="button" data-go="g-report" aria-controls="g-report">Report</button><button type="button" data-go="g-exchange" aria-controls="g-exchange">REFI-QDA exchange</button><button type="button" data-go="g-undo" aria-controls="g-undo">Undo &amp; backups</button></div>
+      </nav>
+      <div class="gallery" role="region" aria-roledescription="carousel" aria-label="Feature gallery">
+        <button type="button" class="garrow gprev" aria-label="Previous feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <div class="gtrack" tabindex="0">
+        <article class="gcard" id="g-import" aria-roledescription="slide" aria-label="1 of 18: Import transcripts">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/03-dokumente-import.png" alt="Import transcripts" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">01 / 18 </p>
+            <h3>Import transcripts</h3>
+            <p>Load <code>.txt</code>, <code>.md</code>, <code>.docx</code> and <code>.pdf</code> by dialog or drag and drop. The text is frozen at import – your markings never drift, not even years later.</p>
+            <a href="wiki/Importing-documents.html">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/49-projekt-zusammenfuehren.png" alt="Merge projects: preview" loading="lazy"></div>
-          <h3>Team work: merging projects</h3>
-          <p>Split the coding, then bring the copies back together: codings, new codes, memos, variables and cases – recognised by text and path, nothing twice, with a preview and an automatic backup.</p>
-          <a href="wiki/Team-work.html">Guide: team work →</a>
+        <article class="gcard" id="g-survey" aria-roledescription="slide" aria-label="2 of 18: Open survey answers">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/45-fragebogen-import.png" alt="Open survey answers" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">02 / 18 <span class="gver">new in 0.9</span></p>
+            <h3>Open survey answers</h3>
+            <p>Answers from SoSci Survey, LimeSurvey, Qualtrics or Google Forms as CSV or Excel: one document per respondent, one segment per answer, closed questions as variables – optionally pre-coded by question.</p>
+            <a href="wiki/Importing-documents.html#survey-open-answers-from-an-online-survey">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
+        <article class="gcard" id="g-pseudo" aria-roledescription="slide" aria-label="3 of 18: Pseudonymise while importing">
           <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/50-pseudonymisieren.png" alt="Pseudonymise while importing" loading="lazy"></div>
-          <h3>Pseudonymise while importing</h3>
-          <p>A key list replaces names of people, places and organisations before the text is frozen – with a preview of the hits. The list and the original files are never stored in the project.</p>
-          <a href="wiki/Importing-documents.html#pseudonymising-while-importing">Guide: pseudonymising →</a>
+          <div class="gtext">
+            <p class="gnum">03 / 18 <span class="gver">new in 0.10</span></p>
+            <h3>Pseudonymise while importing</h3>
+            <p>A key list replaces names of people, places and organisations before the text is frozen – in the text and in the document name, with a preview of the hits. The list and the original files never end up in the project.</p>
+            <a href="wiki/Importing-documents.html#pseudonymising-while-importing">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/34-intercoder.png" alt="Intercoder tab: agreement per code" loading="lazy"></div>
-          <h3>Intercoder agreement</h3>
-          <p>A blind copy for a second coder, then percent agreement, Cohen's kappa, Brennan &amp; Prediger and Krippendorff's alpha per code. Every disagreement listed for the consensus talk – take over a coding with one click.</p>
-          <a href="wiki/Intercoder-agreement.html">Guide: intercoder agreement →</a>
+        <article class="gcard" id="g-codes" aria-roledescription="slide" aria-label="4 of 18: Code system and coding guideline">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/26-kodierleitfaden.png" alt="Code system and coding guideline" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">04 / 18 </p>
+            <h3>Code system and coding guideline</h3>
+            <p>Codes and subcodes, each family in its own colour-blind-safe colour. Every code has a definition, anchor examples and a coding rule – you take anchor examples straight from the text with one click.</p>
+            <a href="wiki/Coding.html">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/38-grafiken-heatmap.png" alt="Heatmap of code co-occurrence" loading="lazy"></div>
-          <h3>Graphics</h3>
-          <p>Which codes occur together (heatmap), a code network, and document portraits that show where in an interview a theme comes up. Click to read the passages; save as SVG for your thesis.</p>
-          <a href="wiki/Graphics.html">Guide: graphics →</a>
+        <article class="gcard" id="g-coding" aria-roledescription="slide" aria-label="5 of 18: Mark and code">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/06-markieren-aktionsleiste.png" alt="Mark and code" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">05 / 18 </p>
+            <h3>Mark and code</h3>
+            <p>Mark a passage, click a code – done. Ctrl+1 to 9 work from the keyboard. Passages with several codings show a count, and in-vivo codes come straight from the marked text.</p>
+            <a href="wiki/Coding.html">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/44-abfrage.png" alt="Query tab: codes combined with AND, OR and NOT" loading="lazy"></div>
-          <h3>Queries</h3>
-          <p>Find passages with all of some codes, at least one of others and none of a third group – in the same speaker turn or document, optionally only for one group (“Workload AND Leadership, but NOT Family, only nurses”). Save the hits as a code.</p>
-          <a href="wiki/Analysis.html#query-codes-combined-and--or--not">Guide: queries →</a>
+        <article class="gcard" id="g-segments" aria-roledescription="slide" aria-label="6 of 18: Segments">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/09-segmentleiste.png" alt="Segments" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">06 / 18 </p>
+            <h3>Segments</h3>
+            <p>Split transcripts into paragraphs, lines or speaker turns (<code>[00:01:12] R: …</code>) and split or join segments with one click. You code whole segments in one step.</p>
+            <a href="wiki/Segments.html">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/45-fragebogen-import.png" alt="Survey import dialog with suggested column roles and preview" loading="lazy"></div>
-          <h3>Open survey answers</h3>
-          <p>Import open answers from SoSci Survey, LimeSurvey, Qualtrics or Google Forms as CSV or Excel: one document per respondent, one segment per answer, closed questions as variables – optionally pre-coded by question.</p>
-          <a href="wiki/Importing-documents.html#survey-open-answers-from-an-online-survey">Guide: survey import →</a>
+        <article class="gcard" id="g-memos" aria-roledescription="slide" aria-label="7 of 18: Memos">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/10-memos.png" alt="Memos" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">07 / 18 </p>
+            <h3>Memos</h3>
+            <p>Four kinds: for a passage, a document, a code and the whole project – plus comments on codings. With filter and search, and in the report next to the interview.</p>
+            <a href="wiki/Memos.html">Guide in the wiki →</a>
+          </div>
         </article>
-        <article class="newcard">
-          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/46-export-refi-qda.png" alt="Export menu with the REFI-QDA (.qdpx) option" loading="lazy"></div>
-          <h3>Exchange with other software</h3>
-          <p>Export the whole project as a REFI-QDA file (<code>.qdpx</code>) for MAXQDA, ATLAS.ti, NVivo or QualCoder – and bring projects from there with the converter. Your project is never locked in.</p>
-          <a href="wiki/Evaluation-and-export.html">Guide: export →</a>
+        <article class="gcard" id="g-mayring" aria-roledescription="slide" aria-label="8 of 18: Summarising after Mayring">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/32-mayring.png" alt="Summarising after Mayring" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">08 / 18 </p>
+            <h3>Summarising after Mayring</h3>
+            <p>Every coding with its passage and a field each for paraphrase and generalisation. One click jumps to the passage; the table exports as CSV.</p>
+            <a href="wiki/Analysis.html">Guide in the wiki →</a>
+          </div>
         </article>
+        <article class="gcard" id="g-words" aria-roledescription="slide" aria-label="9 of 18: Word frequencies and keyword in context">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/31-stichwort-im-kontext.png" alt="Word frequencies and keyword in context" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">09 / 18 </p>
+            <h3>Word frequencies and keyword in context</h3>
+            <p>Which words come up often – without filler words, optionally only within one code? One click shows every occurrence with the text before and after it.</p>
+            <a href="wiki/Analysis.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-query" aria-roledescription="slide" aria-label="10 of 18: Queries">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/44-abfrage.png" alt="Queries" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">10 / 18 <span class="gver">new in 0.9</span></p>
+            <h3>Queries</h3>
+            <p>Find passages with all of some codes, at least one of others and none of a third group (“Workload AND Leadership, but NOT Family, only nurses”) – and save the hits as a code.</p>
+            <a href="wiki/Analysis.html#query-codes-combined-and--or--not">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-matrix" aria-roledescription="slide" aria-label="11 of 18: Code matrix and case comparison">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/29-fallvergleich.png" alt="Code matrix and case comparison" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">11 / 18 </p>
+            <h3>Code matrix and case comparison</h3>
+            <p>Codes against documents, values of a document variable, cases or case variables. Plus the summary grid with one thematic summary per code and document.</p>
+            <a href="wiki/Evaluation-and-export.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-cases" aria-roledescription="slide" aria-label="12 of 18: Cases">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/47-faelle.png" alt="Cases" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">12 / 18 <span class="gver">new in 0.10</span></p>
+            <h3>Cases</h3>
+            <p>A person interviewed twice, the participants of a group interview, a whole team: cases bundle documents or passages, have their own variables and are compared in the code matrix – also built automatically, one case per speaker.</p>
+            <a href="wiki/Cases.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-graphics" aria-roledescription="slide" aria-label="13 of 18: Graphics">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/38-grafiken-heatmap.png" alt="Graphics" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">13 / 18 <span class="gver">new in 0.9</span></p>
+            <h3>Graphics</h3>
+            <p>A heatmap shows which codes occur together; plus a code network and document portraits that show where in an interview a topic comes up. One click leads to the passages; save everything as SVG for your thesis.</p>
+            <a href="wiki/Graphics.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-intercoder" aria-roledescription="slide" aria-label="14 of 18: Intercoder agreement">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/34-intercoder.png" alt="Intercoder agreement" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">14 / 18 <span class="gver">new in 0.8</span></p>
+            <h3>Intercoder agreement</h3>
+            <p>Give a second person a blind copy and load their file back: you see percent agreement, Cohen’s kappa, Brennan &amp; Prediger and Krippendorff’s alpha per code, every disagreement ready to discuss and take over.</p>
+            <a href="wiki/Intercoder-agreement.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-team" aria-roledescription="slide" aria-label="15 of 18: Team work: merging projects">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/49-projekt-zusammenfuehren.png" alt="Team work: merging projects" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">15 / 18 <span class="gver">new in 0.10</span></p>
+            <h3>Team work: merging projects</h3>
+            <p>Split the coding, then bring the copies back together: codings, new codes, memos, variables and cases – recognised by text and path, nothing twice, with a preview and an automatic backup.</p>
+            <a href="wiki/Team-work.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-report" aria-roledescription="slide" aria-label="16 of 18: Report on A4">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/33-bericht-randspalte-a4.png" alt="Report on A4" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">16 / 18 </p>
+            <h3>Report on A4</h3>
+            <p>An overview in seconds or complete with every interview: code system with frequencies, codebook, memos, graphics, cases – and each interview with a margin column for codings and comments. Print-ready, with a progress bar.</p>
+            <a href="wiki/Evaluation-and-export.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-exchange" aria-roledescription="slide" aria-label="17 of 18: Exchange with other software">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/46-export-refi-qda.png" alt="Exchange with other software" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">17 / 18 <span class="gver">new in 0.9</span></p>
+            <h3>Exchange with other software</h3>
+            <p>Export the whole project as a REFI-QDA file (<code>.qdpx</code>) for MAXQDA, ATLAS.ti, NVivo or QualCoder – and bring projects from there with the converter. Your project is never locked in.</p>
+            <a href="wiki/Evaluation-and-export.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        <article class="gcard" id="g-undo" aria-roledescription="slide" aria-label="18 of 18: Undo, audit trail, backups">
+          <div class="window"><div class="bar"><i></i><i></i><i></i></div><img src="img/17-rueckgaengig.png" alt="Undo, audit trail, backups" loading="lazy"></div>
+          <div class="gtext">
+            <p class="gnum">18 / 18 </p>
+            <h3>Undo, audit trail, backups</h3>
+            <p>Ctrl+Z and Ctrl+Y for everything, every action with a timestamp in the audit trail for your methods section, automatic backups every 25 actions. And nothing leaves your computer.</p>
+            <a href="wiki/Undo-and-data-safety.html">Guide in the wiki →</a>
+          </div>
+        </article>
+        </div>
+        <button type="button" class="garrow gnext" aria-label="Next feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
       </div>
     </div>
   </section>
@@ -179,7 +305,7 @@
           <h3><i style="--c:var(--c5)"></i>Coding</h3>
           <ul>
             <li><b>Deductive and inductive</b><span>Coding guideline per code: definition, anchor example, coding rule. In-vivo codes, merging codes.</span></li>
-            <li><b>Overlaps made visible</b><span>Passages with several codings show a count; hover lists them all.</span></li>
+            <li><b>Overlaps made visible</b><span>Passages with several codings show a count; hover over it to see them all.</span></li>
             <li><b>Auto-coding</b><span>Code every hit of a search term in one step, undone with one Ctrl+Z.</span></li>
           </ul>
         </div>
@@ -188,7 +314,7 @@
           <ul>
             <li><b>Mayring's summarising analysis</b><span>Paraphrase and generalisation per coding, exportable as CSV.</span></li>
             <li><b>Queries</b><span>Codes combined with AND, OR and NOT, by group; save the hits as a code.</span></li>
-            <li><b>Case comparison and summary grid</b><span>Codes against document variables; one summary per code and document.</span></li>
+            <li><b>Case comparison, cases and summary grid</b><span>Codes against document or case variables; one summary per code and document.</span></li>
             <li><b>Four kinds of memos</b><span>For a passage, a document, a code and the whole project.</span></li>
           </ul>
         </div>
@@ -197,6 +323,7 @@
           <ul>
             <li><b>Frozen text</b><span>Text is extracted once at import; tests check that what you see matches what is stored, character by character.</span></li>
             <li><b>Automatic backups</b><span>Rotating ZIP snapshots outside the project folder every 25 actions.</span></li>
+            <li><b>Pseudonymise while importing</b><span>Names are replaced before the text is frozen; the key list stays with you.</span></li>
             <li><b>German and English</b><span>Interface, help and report in both languages.</span></li>
           </ul>
         </div>
@@ -302,5 +429,6 @@ qda_open("my-analysis.jellyqda")</pre></div>
 </footer>
 
 <script src="assets/main.js"></script>
+<script src="assets/gallery.js"></script>
 </body>
 </html>

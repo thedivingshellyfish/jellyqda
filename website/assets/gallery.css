@@ -1,0 +1,49 @@
+/* jellyqda landing page :: gallery.css -- the feature gallery ("jellyqda at a
+   glance", section #overview / #ueberblick). Uses the colour tokens of
+   style.css. Behaviour: gallery.js.
+   Layout: buttons per feature in four groups (.gnav), below them one card per
+   feature in a horizontally scrolling track (.gtrack, scroll snap) with
+   arrows on both sides. On phones the card stacks screenshot over text. */
+
+.anchor { display: block; position: relative; top: -80px; visibility: hidden; }
+
+/* feature buttons, grouped */
+.gnav { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 22px; margin: 0 0 26px; }
+.ggroup { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+.ggroup > span { flex-basis: 100%; font-size: .74rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 2px; }
+.gnav button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px;
+  font: 600 .84rem var(--font); cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
+.gnav button:hover { border-color: var(--blue); }
+.gnav button[aria-current="true"] { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+.gnew { font-style: normal; font-size: .68rem; font-weight: 750; text-transform: uppercase; letter-spacing: .05em; margin-left: 4px;
+  padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--gold, #c9a227) 28%, transparent); color: var(--ink); }
+.gnav button[aria-current="true"] .gnew { background: color-mix(in srgb, var(--blue-ink) 25%, transparent); color: inherit; }
+
+/* the gallery: arrows + track */
+.gallery { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; }
+.gtrack { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: 14px; outline-offset: 4px; }
+.gtrack::-webkit-scrollbar { display: none; }
+.garrow { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow); }
+.garrow:hover { border-color: var(--blue); color: var(--blue); }
+.garrow:disabled { opacity: .35; cursor: default; box-shadow: none; }
+.garrow svg { width: 20px; height: 20px; }
+
+/* one card per feature: screenshot left, text right */
+.gcard { box-sizing: border-box; flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 30px; align-items: center; padding: 6px 4px 14px; }
+.gcard .window img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; background: var(--surface-2); }
+.gtext h3 { font-size: 1.3rem; margin: 4px 0 10px; letter-spacing: -.01em; }
+.gtext p { margin: 0 0 14px; color: var(--ink-2); }
+.gtext a { font-weight: 650; }
+.gnum { font: 600 .8rem var(--mono); color: var(--ink-2); margin: 0 !important; display: flex; gap: 10px; align-items: center; }
+.gver { font: 700 .7rem var(--font); text-transform: uppercase; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .gcard { grid-template-columns: 1fr; gap: 16px; }
+  .gallery { grid-template-columns: minmax(0, 1fr); }
+  .garrow { position: absolute; top: 28%; z-index: 2; width: 38px; height: 38px; }
+  .gprev { left: 4px; } .gnext { right: 4px; }
+  .gnav { grid-template-columns: 1fr; gap: 12px; }
+}
+.gfade { animation: gfade .35s ease-out; }
+@keyframes gfade { from { opacity: .15; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .gfade { animation: none; } }
